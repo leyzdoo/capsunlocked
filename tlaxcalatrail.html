@@ -1,18 +1,1377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tlaxcalatrail · Caps Unlocked</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Tlaxcala Trail / El Camino de Tlaxcala</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #CD853F 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    #game {
+      width: 100%;
+      max-width: 780px;
+      background: #FFF8EE;
+      border-radius: 20px;
+      border: 5px solid #8B4513;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      min-height: 580px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    #top-bar {
+      background: #8B4513;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #top-bar h3 {
+      color: #F5E6C8;
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+    #lang-btn {
+      background: #F5E6C8;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #8B4513;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    #lang-btn:hover { transform: scale(1.07); }
+
+    /* ── RESOURCE BAR ── */
+    #resource-bar {
+      background: #4A2500;
+      padding: 8px 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .res-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      min-width: 120px;
+    }
+    .res-label { color: #F5E6C8; font-size: 13px; min-width: 70px; }
+    .res-track {
+      flex: 1;
+      background: #2A1500;
+      border-radius: 8px;
+      height: 14px;
+      overflow: hidden;
+    }
+    .res-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.6s ease;
+    }
+    .fill-health  { background: linear-gradient(90deg, #e74c3c, #ff7675); }
+    .fill-food    { background: linear-gradient(90deg, #27ae60, #55efc4); }
+    .fill-joy     { background: linear-gradient(90deg, #f39c12, #fdcb6e); }
+    .fill-friends { background: linear-gradient(90deg, #8e44ad, #a29bfe); }
+
+    /* ── MAIN CONTENT ── */
+    #content {
+      padding: 24px 28px;
+      min-height: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── SCREENS ── */
+    .screen { width: 100%; text-align: center; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .scene-art {
+      font-size: 64px;
+      margin-bottom: 14px;
+      line-height: 1.2;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.15));
+    }
+    .chapter-badge {
+      display: inline-block;
+      background: #8B4513;
+      color: #F5E6C8;
+      border-radius: 20px;
+      padding: 5px 18px;
+      font-size: 13px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    h1.game-title {
+      font-size: 36px;
+      color: #8B4513;
+      margin-bottom: 6px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    h2.game-title2 {
+      font-size: 22px;
+      color: #C0392B;
+      margin-bottom: 18px;
+    }
+    h2.screen-title {
+      font-size: 26px;
+      color: #8B4513;
+      margin-bottom: 12px;
+    }
+    .story-text {
+      font-size: 18px;
+      color: #3D2000;
+      line-height: 1.6;
+      margin-bottom: 22px;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .result-text {
+      font-size: 19px;
+      color: #1a6020;
+      line-height: 1.6;
+      margin-bottom: 18px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #e8f8e8;
+      border-radius: 12px;
+      padding: 14px 20px;
+      border-left: 5px solid #27ae60;
+    }
+    .result-text.bad {
+      color: #7f1010;
+      background: #fdecea;
+      border-left-color: #e74c3c;
+    }
+    .fact-box {
+      background: linear-gradient(135deg, #FFF3CD, #FFE082);
+      border: 3px solid #F39C12;
+      border-radius: 16px;
+      padding: 18px 24px;
+      margin-bottom: 18px;
+      max-width: 620px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .fact-box .fact-icon { font-size: 36px; margin-bottom: 8px; }
+    .fact-box p { font-size: 17px; color: #5D4037; line-height: 1.6; }
+
+    .event-box {
+      background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+      border: 3px solid #2196F3;
+      border-radius: 16px;
+      padding: 18px 24px;
+      margin-bottom: 18px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .event-box .event-icon { font-size: 44px; margin-bottom: 8px; }
+    .event-box p { font-size: 17px; color: #1A237E; line-height: 1.6; }
+
+    .resource-changes {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .res-change {
+      font-size: 16px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+    .res-change.pos { background: #d4edda; color: #155724; }
+    .res-change.neg { background: #f8d7da; color: #721c24; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block;
+      padding: 14px 30px;
+      border-radius: 14px;
+      border: none;
+      font-size: 18px;
+      font-family: 'Georgia', serif;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      margin: 6px;
+      min-width: 200px;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+    .btn:active { transform: translateY(0); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8B4513, #C0392B);
+      color: white;
+    }
+    .btn-choice {
+      background: linear-gradient(135deg, #2471A3, #1ABC9C);
+      color: white;
+      display: block;
+      width: 90%;
+      max-width: 520px;
+      margin: 8px auto;
+      text-align: left;
+      font-size: 16px;
+      padding: 16px 22px;
+    }
+    .btn-next {
+      background: linear-gradient(135deg, #27AE60, #1E8449);
+      color: white;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #D4AC0D, #F39C12);
+      color: #3D2000;
+    }
+    .btn-chapter {
+      background: linear-gradient(135deg, #8B4513, #A93226);
+      color: white;
+      font-size: 20px;
+      padding: 18px 40px;
+    }
+
+    /* ── NAME INPUT ── */
+    #name-input {
+      font-size: 22px;
+      font-family: 'Georgia', serif;
+      padding: 12px 20px;
+      border: 3px solid #8B4513;
+      border-radius: 12px;
+      color: #3D2000;
+      background: #FFF3E0;
+      width: 280px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    #name-input:focus { outline: none; border-color: #C0392B; }
+
+    /* ── CHAPTER INTRO ── */
+    .chapter-intro-bg {
+      background: linear-gradient(135deg, #4A2500 0%, #8B4513 100%);
+      border-radius: 16px;
+      padding: 30px;
+      color: white;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .chapter-intro-bg h2 { font-size: 28px; margin-bottom: 8px; }
+    .chapter-intro-bg .ch-year { font-size: 15px; color: #FFD580; margin-bottom: 16px; }
+    .chapter-intro-bg p { font-size: 17px; line-height: 1.6; color: #F5E6C8; }
+
+    /* ── SUMMARY ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 440px;
+      margin: 0 auto 20px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      border: 2px solid #DDD;
+      text-align: center;
+    }
+    .summary-card .sc-icon { font-size: 28px; }
+    .summary-card .sc-val { font-size: 24px; font-weight: bold; color: #8B4513; }
+    .summary-card .sc-lbl { font-size: 13px; color: #888; }
+
+    /* ── GAME OVER / VICTORY ── */
+    .win-screen { background: linear-gradient(135deg, #1a5c1a, #27ae60); border-radius: 16px; padding: 30px; color: white; }
+    .lose-screen { background: linear-gradient(135deg, #7f1010, #c0392b); border-radius: 16px; padding: 30px; color: white; }
+    .win-screen h2, .lose-screen h2 { font-size: 30px; margin-bottom: 14px; }
+    .win-screen p, .lose-screen p { font-size: 18px; line-height: 1.6; color: rgba(255,255,255,0.9); }
+
+    .big-emoji { font-size: 80px; margin-bottom: 10px; }
+
+    /* ── PROGRESS DOTS ── */
+    #progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      background: #6B3410;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #4A2500;
+      transition: background 0.3s;
+    }
+    .dot.done { background: #F39C12; }
+    .dot.current { background: #FFD700; box-shadow: 0 0 6px #FFD700; }
+
+    @media (max-width: 500px) {
+      h1.game-title { font-size: 26px; }
+      .story-text { font-size: 16px; }
+      .scene-art { font-size: 48px; }
+      #content { padding: 16px 14px; }
+    }
+  </style>
 </head>
 <body>
+<div id="game">
+  <div id="top-bar">
+    <h3 id="top-title">🌋 The Tlaxcala Trail</h3>
+    <button id="lang-btn" onclick="toggleLang()">🌐 Español</button>
+  </div>
+  <div id="progress-dots"></div>
+  <div id="resource-bar" style="display:none">
+    <div class="res-item">
+      <span class="res-label">❤️ <span data-key="health">Health</span></span>
+      <div class="res-track"><div class="res-fill fill-health" id="fill-health"></div></div>
+    </div>
+    <div class="res-item">
+      <span class="res-label">🌽 <span data-key="food">Food</span></span>
+      <div class="res-track"><div class="res-fill fill-food" id="fill-food"></div></div>
+    </div>
+    <div class="res-item">
+      <span class="res-label">😊 <span data-key="joy">Joy</span></span>
+      <div class="res-track"><div class="res-fill fill-joy" id="fill-joy"></div></div>
+    </div>
+    <div class="res-item">
+      <span class="res-label">🤝 <span data-key="friends">Friends</span></span>
+      <div class="res-track"><div class="res-fill fill-friends" id="fill-friends"></div></div>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
 
-  <main data-app="tlaxcalatrail">
-    <!-- Content is rendered by layout.js from apps-data.js -->
-  </main>
+<script>
+// ═══════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════
+let currentLang = 'en';
+let playerName  = 'Explorer';
+let resources   = { health: 90, food: 80, joy: 70, friends: 60 };
+let step        = 0;   // current step in STEPS array
+let totalSteps  = 0;
 
-  <script src="apps-data.js"></script>
-  <script src="layout.js"></script>
+// ═══════════════════════════════════════════════
+//  BILINGUAL STRINGS
+// ═══════════════════════════════════════════════
+const T = {
+  topTitle:   { en: '🌋 The Tlaxcala Trail',        es: '🌋 El Camino de Tlaxcala' },
+  langBtn:    { en: '🌐 Español',                    es: '🌐 English' },
+  health:     { en: 'Health',                        es: 'Salud' },
+  food:       { en: 'Food',                          es: 'Comida' },
+  joy:        { en: 'Joy',                           es: 'Alegría' },
+  friends:    { en: 'Friends',                       es: 'Amigos' },
+  next:       { en: '➡️ Continue',                  es: '➡️ Continuar' },
+  startGame:  { en: '🎮 Start Adventure!',           es: '🎮 ¡Comenzar Aventura!' },
+  enterName:  { en: 'What is your name?',            es: '¿Cómo te llamas?' },
+  namePh:     { en: 'Your name here...',             es: 'Tu nombre aquí...' },
+  nameGo:     { en: "🌟 Let's Go!",                  es: '🌟 ¡Vamos!' },
+  chSummary:  { en: 'Chapter Complete!',             es: '¡Capítulo Completo!' },
+  chSumSub:   { en: 'Here is how you are doing:',   es: 'Así vas hasta ahora:' },
+  nextCh:     { en: '⭐ Next Chapter!',              es: '⭐ ¡Siguiente Capítulo!' },
+  funFact:    { en: '📚 Fun Fact!',                  es: '📚 ¡Dato Curioso!' },
+  event:      { en: '🎲 Something Happened!',        es: '🎲 ¡Algo Pasó!' },
+  gameOver:   { en: 'Oh no! Game Over.',             es: 'Oh no. Fin del Juego.' },
+  gameOverSub:{ en: "Your health ran out! But don't worry — history is full of second chances. Try again!", es: '¡Tu salud se acabó! Pero no te preocupes — la historia está llena de segundas oportunidades. ¡Inténtalo de nuevo!' },
+  tryAgain:   { en: '🔄 Try Again!',                es: '🔄 ¡Intentar de Nuevo!' },
+  youDid:     { en: 'You did it!',                  es: '¡Lo lograste!' },
+  victory:    { en: ({ n }) => `Amazing, ${n}! You journeyed through ancient Tlaxcala, the great encounter with the Spanish, the colonial era, and all the way to Mexican Independence! You are a true Tlaxcalan hero!`,
+                es: ({ n }) => `¡Increíble, ${n}! Viajaste por la antigua Tlaxcala, el gran encuentro con los españoles, la era colonial, ¡y hasta la Independencia de México! ¡Eres un verdadero héroe tlaxcalteca!` },
+  playAgain:  { en: '🎉 Play Again!',               es: '🎉 ¡Jugar de Nuevo!' },
+};
+
+function t(key, vars) {
+  const v = T[key];
+  if (!v) return key;
+  const val = v[currentLang] ?? v.en;
+  return typeof val === 'function' ? val(vars || {}) : val;
+}
+
+// ═══════════════════════════════════════════════
+//  GAME STEPS  (the full script)
+// ═══════════════════════════════════════════════
+// Each step: { type, ... }
+// Types: title | name | chapterIntro | scene | result | event | fact | summary | victory | gameOver
+
+function buildSteps(name) {
+  const N = name || playerName;
+  return [
+
+  // ──────────────── TITLE ────────────────
+  { type: 'title' },
+
+  // ──────────────── NAME ────────────────
+  { type: 'name' },
+
+  // ══════════════════════════════════════
+  //  CHAPTER 1 — Ancient Tlaxcala
+  // ══════════════════════════════════════
+  {
+    type: 'chapterIntro',
+    num: 1,
+    art: '🌽🏔️🌺🦅',
+    title: {
+      en: 'Chapter 1: Ancient Tlaxcala',
+      es: 'Capítulo 1: La Antigua Tlaxcala'
+    },
+    year: { en: 'Long ago, before 1519 CE', es: 'Hace mucho tiempo, antes del año 1519' },
+    text: {
+      en: ({ n }) => `Welcome, ${n}! You live in Tlaxcala — a proud, free city in Mexico surrounded by the mighty Aztec Empire. Your people speak Nahuatl and are famous for their bravery and delicious corn. Get ready to explore your home!`,
+      es: ({ n }) => `¡Bienvenido, ${n}! Vives en Tlaxcala — una ciudad libre y orgullosa en México, rodeada por el poderoso Imperio Azteca. Tu gente habla náhuatl y es famosa por su valentía y su delicioso maíz. ¡Prepárate para explorar tu hogar!`
+    }
+  },
+
+  // Ch1 Scene 1
+  {
+    type: 'scene',
+    art: '🏪🌽🥑🍅',
+    chapter: 1,
+    title: { en: 'The Busy Market', es: 'El Mercado Lleno de Vida' },
+    text: {
+      en: ({ n }) => `${n}, you are at the great Tlaxcalan market! Colorful fabrics, fresh corn, and beautiful pottery fill every stall. You notice a small, hungry child with no food. What do you do?`,
+      es: ({ n }) => `${n}, ¡estás en el gran mercado tlaxcalteca! Hay telas de colores, maíz fresco y hermosa cerámica en cada puesto. Notas a un niño pequeño con hambre y sin comida. ¿Qué haces?`
+    },
+    choices: [
+      {
+        icon: '🌽',
+        text: { en: 'Share your food with the child', es: 'Compartir tu comida con el niño' },
+        result: {
+          good: true,
+          art: '😊🤝',
+          text: {
+            en: ({ n }) => `How kind, ${n}! The child smiles and says "Tlazohcamati!" (thank you in Nahuatl). You made a new friend today!`,
+            es: ({ n }) => `¡Qué amable, ${n}! El niño sonríe y dice "¡Tlazohcamati!" (gracias en náhuatl). ¡Hoy hiciste un nuevo amigo!`
+          },
+          changes: { food: -15, friends: +20, joy: +10 }
+        }
+      },
+      {
+        icon: '🛡️',
+        text: { en: 'Keep your food — you might need it later', es: 'Guardar tu comida — podrías necesitarla después' },
+        result: {
+          good: false,
+          art: '😐📦',
+          text: {
+            en: ({ n }) => `You keep your food safe, ${n}. You feel a little sad seeing the child leave hungry. Sometimes keeping resources is smart, but it can feel lonely.`,
+            es: ({ n }) => `Guardas tu comida, ${n}. Te sientes un poco triste al ver al niño irse con hambre. A veces guardar recursos es inteligente, pero puede sentirse solitario.`
+          },
+          changes: { food: 0, friends: -5, joy: -5 }
+        }
+      }
+    ]
+  },
+
+  // Ch1 Scene 2
+  {
+    type: 'scene',
+    art: '👴📖🌿',
+    chapter: 1,
+    title: { en: 'The Wise Elders', es: 'Los Sabios Ancianos' },
+    text: {
+      en: ({ n }) => `The village elders are teaching about Tlaxcalan history under the shade of a big tree. But your friends are nearby playing a ball game! What do you choose, ${n}?`,
+      es: ({ n }) => `Los ancianos del pueblo enseñan la historia tlaxcalteca bajo la sombra de un árbol grande. ¡Pero tus amigos están cerca jugando pelota! ¿Qué eliges, ${n}?`
+    },
+    choices: [
+      {
+        icon: '📖',
+        text: { en: 'Listen to the elders and learn', es: 'Escuchar a los ancianos y aprender' },
+        result: {
+          good: true,
+          art: '🧠✨',
+          text: {
+            en: ({ n }) => `Great choice, ${n}! You learn that Tlaxcala means "Place of Corn Tortillas" in Nahuatl, and that Tlaxcala had FOUR city-states ruled by a council — not one king! That was very special.`,
+            es: ({ n }) => `¡Excelente elección, ${n}! Aprendes que Tlaxcala significa "Lugar de las Tortillas de Maíz" en náhuatl, y que Tlaxcala tenía CUATRO ciudades-estado gobernadas por un consejo — ¡no un solo rey! Eso era muy especial.`
+          },
+          changes: { joy: +20, health: +5 }
+        }
+      },
+      {
+        icon: '⚽',
+        text: { en: 'Play the ball game with friends', es: 'Jugar pelota con los amigos' },
+        result: {
+          good: false,
+          art: '⚽😄',
+          text: {
+            en: ({ n }) => `You have so much fun, ${n}! But later you wonder what the elders were teaching. Maybe you can ask them tomorrow!`,
+            es: ({ n }) => `¡Te diviertes muchísimo, ${n}! Pero después te preguntas qué enseñaban los ancianos. ¡Tal vez puedes preguntarles mañana!`
+          },
+          changes: { joy: +10, friends: +10, food: -10 }
+        }
+      }
+    ]
+  },
+
+  // Ch1 Scene 3
+  {
+    type: 'scene',
+    art: '🌧️☁️🌽🌾',
+    chapter: 1,
+    title: { en: 'The Coming Storm!', es: '¡La Tormenta se Acerca!' },
+    text: {
+      en: ({ n }) => `Dark clouds are rolling in fast, ${n}! A big rainstorm is coming. Your family has corn crops in the field AND animals in the yard. You can only save one!`,
+      es: ({ n }) => `¡Las nubes oscuras llegan rápido, ${n}! Se acerca una gran tormenta. Tu familia tiene maíz en el campo Y animales en el patio. ¡Solo puedes salvar uno!`
+    },
+    choices: [
+      {
+        icon: '🌽',
+        text: { en: 'Run out and harvest the corn!', es: '¡Correr a cosechar el maíz!' },
+        result: {
+          good: true,
+          art: '🌽💧',
+          text: {
+            en: ({ n }) => `You dash through the rain, ${n}! You saved lots of corn but got very wet. You might catch a little cold, but at least your family won't be hungry!`,
+            es: ({ n }) => `¡Corres bajo la lluvia, ${n}! Salvaste mucho maíz pero te mojaste mucho. Quizás te resfríes un poco, ¡pero al menos tu familia no pasará hambre!`
+          },
+          changes: { food: +25, health: -10, joy: +5 }
+        }
+      },
+      {
+        icon: '🐓',
+        text: { en: 'Shelter the animals in the barn', es: 'Llevar los animales al refugio' },
+        result: {
+          good: true,
+          art: '🐓🏠',
+          text: {
+            en: ({ n }) => `The animals are safe! You stayed dry too, ${n}. The corn got a little wet, but your turkey and dogs are happy and healthy. Good thinking!`,
+            es: ({ n }) => `¡Los animales están a salvo! Tú también te mantuviste seco, ${n}. El maíz se mojó un poco, pero tu guajolote y perros están contentos y sanos. ¡Bien pensado!`
+          },
+          changes: { health: +10, friends: +15, food: -10 }
+        }
+      }
+    ]
+  },
+
+  // Ch1 Random Event
+  {
+    type: 'event',
+    art: '🎊🎭🎉',
+    title: { en: '🎉 Festival Time!', es: '🎉 ¡Tiempo de Festival!' },
+    text: {
+      en: ({ n }) => `Surprise, ${n}! The Tlaxcalan festival has begun! There is music, dancing, colorful costumes, and delicious food everywhere. Your whole village is celebrating together!`,
+      es: ({ n }) => `¡Sorpresa, ${n}! ¡Ha comenzado el festival tlaxcalteca! Hay música, baile, disfraces coloridos y deliciosa comida por todos lados. ¡Todo tu pueblo celebra junto!`
+    },
+    changes: { joy: +20, friends: +10, food: +5 }
+  },
+
+  // Ch1 Fun Fact
+  {
+    type: 'fact',
+    icon: '🌽',
+    title: { en: '📚 Fun Fact about Tlaxcala!', es: '📚 ¡Dato Curioso sobre Tlaxcala!' },
+    text: {
+      en: 'Tlaxcala is the SMALLEST state in all of Mexico — but it has one of the BIGGEST histories! Its name comes from the Nahuatl word "Tlaxcallan" meaning "Place of Corn Tortillas." Corn (maize) was the most important food and was even considered sacred!',
+      es: 'Tlaxcala es el estado MÁS PEQUEÑO de todo México — ¡pero tiene una de las MAYORES historias! Su nombre viene de la palabra náhuatl "Tlaxcallan" que significa "Lugar de las Tortillas de Maíz." ¡El maíz era el alimento más importante y hasta se consideraba sagrado!'
+    }
+  },
+
+  // Ch1 Summary
+  {
+    type: 'summary',
+    chapter: 1,
+    title: { en: 'Chapter 1 Complete! 🌽', es: '¡Capítulo 1 Completo! 🌽' }
+  },
+
+  // ══════════════════════════════════════
+  //  CHAPTER 2 — The Great Encounter
+  // ══════════════════════════════════════
+  {
+    type: 'chapterIntro',
+    num: 2,
+    art: '⛵🐴🛡️🌊',
+    title: {
+      en: 'Chapter 2: The Great Encounter',
+      es: 'Capítulo 2: El Gran Encuentro'
+    },
+    year: { en: '1519 CE — Spanish explorers arrive!', es: '1519 — ¡Llegan los exploradores españoles!' },
+    text: {
+      en: ({ n }) => `Big news, ${n}! Men with big ships, shiny metal armor, and strange animals called horses have arrived on the coast of Mexico. They are Spanish explorers led by a man named Hernán Cortés. What will happen when two very different worlds meet?`,
+      es: ({ n }) => `¡Gran noticia, ${n}! Hombres con grandes barcos, brillante armadura de metal y extraños animales llamados caballos llegaron a la costa de México. Son exploradores españoles liderados por un hombre llamado Hernán Cortés. ¿Qué pasará cuando dos mundos muy diferentes se encuentren?`
+    }
+  },
+
+  // Ch2 Scene 1
+  {
+    type: 'scene',
+    art: '⛵🤝🦅⚔️',
+    chapter: 2,
+    title: { en: 'Strangers Arrive!', es: '¡Llegan Extraños!' },
+    text: {
+      en: ({ n }) => `Cortés's messengers arrive in Tlaxcala, ${n}. The Tlaxcalan leaders must make a big decision. The Spanish want to be allies — friends who fight together against the Aztec Empire. How do you help?`,
+      es: ({ n }) => `Los mensajeros de Cortés llegan a Tlaxcala, ${n}. Los líderes tlaxcaltecas deben tomar una gran decisión. Los españoles quieren ser aliados — amigos que luchen juntos contra el Imperio Azteca. ¿Cómo ayudas?`
+    },
+    choices: [
+      {
+        icon: '👂',
+        text: { en: 'Listen carefully and ask questions', es: 'Escuchar con cuidado y hacer preguntas' },
+        result: {
+          good: true,
+          art: '🤝✨',
+          text: {
+            en: ({ n }) => `Wonderful, ${n}! You listen well. You learn that the Spanish also don't like the Aztecs, who took things from many people. Tlaxcala and the Spanish decide to work together. This alliance will change history!`,
+            es: ({ n }) => `¡Maravilloso, ${n}! Escuchas bien. Aprendes que los españoles tampoco quieren a los aztecas, quienes quitaron cosas a mucha gente. Tlaxcala y los españoles deciden trabajar juntos. ¡Esta alianza cambiará la historia!`
+          },
+          changes: { friends: +25, joy: +10 }
+        }
+      },
+      {
+        icon: '🛡️',
+        text: { en: 'Stay back and watch carefully', es: 'Quedarte atrás y observar con cuidado' },
+        result: {
+          good: false,
+          art: '👀🛡️',
+          text: {
+            en: ({ n }) => `Being careful is smart, ${n}! You watch and observe. Sometimes it's good to wait before making a big decision. But the world is changing fast around you!`,
+            es: ({ n }) => `¡Ser cuidadoso es inteligente, ${n}! Observas y esperas. A veces es bueno esperar antes de tomar una gran decisión. ¡Pero el mundo cambia rápido a tu alrededor!`
+          },
+          changes: { health: +10, friends: -5, joy: -5 }
+        }
+      }
+    ]
+  },
+
+  // Ch2 Scene 2
+  {
+    type: 'scene',
+    art: '🐴😲🌽🍊',
+    chapter: 2,
+    title: { en: 'New Animals, New Foods!', es: '¡Nuevos Animales, Nuevas Comidas!' },
+    text: {
+      en: ({ n }) => `Wow, ${n}! The Spanish brought animals no one in Mexico had ever seen — huge horses! 🐴 They also brought new foods like pigs, wheat bread, and oranges. And they were amazed to see YOUR foods like tomatoes, chocolate, and corn!`,
+      es: ({ n }) => `¡Wow, ${n}! Los españoles trajeron animales que nadie en México había visto — ¡enormes caballos! 🐴 También trajeron nuevas comidas como cerdos, pan de trigo y naranjas. ¡Y ellos quedaron asombrados de ver TUS alimentos como tomates, chocolate y maíz!`
+    },
+    choices: [
+      {
+        icon: '🍊',
+        text: { en: 'Try the new Spanish foods!', es: '¡Probar las nuevas comidas españolas!' },
+        result: {
+          good: true,
+          art: '😋🍊',
+          text: {
+            en: ({ n }) => `Delicious, ${n}! The orange is sweet and juicy — unlike anything you've tasted! You share some corn with the Spanish explorers too. Everyone enjoys trying something new!`,
+            es: ({ n }) => `¡Delicioso, ${n}! La naranja es dulce y jugosa — ¡a diferencia de cualquier cosa que hayas probado! También compartes algo de maíz con los exploradores españoles. ¡A todos les gusta probar algo nuevo!`
+          },
+          changes: { food: +15, friends: +15, joy: +15 }
+        }
+      },
+      {
+        icon: '🌽',
+        text: { en: 'Stick with familiar Tlaxcalan food', es: 'Quedarte con la comida tlaxcalteca conocida' },
+        result: {
+          good: true,
+          art: '🌽😊',
+          text: {
+            en: ({ n }) => `Smart and comfortable, ${n}! Your tortillas and beans are perfect and you know exactly how to make them. There's nothing wrong with loving what you know!`,
+            es: ({ n }) => `¡Inteligente y cómodo, ${n}! Tus tortillas y frijoles son perfectos y sabes exactamente cómo hacerlos. ¡No hay nada malo en amar lo que conoces!`
+          },
+          changes: { food: +5, health: +10, joy: +5 }
+        }
+      }
+    ]
+  },
+
+  // Ch2 Scene 3
+  {
+    type: 'scene',
+    art: '🎒🌄🦅',
+    chapter: 2,
+    title: { en: 'Time to Help!', es: '¡Hora de Ayudar!' },
+    text: {
+      en: ({ n }) => `The Tlaxcalan-Spanish alliance is going on a long journey, ${n}! They need your help. You can carry supplies OR you can share the stories and history of your people with the Spanish soldiers. What do you choose?`,
+      es: ({ n }) => `¡La alianza tlaxcalteca-española emprende un largo viaje, ${n}! Necesitan tu ayuda. Puedes cargar suministros O puedes compartir las historias e historia de tu pueblo con los soldados españoles. ¿Qué eliges?`
+    },
+    choices: [
+      {
+        icon: '🎒',
+        text: { en: 'Carry supplies and equipment', es: 'Cargar suministros y equipo' },
+        result: {
+          good: true,
+          art: '💪🎒',
+          text: {
+            en: ({ n }) => `You're so strong, ${n}! You carry the heavy supplies on a long, tiring road. Your muscles ache, but the alliance stays well-supplied. Everyone thanks you!`,
+            es: ({ n }) => `¡Eres muy fuerte, ${n}! Cargas los pesados suministros en un largo y cansado camino. Te duelen los músculos, ¡pero la alianza tiene todo lo que necesita. ¡Todos te agradecen!`
+          },
+          changes: { friends: +20, health: -10, food: -5 }
+        }
+      },
+      {
+        icon: '📖',
+        text: { en: 'Tell stories of Tlaxcalan history', es: 'Contar historias de la historia tlaxcalteca' },
+        result: {
+          good: true,
+          art: '📖🌟',
+          text: {
+            en: ({ n }) => `The Spanish soldiers are fascinated, ${n}! They never knew about the brave Tlaxcalan republic. Your stories help them understand your culture and build respect between the two peoples!`,
+            es: ({ n }) => `¡Los soldados españoles quedan fascinados, ${n}! Nunca supieron sobre la valiente república tlaxcalteca. ¡Tus historias les ayudan a entender tu cultura y construyen respeto entre los dos pueblos!`
+          },
+          changes: { friends: +25, joy: +15, health: +5 }
+        }
+      }
+    ]
+  },
+
+  // Ch2 Random Event
+  {
+    type: 'event',
+    art: '🐴😮✨',
+    title: { en: '🐴 You See a Horse!', es: '🐴 ¡Ves un Caballo!' },
+    text: {
+      en: ({ n }) => `Wow, ${n}! A huge horse trots right past you! These amazing animals came from Spain. Before the Spanish arrived, there were NO horses in all of the Americas! Now they will change transportation, farming, and even how battles are fought forever!`,
+      es: ({ n }) => `¡Wow, ${n}! ¡Un enorme caballo trota justo frente a ti! Estos increíbles animales vinieron de España. ¡Antes de que llegaran los españoles, NO había caballos en toda América! Ahora cambiarán el transporte, la agricultura e incluso cómo se libran las batallas para siempre!`
+    },
+    changes: { joy: +15, health: +5 }
+  },
+
+  // Ch2 Fun Fact
+  {
+    type: 'fact',
+    icon: '🤝',
+    title: { en: '📚 The Tlaxcalan Alliance', es: '📚 La Alianza Tlaxcalteca' },
+    text: {
+      en: 'The Tlaxcalans were SO important to the Spanish that the King of Spain gave them very special rights! Tlaxcalan nobles were treated like Spanish nobles. And because of their loyalty, Tlaxcala kept many of its freedoms even after New Spain (Mexico) was created. Tlaxcala has always been special!',
+      es: '¡Los tlaxcaltecas fueron TAN importantes para los españoles que el Rey de España les dio derechos muy especiales! Los nobles tlaxcaltecas eran tratados como nobles españoles. Y gracias a su lealtad, Tlaxcala conservó muchas de sus libertades incluso después de que se creó la Nueva España (México). ¡Tlaxcala siempre ha sido especial!'
+    }
+  },
+
+  // Ch2 Summary
+  {
+    type: 'summary',
+    chapter: 2,
+    title: { en: 'Chapter 2 Complete! ⛵', es: '¡Capítulo 2 Completo! ⛵' }
+  },
+
+  // ══════════════════════════════════════
+  //  CHAPTER 3 — Building New Tlaxcala
+  // ══════════════════════════════════════
+  {
+    type: 'chapterIntro',
+    num: 3,
+    art: '⛪🏛️🌺🔨',
+    title: {
+      en: 'Chapter 3: Building Together',
+      es: 'Capítulo 3: Construyendo Juntos'
+    },
+    year: { en: 'Colonial Era — 1521 to 1700 CE', es: 'Era Colonial — 1521 a 1700' },
+    text: {
+      en: ({ n }) => `Time passes, ${n}. Mexico is now called "New Spain." Tlaxcala and the Spanish are building a brand-new world together — with schools, churches, new foods, and new ideas. Two cultures are mixing and creating something wonderful!`,
+      es: ({ n }) => `Pasa el tiempo, ${n}. México ahora se llama "Nueva España." Tlaxcala y los españoles están construyendo juntos un mundo completamente nuevo — con escuelas, iglesias, nuevas comidas y nuevas ideas. ¡Dos culturas se mezclan y crean algo maravilloso!`
+    }
+  },
+
+  // Ch3 Scene 1
+  {
+    type: 'scene',
+    art: '📚✏️🗣️',
+    chapter: 3,
+    title: { en: 'Learning New Languages', es: 'Aprendiendo Nuevas Lenguas' },
+    text: {
+      en: ({ n }) => `A friendly Spanish monk named Fray Diego wants to teach you Spanish, ${n}. But you could also teach HIM Nahuatl, your beautiful indigenous language! Languages help people understand each other. What do you do?`,
+      es: ({ n }) => `Un amable monje español llamado Fray Diego quiere enseñarte español, ${n}. ¡Pero tú también podrías enseñarle náhuatl, tu hermosa lengua indígena! Los idiomas ayudan a la gente a entenderse. ¿Qué haces?`
+    },
+    choices: [
+      {
+        icon: '📚',
+        text: { en: 'Learn Spanish from the monk', es: 'Aprender español del monje' },
+        result: {
+          good: true,
+          art: '🗣️✨',
+          text: {
+            en: ({ n }) => `Excellent, ${n}! Now you can speak to both Tlaxcalan people AND Spanish people. Knowing two languages is a superpower! "¡Hola amigo!" you say, and the monk smiles.`,
+            es: ({ n }) => `¡Excelente, ${n}! Ahora puedes hablar con personas tlaxcaltecas Y españolas. ¡Saber dos idiomas es un superpoder! "¡Hola amigo!" dices, y el monje sonríe.`
+          },
+          changes: { friends: +20, joy: +15 }
+        }
+      },
+      {
+        icon: '🦋',
+        text: { en: 'Teach the monk Nahuatl instead!', es: '¡Enseñarle náhuatl al monje!' },
+        result: {
+          good: true,
+          art: '🦋🌟',
+          text: {
+            en: ({ n }) => `Brilliant idea, ${n}! Fray Diego learns to say "Tlazohcamati" (thank you) and "Nimitztlazohtla" (I love you) in Nahuatl. He writes them down to share with others. You helped preserve your language!`,
+            es: ({ n }) => `¡Idea brillante, ${n}! Fray Diego aprende a decir "Tlazohcamati" (gracias) y "Nimitztlazohtla" (te quiero) en náhuatl. Los escribe para compartirlos con otros. ¡Ayudaste a preservar tu idioma!`
+          },
+          changes: { joy: +25, friends: +15, health: +5 }
+        }
+      }
+    ]
+  },
+
+  // Ch3 Scene 2
+  {
+    type: 'scene',
+    art: '⛪🔨🪨✝️',
+    chapter: 3,
+    title: { en: 'Building the Cathedral!', es: '¡Construyendo la Catedral!' },
+    text: {
+      en: ({ n }) => `The Cathedral of Tlaxcala is being built — and it will become the OLDEST cathedral in all the Americas, ${n}! Workers need your help. You can help carry stones to build, or you can bring food and water to keep the workers strong.`,
+      es: ({ n }) => `¡La Catedral de Tlaxcala está siendo construida — y se convertirá en la catedral MÁS ANTIGUA de todas las Américas, ${n}! Los trabajadores necesitan tu ayuda. Puedes ayudar a cargar piedras para construir, o puedes llevar comida y agua para mantener fuertes a los trabajadores.`
+    },
+    choices: [
+      {
+        icon: '🪨',
+        text: { en: 'Help carry stones to build!', es: '¡Ayudar a cargar piedras!' },
+        result: {
+          good: true,
+          art: '💪⛪',
+          text: {
+            en: ({ n }) => `Hard work, ${n}! Your arms are tired but the walls go up beautifully. You helped build something that will last for HUNDREDS of years and that people still visit today!`,
+            es: ({ n }) => `¡Duro trabajo, ${n}! Te duelen los brazos pero las paredes suben bellamente. ¡Ayudaste a construir algo que durará CIENTOS de años y que la gente aún visita hoy!`
+          },
+          changes: { friends: +20, health: -5, joy: +20 }
+        }
+      },
+      {
+        icon: '🌽',
+        text: { en: 'Bring food and water to workers', es: 'Llevar comida y agua a los trabajadores' },
+        result: {
+          good: true,
+          art: '🍲💧',
+          text: {
+            en: ({ n }) => `So thoughtful, ${n}! The workers cheer when you arrive with tortillas and fresh water. Happy workers build better! Everyone smiles and works faster!`,
+            es: ({ n }) => `¡Qué considerado, ${n}! Los trabajadores aplauden cuando llegas con tortillas y agua fresca. ¡Los trabajadores felices construyen mejor! ¡Todos sonríen y trabajan más rápido!`
+          },
+          changes: { food: -15, friends: +25, joy: +10 }
+        }
+      }
+    ]
+  },
+
+  // Ch3 Scene 3
+  {
+    type: 'scene',
+    art: '🌿💊🏥',
+    chapter: 3,
+    title: { en: 'Someone is Sick!', es: '¡Alguien Está Enfermo!' },
+    text: {
+      en: ({ n }) => `Oh no, ${n}! Your neighbor has a bad fever. Your grandmother knows traditional Tlaxcalan plant medicines. But the Spanish brought a doctor with European medicine too. Who do you ask for help?`,
+      es: ({ n }) => `¡Oh no, ${n}! Tu vecino tiene fiebre alta. Tu abuela conoce las medicinas tlaxcaltecas tradicionales de plantas. Pero los españoles también trajeron un médico con medicina europea. ¿A quién pides ayuda?`
+    },
+    choices: [
+      {
+        icon: '🌿',
+        text: { en: "Use grandmother's plant medicine", es: 'Usar la medicina de plantas de la abuela' },
+        result: {
+          good: true,
+          art: '🌿✨',
+          text: {
+            en: ({ n }) => `The old ways work, ${n}! Your grandmother brews a tea from healing herbs. By morning, your neighbor is feeling much better. Traditional knowledge is priceless!`,
+            es: ({ n }) => `¡Las viejas tradiciones funcionan, ${n}! Tu abuela prepara un té de hierbas medicinales. Para la mañana, tu vecino se siente mucho mejor. ¡El conocimiento tradicional no tiene precio!`
+          },
+          changes: { health: +20, joy: +15, friends: +10 }
+        }
+      },
+      {
+        icon: '🏥',
+        text: { en: 'Ask the Spanish doctor', es: 'Pedir ayuda al médico español' },
+        result: {
+          good: true,
+          art: '🤝💊',
+          text: {
+            en: ({ n }) => `Working together is great, ${n}! The Spanish doctor helps your neighbor recover. He also learns about Tlaxcalan medicinal plants from your grandmother. Two kinds of medicine together can help even more!`,
+            es: ({ n }) => `¡Trabajar juntos es genial, ${n}! El médico español ayuda a tu vecino a recuperarse. También aprende sobre las plantas medicinales tlaxcaltecas de tu abuela. ¡Dos tipos de medicina juntos pueden ayudar aún más!`
+          },
+          changes: { health: +15, friends: +15, joy: +10 }
+        }
+      }
+    ]
+  },
+
+  // Ch3 Random Event
+  {
+    type: 'event',
+    art: '🍊🐄🍞✨',
+    title: { en: '🍊 New Foods Arrive!', es: '🍊 ¡Llegan Nuevas Comidas!' },
+    text: {
+      en: ({ n }) => `How exciting, ${n}! Ships from Spain bring oranges, lemons, wheat, and cattle to New Spain. And from Tlaxcala, chocolate, tomatoes, vanilla, and corn travel back to Europe! Foods from both worlds are now mixing everywhere. Today, pizza has tomatoes and chocolate comes from Mexico — because of moments like this!`,
+      es: ({ n }) => `¡Qué emocionante, ${n}! Los barcos de España traen naranjas, limones, trigo y ganado a la Nueva España. ¡Y desde Tlaxcala, el chocolate, los tomates, la vainilla y el maíz viajan a Europa! Los alimentos de ambos mundos ahora se mezclan en todas partes. ¡Hoy, la pizza lleva tomates y el chocolate viene de México — gracias a momentos como este!`
+    },
+    changes: { food: +20, joy: +15, friends: +5 }
+  },
+
+  // Ch3 Fun Fact
+  {
+    type: 'fact',
+    icon: '⛪',
+    title: { en: '📚 The Oldest Cathedral in the Americas!', es: '📚 ¡La Catedral Más Antigua de las Américas!' },
+    text: {
+      en: 'The Cathedral of Our Lady of the Assumption in Tlaxcala was built starting in 1527 — that makes it the OLDEST standing cathedral in all of North and South America! It was built with the help of Tlaxcalan workers and is now a UNESCO World Heritage Site. That means the whole world agrees it is super special!',
+      es: 'La Catedral de Nuestra Señora de la Asunción en Tlaxcala se empezó a construir en 1527 — ¡eso la convierte en la catedral en pie MÁS ANTIGUA de toda América del Norte y del Sur! Fue construida con la ayuda de trabajadores tlaxcaltecas y ahora es Patrimonio de la Humanidad de la UNESCO. ¡Eso significa que el mundo entero está de acuerdo en que es súper especial!'
+    }
+  },
+
+  // Ch3 Summary
+  {
+    type: 'summary',
+    chapter: 3,
+    title: { en: 'Chapter 3 Complete! ⛪', es: '¡Capítulo 3 Completo! ⛪' }
+  },
+
+  // ══════════════════════════════════════
+  //  CHAPTER 4 — Viva México!
+  // ══════════════════════════════════════
+  {
+    type: 'chapterIntro',
+    num: 4,
+    art: '🦅🎺🔔🇲🇽',
+    title: {
+      en: 'Chapter 4: Viva México!',
+      es: 'Capítulo 4: ¡Viva México!'
+    },
+    year: { en: '1810–1821 — The War of Independence!', es: '1810–1821 — ¡La Guerra de Independencia!' },
+    text: {
+      en: ({ n }) => `It has been 300 years since the Spanish arrived, ${n}. Many people in Mexico now want to be FREE from Spain. A brave priest named Father Miguel Hidalgo rings a church bell and gives his famous speech — the Grito de Independencia (Cry of Independence). A new nation is about to be born!`,
+      es: ({ n }) => `Han pasado 300 años desde que llegaron los españoles, ${n}. Mucha gente en México ahora quiere ser LIBRE de España. Un valiente sacerdote llamado el Padre Miguel Hidalgo toca una campana y da su famoso discurso — el Grito de Independencia. ¡Una nueva nación está a punto de nacer!`
+    }
+  },
+
+  // Ch4 Scene 1
+  {
+    type: 'scene',
+    art: '🔔⭐🎺🦅',
+    chapter: 4,
+    title: { en: "Hidalgo's Bell!", es: '¡La Campana de Hidalgo!' },
+    text: {
+      en: ({ n }) => `DONG! DONG! DONG! The bells ring out in the early morning, ${n}! Father Hidalgo is calling everyone to hear his Grito de Independencia! It's September 16, 1810. Do you go listen?`,
+      es: ({ n }) => `¡DONG! ¡DONG! ¡DONG! ¡Las campanas suenan en la madrugada, ${n}! El Padre Hidalgo llama a todos a escuchar su Grito de Independencia. Es el 16 de septiembre de 1810. ¿Vas a escuchar?`
+    },
+    choices: [
+      {
+        icon: '🔔',
+        text: { en: "Run to hear Hidalgo's speech!", es: '¡Correr a escuchar el discurso de Hidalgo!' },
+        result: {
+          good: true,
+          art: '🦅✨',
+          text: {
+            en: ({ n }) => `You run through the streets, ${n}! Hidalgo shouts "¡Viva México! ¡Viva la Independencia!" The crowd roars! Your heart feels full of hope and courage. This is a moment that will change everything!`,
+            es: ({ n }) => `¡Corres por las calles, ${n}! Hidalgo grita "¡Viva México! ¡Viva la Independencia!" ¡La multitud ruge! Tu corazón se llena de esperanza y valentía. ¡Este es un momento que cambiará todo!`
+          },
+          changes: { joy: +25, friends: +15 }
+        }
+      },
+      {
+        icon: '🏠',
+        text: { en: 'Stay home to protect your family', es: 'Quedarte en casa para proteger a tu familia' },
+        result: {
+          good: true,
+          art: '🏠❤️',
+          text: {
+            en: ({ n }) => `Protecting family is always important, ${n}! You hear the cheering from inside your home. Later your neighbors tell you all about the Grito. Your family is safe and together — that matters most!`,
+            es: ({ n }) => `¡Proteger a la familia siempre es importante, ${n}! Escuchas los vítores desde dentro de tu casa. Más tarde tus vecinos te cuentan todo sobre el Grito. ¡Tu familia está segura y unida — eso es lo que más importa!`
+          },
+          changes: { health: +10, friends: +10, joy: +5 }
+        }
+      }
+    ]
+  },
+
+  // Ch4 Scene 2
+  {
+    type: 'scene',
+    art: '🎒🍞⚔️🌟',
+    chapter: 4,
+    title: { en: 'The Fight for Freedom', es: 'La Lucha por la Libertad' },
+    text: {
+      en: ({ n }) => `The independence fighters need food and supplies for their long journey, ${n}. Your family has some to spare. How much do you share to help Mexico become free?`,
+      es: ({ n }) => `Los luchadores por la independencia necesitan comida y suministros para su largo viaje, ${n}. Tu familia tiene algo para compartir. ¿Cuánto compartes para ayudar a que México sea libre?`
+    },
+    choices: [
+      {
+        icon: '🍞',
+        text: { en: 'Share as much as we can!', es: '¡Compartir todo lo que podamos!' },
+        result: {
+          good: true,
+          art: '🦅🌟',
+          text: {
+            en: ({ n }) => `So generous, ${n}! You give away most of your food. Your family goes a little hungry, but the fighters cheer. They say "¡Gracias, amigos de Tlaxcala!" — Thank you, friends of Tlaxcala!`,
+            es: ({ n }) => `¡Qué generoso, ${n}! Das casi toda tu comida. Tu familia pasa un poco de hambre, ¡pero los luchadores aplauden. Dicen "¡Gracias, amigos de Tlaxcala!" — ¡Gracias, amigos de Tlaxcala!`
+          },
+          changes: { food: -20, friends: +25, joy: +10 }
+        }
+      },
+      {
+        icon: '🌽',
+        text: { en: 'Share a little — keep some for family', es: 'Compartir un poco — guardar algo para la familia' },
+        result: {
+          good: true,
+          art: '🤝🌽',
+          text: {
+            en: ({ n }) => `A smart balance, ${n}! Every bit helps. The fighters are grateful, and your family still has enough to eat. Even small acts of kindness make a big difference in history!`,
+            es: ({ n }) => `¡Un equilibrio inteligente, ${n}! Cada poco ayuda. Los luchadores están agradecidos, y tu familia todavía tiene suficiente para comer. ¡Incluso los pequeños actos de bondad hacen una gran diferencia en la historia!`
+          },
+          changes: { food: -10, friends: +15, joy: +10 }
+        }
+      }
+    ]
+  },
+
+  // Ch4 Scene 3
+  {
+    type: 'scene',
+    art: '🎉🇲🇽🦅🎊',
+    chapter: 4,
+    title: { en: 'Victory! Mexico is Free!', es: '¡Victoria! ¡México es Libre!' },
+    text: {
+      en: ({ n }) => `September 27, 1821 — Mexico is INDEPENDENT! 🇲🇽 After 11 long years, Mexico is finally free from Spain! There are celebrations everywhere in Tlaxcala. What do you do to mark this amazing day, ${n}?`,
+      es: ({ n }) => `27 de septiembre de 1821 — ¡México es INDEPENDIENTE! 🇲🇽 ¡Después de 11 largos años, México finalmente es libre de España! Hay celebraciones en todas partes de Tlaxcala. ¿Qué haces para marcar este día increíble, ${n}?`
+    },
+    choices: [
+      {
+        icon: '💃',
+        text: { en: 'Dance and celebrate with everyone!', es: '¡Bailar y celebrar con todos!' },
+        result: {
+          good: true,
+          art: '🎊🦅🎉',
+          text: {
+            en: ({ n }) => `¡VIVA MÉXICO! ¡VIVA TLAXCALA! You dance, ${n}! The music plays all night. Fireworks light up the sky. You laugh and hug your neighbors. This is the happiest day in a very long time!`,
+            es: ({ n }) => `¡VIVA MÉXICO! ¡VIVA TLAXCALA! ¡Bailas, ${n}! La música suena toda la noche. Los fuegos artificiales iluminan el cielo. Ríes y abrazas a tus vecinos. ¡Este es el día más feliz en mucho tiempo!`
+          },
+          changes: { joy: +30, friends: +20, health: +5 }
+        }
+      },
+      {
+        icon: '📝',
+        text: { en: 'Write down the story so no one forgets', es: 'Escribir la historia para que nadie la olvide' },
+        result: {
+          good: true,
+          art: '📝⭐',
+          text: {
+            en: ({ n }) => `What a wonderful idea, ${n}! You write everything down — the celebrations, the music, the faces of happy people. Your words will help children 200 years from now understand this incredible day!`,
+            es: ({ n }) => `¡Qué idea tan maravillosa, ${n}! Escribes todo — las celebraciones, la música, los rostros de la gente feliz. ¡Tus palabras ayudarán a niños 200 años después a entender este día increíble!`
+          },
+          changes: { joy: +20, friends: +15, health: +10 }
+        }
+      }
+    ]
+  },
+
+  // Ch4 Fun Fact
+  {
+    type: 'fact',
+    icon: '🦅',
+    title: { en: '📚 The Grito de Independencia!', es: '📚 ¡El Grito de Independencia!' },
+    text: {
+      en: 'Every year on the night of September 15, the President of Mexico stands on the balcony of the National Palace and shouts the Grito de Independencia — just like Father Hidalgo did in 1810! Millions of people across Mexico shout back "¡Viva México!" It is the biggest celebration in the whole country. September 16 is Mexican Independence Day!',
+      es: 'Cada año, en la noche del 15 de septiembre, el Presidente de México sale al balcón del Palacio Nacional y grita el Grito de Independencia — ¡igual que el Padre Hidalgo lo hizo en 1810! Millones de personas en todo México responden "¡Viva México!" Es la celebración más grande de todo el país. ¡El 16 de septiembre es el Día de la Independencia de México!'
+    }
+  },
+
+  // VICTORY
+  { type: 'victory' }
+
+  ]; // end return
+}
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function clamp(v) { return Math.max(0, Math.min(100, v)); }
+
+function applyChanges(changes) {
+  for (const [k, v] of Object.entries(changes)) {
+    resources[k] = clamp(resources[k] + v);
+  }
+  updateResourceBar();
+  return resources.health <= 0;
+}
+
+function updateResourceBar() {
+  document.getElementById('fill-health').style.width  = resources.health  + '%';
+  document.getElementById('fill-food').style.width    = resources.food    + '%';
+  document.getElementById('fill-joy').style.width     = resources.joy     + '%';
+  document.getElementById('fill-friends').style.width = resources.friends + '%';
+}
+
+function updateResLabels() {
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    if (T[key]) el.textContent = t(key);
+  });
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'es' : 'en';
+  document.getElementById('lang-btn').textContent = t('langBtn');
+  document.getElementById('top-title').textContent = t('topTitle');
+  updateResLabels();
+  renderCurrentStep();
+}
+
+function buildDots() {
+  const el = document.getElementById('progress-dots');
+  el.innerHTML = '';
+  const chapters = [0, 1, 2, 3];
+  // each chapter = scenes within it
+  const chapterSteps = STEPS.reduce((acc, s, i) => {
+    if (s.type === 'chapterIntro') acc.push(i);
+    return acc;
+  }, []);
+  chapterSteps.forEach((si, ci) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (step > si ? ' done' : step === si ? ' current' : '');
+    el.appendChild(dot);
+  });
+}
+
+function resBar(show) {
+  document.getElementById('resource-bar').style.display = show ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════════
+function renderCurrentStep() {
+  const s = STEPS[step];
+  if (!s) return;
+  buildDots();
+
+  switch (s.type) {
+    case 'title':     return renderTitle();
+    case 'name':      return renderName();
+    case 'chapterIntro': return renderChapterIntro(s);
+    case 'scene':     return renderScene(s);
+    case 'result':    return renderResult(s);
+    case 'event':     return renderEvent(s);
+    case 'fact':      return renderFact(s);
+    case 'summary':   return renderSummary(s);
+    case 'victory':   return renderVictory();
+    case 'gameOver':  return renderGameOver();
+  }
+}
+
+function el(html) {
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderTitle() {
+  resBar(false);
+  el(`<div class="screen">
+    <div class="scene-art">🌋🦅🌽🏔️</div>
+    <h1 class="game-title">The Tlaxcala Trail</h1>
+    <h2 class="game-title2">El Camino de Tlaxcala</h2>
+    <p class="story-text">A kids' adventure through<br>Mexican history! ⭐<br><em>¡Una aventura infantil por la historia de México!</em></p>
+    <button class="btn btn-primary" onclick="nextStep()">${t('startGame')}</button>
+  </div>`);
+}
+
+function renderName() {
+  resBar(false);
+  el(`<div class="screen">
+    <div class="scene-art">✏️🌟</div>
+    <h2 class="screen-title">${t('enterName')}</h2>
+    <p class="story-text">You will be the hero of this story!<br><em>¡Tú serás el héroe de esta historia!</em></p>
+    <input id="name-input" type="text" maxlength="15" placeholder="${t('namePh')}">
+    <br>
+    <button class="btn btn-gold" onclick="saveName()">${t('nameGo')}</button>
+  </div>`);
+  setTimeout(() => { const inp = document.getElementById('name-input'); if(inp) inp.focus(); }, 100);
+}
+
+function saveName() {
+  const inp = document.getElementById('name-input');
+  const nm = inp ? inp.value.trim() : '';
+  playerName = nm || 'Explorer';
+  STEPS = buildSteps(playerName);
+  nextStep();
+}
+
+function renderChapterIntro(s) {
+  resBar(s.num > 1);
+  const title = s.title[currentLang] || s.title.en;
+  const year  = s.year[currentLang]  || s.year.en;
+  const rawText = s.text[currentLang] || s.text.en;
+  const text  = typeof rawText === 'function' ? rawText({ n: playerName }) : rawText;
+  el(`<div class="screen">
+    <div class="scene-art">${s.art}</div>
+    <div class="chapter-intro-bg">
+      <div class="ch-year">📅 ${year}</div>
+      <h2>${title}</h2>
+      <p>${text}</p>
+    </div>
+    <br>
+    <button class="btn btn-chapter" onclick="nextStep()">${t('next')}</button>
+  </div>`);
+}
+
+function renderScene(s) {
+  resBar(true);
+  const title = s.title[currentLang] || s.title.en;
+  const rawText = s.text[currentLang] || s.text.en;
+  const text  = typeof rawText === 'function' ? rawText({ n: playerName }) : rawText;
+  const choiceButtons = s.choices.map((c, i) => {
+    const ct = c.text[currentLang] || c.text.en;
+    return `<button class="btn btn-choice" onclick="makeChoice(${i})">${c.icon} ${ct}</button>`;
+  }).join('');
+  el(`<div class="screen">
+    <div class="scene-art">${s.art}</div>
+    <div class="chapter-badge">Chapter ${s.chapter}</div>
+    <h2 class="screen-title">${title}</h2>
+    <p class="story-text">${text}</p>
+    <div>${choiceButtons}</div>
+  </div>`);
+}
+
+function makeChoice(idx) {
+  const s = STEPS[step];
+  const choice = s.choices[idx];
+  const result = choice.result;
+  // Push a result step right after current
+  STEPS.splice(step + 1, 0, { type: 'result', result, chapterNum: s.chapter });
+  nextStep();
+}
+
+function renderResult(s) {
+  resBar(true);
+  const r = s.result;
+  const rawText = r.text[currentLang] || r.text.en;
+  const text = typeof rawText === 'function' ? rawText({ n: playerName }) : rawText;
+  const dead = applyChanges(r.changes);
+  const changesHtml = Object.entries(r.changes).map(([k,v]) => {
+    const icons = { health:'❤️', food:'🌽', joy:'😊', friends:'🤝' };
+    const lbl = t(k);
+    return `<span class="res-change ${v >= 0 ? 'pos' : 'neg'}">${icons[k]} ${lbl} ${v >= 0 ? '+' : ''}${v}</span>`;
+  }).join('');
+  el(`<div class="screen">
+    <div class="scene-art">${r.art}</div>
+    <div class="result-text ${r.good ? '' : 'bad'}">${text}</div>
+    <div class="resource-changes">${changesHtml}</div>
+    <button class="btn btn-next" onclick="${dead ? 'showGameOver()' : 'nextStep()'}">${dead ? '😢 Oh no...' : t('next')}</button>
+  </div>`);
+}
+
+function renderEvent(s) {
+  resBar(true);
+  const title = s.title[currentLang] || s.title.en;
+  const rawText = s.text[currentLang] || s.text.en;
+  const text  = typeof rawText === 'function' ? rawText({ n: playerName }) : rawText;
+  applyChanges(s.changes);
+  const changesHtml = Object.entries(s.changes).map(([k,v]) => {
+    const icons = { health:'❤️', food:'🌽', joy:'😊', friends:'🤝' };
+    return `<span class="res-change ${v >= 0 ? 'pos' : 'neg'}">${icons[k]} ${v >= 0 ? '+' : ''}${v}</span>`;
+  }).join('');
+  el(`<div class="screen">
+    <div class="event-box">
+      <div class="event-icon">${s.art}</div>
+      <h2 style="color:#1A237E;margin-bottom:10px;">${title}</h2>
+      <p>${text}</p>
+    </div>
+    <div class="resource-changes">${changesHtml}</div>
+    <button class="btn btn-next" onclick="nextStep()">${t('next')}</button>
+  </div>`);
+}
+
+function renderFact(s) {
+  resBar(true);
+  const title = s.title[currentLang] || s.title.en;
+  const text  = s.text[currentLang]  || s.text.en;
+  el(`<div class="screen">
+    <div class="fact-box">
+      <div class="fact-icon">${s.icon}</div>
+      <h2 style="color:#5D4037;margin-bottom:10px;">${title}</h2>
+      <p>${text}</p>
+    </div>
+    <button class="btn btn-gold" onclick="nextStep()">${t('next')}</button>
+  </div>`);
+}
+
+function renderSummary(s) {
+  resBar(true);
+  const title = s.title[currentLang] || s.title.en;
+  el(`<div class="screen">
+    <div class="scene-art">⭐</div>
+    <h2 class="screen-title">${title}</h2>
+    <p class="story-text">${t('chSumSub')}</p>
+    <div class="summary-grid">
+      <div class="summary-card"><div class="sc-icon">❤️</div><div class="sc-val">${resources.health}</div><div class="sc-lbl">${t('health')}</div></div>
+      <div class="summary-card"><div class="sc-icon">🌽</div><div class="sc-val">${resources.food}</div><div class="sc-lbl">${t('food')}</div></div>
+      <div class="summary-card"><div class="sc-icon">😊</div><div class="sc-val">${resources.joy}</div><div class="sc-lbl">${t('joy')}</div></div>
+      <div class="summary-card"><div class="sc-icon">🤝</div><div class="sc-val">${resources.friends}</div><div class="sc-lbl">${t('friends')}</div></div>
+    </div>
+    <button class="btn btn-chapter" onclick="nextStep()">${t('nextCh')}</button>
+  </div>`);
+}
+
+function renderVictory() {
+  resBar(false);
+  const total = resources.health + resources.food + resources.joy + resources.friends;
+  let stars = '⭐⭐⭐';
+  if (total >= 280) stars = '🌟🌟🌟🌟🌟';
+  else if (total >= 220) stars = '⭐⭐⭐⭐';
+  el(`<div class="screen">
+    <div class="win-screen">
+      <div class="big-emoji">🦅🇲🇽🎊</div>
+      <h2>${t('youDid')}<br>¡Lo Lograste!</h2>
+      <p>${t('victory', {n: playerName})}</p>
+      <br>
+      <p style="font-size:24px;margin:10px 0;">${stars}</p>
+      <p style="font-size:16px;opacity:0.8;">Final Score: ${total}/400 · Puntuación Final: ${total}/400</p>
+    </div>
+    <br>
+    <button class="btn btn-gold" onclick="resetGame()">${t('playAgain')}</button>
+  </div>`);
+}
+
+function renderGameOver() {
+  resBar(false);
+  el(`<div class="screen">
+    <div class="lose-screen">
+      <div class="big-emoji">😢💔</div>
+      <h2>${t('gameOver')}</h2>
+      <p>${t('gameOverSub')}</p>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="resetGame()">${t('tryAgain')}</button>
+  </div>`);
+}
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+function nextStep() {
+  step++;
+  if (step >= STEPS.length) {
+    step = STEPS.length - 1; // safety
+  }
+  renderCurrentStep();
+  window.scrollTo(0, 0);
+}
+
+function showGameOver() {
+  STEPS.splice(step + 1, 0, { type: 'gameOver' });
+  nextStep();
+}
+
+function resetGame() {
+  resources = { health: 90, food: 80, joy: 70, friends: 60 };
+  step = 0;
+  playerName = 'Explorer';
+  STEPS = buildSteps();
+  renderCurrentStep();
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+let STEPS = buildSteps();
+document.getElementById('top-title').textContent = t('topTitle');
+renderCurrentStep();
+</script>
 </body>
 </html>
