@@ -11,8 +11,9 @@
   function renderHeader() {
     const nav = [
       { label: "Home", href: "index.html", match: "index" },
-      { label: "Portfolio", href: "dashboard.html", match: "dashboard" },
-      { label: "About", href: "about.html", match: "about" },
+      { label: "Dashboard", href: "dashboard.html", match: "dashboard" },
+      { label: "Portfolio", href: "portfolio.html", match: "portfolio" },
+      { label: "Bio", href: "about.html", match: "about" },
     ];
 
     const header = document.createElement("header");
