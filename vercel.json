@@ -1,4 +1,16 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/Compás_gas",
+      "destination": "https://script.google.com/macros/s/AKfycbwop94SVKMOsWbrl_HPXcxx0AelVdlDZ_wHLGe3AZkyHGFAX5R2QzoEiyhTKgFVyqs4GQ/exec",
+      "permanent": false
+    },
+    {
+      "source": "/compas_gas",
+      "destination": "https://script.google.com/macros/s/AKfycbwop94SVKMOsWbrl_HPXcxx0AelVdlDZ_wHLGe3AZkyHGFAX5R2QzoEiyhTKgFVyqs4GQ/exec",
+      "permanent": false
+    }
+  ]
 }
