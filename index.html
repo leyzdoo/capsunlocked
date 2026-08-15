@@ -1,57 +1,418 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Caps Unlocked</title>
-  <meta name="description" content="A workbench of small apps — built with Claude, unlocked one key at a time." />
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caps Unlocked</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+      :root{
+            --ink:#0d0c0a;
+            --ink-soft:#17140f;
+            --paper:#ece4d3;
+            --paper-dim:#c9c0ab;
+            --brass:#a08a5f;
+            --rust:#a8402c;
+            --rust-bright:#c24f36;
+            --faded:#8d8471;
+      }
 
-  <main>
-    <section class="wrap hero">
-      <div>
-        <span class="eyebrow">Welcome</span>
-        <h1>Capital, <em>unlocked</em>.<br />One key at a time.</h1>
-        <p class="lede">
-          Not just financial capital — capacity, access, opportunity.
-          Caps Unlocked is where that idea gets tested in working software:
-          small, specific tools, built end-to-end, each one its own key
-          on the board.
-        </p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="dashboard.html">See the portfolio →</a>
-          <a class="btn btn-ghost" href="about.html">About this work</a>
-        </div>
-      </div>
+      *{box-sizing:border-box;}
+      html{scroll-behavior:smooth;}
+      body{
+            margin:0;
+            background:var(--ink);
+            color:var(--paper);
+            font-family:'Source Serif 4', Georgia, serif;
+            -webkit-font-smoothing:antialiased;
+      }
 
-      <div class="key-hero">
-        <a class="key" href="dashboard.html" aria-label="Go to dashboard">
-          <span class="glyph">⇪</span>
-          <span class="glyph-label">Caps Unlocked</span>
-        </a>
-      </div>
-    </section>
+      .eyebrow{
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.72rem;
+            letter-spacing:0.22em;
+            text-transform:uppercase;
+            color:var(--brass);
+      }
 
-    <section class="wrap" id="about" style="padding: 20px 0 40px;">
-      <div class="app-body" style="grid-template-columns: 1fr;">
-        <div class="panel">
-          <h2>About this place</h2>
-          <p style="color: var(--paper-dim); max-width: 62ch; margin: 0 0 16px;">
-            Every app here started as a small, specific problem worth solving —
-            from housing and urban planning to a marathon-training tracker.
-            They're built and hosted independently — some still running on
-            Google Apps Script, others gradually moving onto this domain —
-            but they all live under one roof so they're easy to find and share.
-          </p>
-          <a class="back-link" href="about.html" style="margin-top: 0;">Read the full story →</a>
-        </div>
-      </div>
-    </section>
-  </main>
+      /* ---------- HERO ---------- */
+      .hero{
+            position:relative;
+            min-height:100svh;
+            display:grid;
+            grid-template-columns:1.05fr 1fr;
+            overflow:hidden;
+      }
 
-  <script src="apps-data.js"></script>
-  <script src="layout.js"></script>
-</body>
-</html>
+      .hero-copy{
+            position:relative;
+            z-index:2;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            gap:1.6rem;
+            padding:8vw 6vw 8vw 7vw;
+      }
+
+      .hero-headline{
+            font-family:'Special Elite', 'Courier New', monospace;
+            font-weight:400;
+            font-size:clamp(2.1rem, 4.6vw, 3.6rem);
+            line-height:1.18;
+            color:var(--paper);
+            margin:0;
+            max-width:11ch;
+      }
+
+      .hero-headline .cursor{
+            display:inline-block;
+            width:0.55ch;
+            background:var(--rust-bright);
+            margin-left:2px;
+            animation:blink 1s steps(1) infinite;
+      }
+
+      @keyframes blink{
+            0%,49%{opacity:1;}
+            50%,100%{opacity:0;}
+      }
+
+      .hero-sub{
+            font-size:clamp(1rem, 1.25vw, 1.15rem);
+            line-height:1.7;
+            color:var(--paper-dim);
+            max-width:34ch;
+            margin:0;
+      }
+
+      .hero-form{
+            display:flex;
+            gap:0;
+            max-width:420px;
+            margin-top:0.4rem;
+            border-bottom:1px solid var(--brass);
+            padding-bottom:2px;
+      }
+
+      .hero-form input[type="email"]{
+            flex:1;
+            background:transparent;
+            border:none;
+            outline:none;
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.92rem;
+            color:var(--paper);
+            padding:0.6rem 0.2rem;
+      }
+
+      .hero-form input::placeholder{
+            color:var(--faded);
+      }
+
+      .hero-form button{
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.78rem;
+            letter-spacing:0.12em;
+            text-transform:uppercase;
+            background:none;
+            border:none;
+            color:var(--rust-bright);
+            cursor:pointer;
+            padding:0.6rem 0.4rem;
+            white-space:nowrap;
+            transition:color 0.2s ease, transform 0.2s ease;
+      }
+
+      .hero-form button:hover{
+            color:var(--paper);
+      }
+
+      .hero-form button:focus-visible,
+      .hero-form input:focus-visible{
+            outline:2px solid var(--rust-bright);
+            outline-offset:3px;
+      }
+
+      .form-note{
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.72rem;
+            color:var(--faded);
+            letter-spacing:0.02em;
+      }
+
+      .hero-photo{
+            position:relative;
+            background-image:url('ChatGPT%20Image%20Aug%2014%2C%202026%20at%2008_57_00%20PM.png');
+            background-size:cover;
+            background-position:60% center;
+      }
+
+      .hero-photo::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(90deg, var(--ink) 0%, rgba(13,12,10,0.15) 22%, rgba(13,12,10,0) 45%);
+      }
+
+      .hero-photo::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(0deg, rgba(13,12,10,0.55) 0%, rgba(13,12,10,0) 30%);
+      }
+
+      /* ---------- MANIFESTO ---------- */
+      .manifesto{
+            padding:9vw 7vw;
+            background:var(--ink-soft);
+            border-top:1px solid #262019;
+      }
+
+      .manifesto-inner{
+            max-width:760px;
+            margin:0 auto;
+      }
+
+      .manifesto p{
+            font-family:'IBM Plex Mono', monospace;
+            font-size:clamp(0.95rem, 1.6vw, 1.15rem);
+            line-height:2.1;
+            color:var(--paper-dim);
+            margin:0 0 0.3rem 0;
+      }
+
+      .manifesto strong{
+            color:var(--paper);
+            font-weight:500;
+      }
+
+      .manifesto .rule{
+            width:34px;
+            height:2px;
+            background:var(--rust);
+            border:none;
+            margin:0 0 2rem 0;
+      }
+
+      /* ---------- FOOTER ---------- */
+      footer{
+            padding:5vw 7vw;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:1rem;
+            flex-wrap:wrap;
+            border-top:1px solid #262019;
+      }
+
+      .brand{
+            font-family:'Special Elite', monospace;
+            font-size:1rem;
+            color:var(--paper-dim);
+      }
+
+      .brand span{color:var(--rust-bright);}
+
+      footer .fine{
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.72rem;
+            color:var(--faded);
+            letter-spacing:0.04em;
+      }
+
+      /* ---------- SITE MENU ---------- */
+      .site-menu{
+            position:absolute;
+            top:2rem;
+            right:2rem;
+            z-index:10;
+      }
+
+      .site-menu summary{
+            list-style:none;
+            cursor:pointer;
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.75rem;
+            letter-spacing:0.14em;
+            text-transform:uppercase;
+            color:var(--paper-dim);
+            background:rgba(13,12,10,0.55);
+            border:1px solid rgba(160,138,95,0.5);
+            border-radius:3px;
+            padding:0.55rem 1rem;
+            -webkit-backdrop-filter:blur(4px);
+            backdrop-filter:blur(4px);
+            transition:color 0.2s ease, border-color 0.2s ease;
+      }
+
+      .site-menu summary::-webkit-details-marker{display:none;}
+
+      .site-menu summary:hover,
+      .site-menu[open] summary{
+            color:var(--paper);
+            border-color:var(--rust-bright);
+      }
+
+      .site-menu summary:focus-visible{
+            outline:2px solid var(--rust-bright);
+            outline-offset:3px;
+      }
+
+      .site-menu summary .arrow{
+            display:inline-block;
+            margin-left:0.5rem;
+            transition:transform 0.2s ease;
+      }
+
+      .site-menu[open] summary .arrow{
+            transform:rotate(180deg);
+      }
+
+      .menu-list{
+            margin-top:0.4rem;
+            background:var(--ink-soft);
+            border:1px solid rgba(160,138,95,0.35);
+            border-radius:4px;
+            overflow:hidden;
+            min-width:180px;
+      }
+
+      .menu-list a{
+            display:block;
+            padding:0.75rem 1rem;
+            font-family:'IBM Plex Mono', monospace;
+            font-size:0.82rem;
+            letter-spacing:0.04em;
+            color:var(--paper-dim);
+            text-decoration:none;
+            border-bottom:1px solid rgba(160,138,95,0.18);
+            transition:color 0.15s ease, background 0.15s ease;
+      }
+
+      .menu-list a:last-child{border-bottom:none;}
+
+      .menu-list a:hover,
+      .menu-list a:focus-visible{
+            color:var(--paper);
+            background:rgba(168,64,44,0.15);
+      }
+
+      @media (max-width: 860px){
+            .site-menu{top:1.2rem; right:1.2rem;}
+      }
+
+      /* ---------- RESPONSIVE ---------- */
+      @media (max-width: 860px){
+            .hero{grid-template-columns:1fr;}
+            .hero-photo{
+                    min-height:46vh;
+                    order:-1;
+            }
+            .hero-photo::before{
+                    background:linear-gradient(0deg, var(--ink) 0%, rgba(13,12,10,0.05) 30%, rgba(13,12,10,0) 55%);
+            }
+            .hero-copy{padding:9vw 7vw;}
+            .hero-headline{max-width:14ch;}
+      }
+
+      @media (prefers-reduced-motion: reduce){
+            .hero-headline .cursor{animation:none; opacity:1;}
+            *{scroll-behavior:auto !important;}
+      }
+    </style>
+  </head>
+  <body>
+
+    <section class="hero">
+        <details class="site-menu">
+              <summary>Menu<span class="arrow" aria-hidden="true">▾</span>span></summary>
+            <nav class="menu-list" aria-label="Site sections">
+                  <a href="dashboard.html">Dashboard</a>a>
+                  <a href="portfolio.html">Portfolio</a>a>
+                  <a href="about.html">Bio</a>a>
+            </nav>nav>
+        </details>details>
+    
+      <div class="hero-copy">
+          <p class="eyebrow">a workspace for projects...with potential</p>p>
+      
+          <h1 class="hero-headline" id="typedHeadline" aria-label="Caps unlocked. And so much more.">
+                <span id="typedText"></span>span><span class="cursor" aria-hidden="true"></span>span>
+          </h1>h1>
+      
+          <p class="hero-sub">
+            Reflections and requirement frameworks for projects in flight.
+          </p>p>
+      
+          <form class="hero-form" id="signupForm">
+                <label for="emailInput" class="visually-hidden" style="position:absolute;left:-9999px;">Email address</label>label>
+                <input type="email" id="emailInput" name="email" placeholder="your@email.com" required autocomplete="email">
+                <button type="submit">Start typing →</button>button>
+          </form>form>
+          <p class="form-note">Free while we're in the flow. No spam, obviously.</p>p>
+      </div>div>
+    
+      <div class="hero-photo" role="img" aria-label="Close-up of a vintage black typewriter keyboard, its Caps Lock key relabeled Caps Unlocked"></div>div>
+    </section>section>
+  
+  <section class="manifesto">
+    <div class="manifesto-inner">
+        <hr class="rule">
+        <p><strong>Held Shift too long.</strong> Forgot what you meant to say.</p>
+        <p><strong>Wrote it anyway.</strong> Left the typos in.</p>
+        <p><strong>Hit return.</strong>strong> Called it finished.</p>
+    </div>div>
+  </section>section>
+  
+  <footer>
+      <div class="brand">caps<span>unlocked</span></div>div>
+    <p class="fine">© 2026 Caps Unlocked — write it messy</p>p>
+  </footer>
+  
+  <script>
+      (function(){
+            var target = "Caps unlocked.\nAnd so much more.";
+            var el = document.getElementById('typedText');
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            function renderPlain(){
+                    el.innerHTML = target.replace(/\n/g, '<br>');
+            }
+
+            if (reduce) {
+                    renderPlain();
+            } else {
+                    var i = 0;
+                    function type(){
+                              if (i <= target.length){
+                                          el.innerHTML = target.slice(0, i).replace(/\n/g, '<br>');
+                                          i++;
+                                          var delay = 34 + Math.random() * 40;
+                                          setTimeout(type, delay);
+                              }
+                    }
+                    setTimeout(type, 250);
+            }
+
+            var form = document.getElementById('signupForm');
+            form.addEventListener('submit', function(e){
+                    e.preventDefault();
+                    var btn = form.querySelector('button');
+                    var original = btn.textContent;
+                    btn.textContent = 'Noted →';
+                    setTimeout(function(){ btn.textContent = original; }, 1800);
+                    form.reset();
+            });
+      })();
+  </script>
+
+  </body>
+</html>html>
+
+  </script></span>
+  </footer></p></strong></strong></p></summary>
+  </body>
+  </style></title>
+  </head>
