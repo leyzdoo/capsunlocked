@@ -1,0 +1,28 @@
+<svg viewBox="0 0 780 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B4513"/>
+      <stop offset="50%" stop-color="#D2691E"/>
+      <stop offset="100%" stop-color="#CD853F"/>
+    </linearGradient>
+  </defs>
+  <rect width="780" height="560" fill="url(#bg)"/>
+  <rect x="24" y="24" width="732" height="512" rx="20" fill="#FFF8EE" stroke="#8B4513" stroke-width="5"/>
+  <rect x="24" y="24" width="732" height="64" rx="20" fill="#8B4513"/>
+  <rect x="24" y="68" width="732" height="20" fill="#8B4513"/>
+  <text x="52" y="63" font-family="Georgia, serif" font-size="19" font-weight="bold" fill="#F5E6C8">&#127811; The Tlaxcala Trail</text>
+  <rect x="628" y="42" width="104" height="30" rx="15" fill="#F5E6C8"/>
+  <text x="680" y="62" font-family="Georgia, serif" font-size="13" font-weight="bold" fill="#8B4513" text-anchor="middle">&#127760; Espa&#241;ol</text>
+  <rect x="24" y="88" width="732" height="34" fill="#4A2500"/>
+  <circle cx="378" cy="105" r="6" fill="#F39C12"/>
+  <circle cx="398" cy="105" r="6" fill="#4A2500" stroke="#F39C12" stroke-width="1.5"/>
+  <circle cx="418" cy="105" r="6" fill="#4A2500" stroke="#F39C12" stroke-width="1.5"/>
+  <circle cx="438" cy="105" r="6" fill="#4A2500" stroke="#F39C12" stroke-width="1.5"/>
+  <text x="390" y="200" font-size="56" text-anchor="middle">&#127749;&#128561;&#127805;&#127956;</text>
+  <text x="390" y="270" font-family="Georgia, serif" font-size="40" font-weight="bold" fill="#8B4513" text-anchor="middle">The Tlaxcala Trail</text>
+  <text x="390" y="305" font-family="Georgia, serif" font-size="24" font-weight="bold" fill="#C0392B" text-anchor="middle">El Camino de Tlaxcala</text>
+  <text x="390" y="345" font-family="Georgia, serif" font-size="18" fill="#3D2000" text-anchor="middle">A kids' adventure through Mexican history! &#11088;</text>
+  <text x="390" y="372" font-family="Georgia, serif" font-size="18" font-style="italic" fill="#3D2000" text-anchor="middle">&#161;Una aventura infantil por la historia de M&#233;xico!</text>
+  <rect x="270" y="410" width="240" height="56" rx="14" fill="#A9322A"/>
+  <text x="390" y="446" font-family="Georgia, serif" font-size="19" font-weight="bold" fill="white" text-anchor="middle">&#127918; Start Adventure!</text>
+</svg>
