@@ -1,1 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Design tokens ported from Compas.html's CSS custom properties
+   (migration doc §5.4) — same names, same intent: a warm paper/ink
+   palette with named accent colors per person and per data type. */
+:root {
+  --james: #3b6ea5;
+  --ale: #a5573b;
+  --mixed: #5c6470;
+  --fog: #9a9a9a;
+  --school: #7a8c5c;
+  --activity: #c99a3b;
+  --bcc: #6b5b95;
+  --paper: #faf7f2;
+  --ink: #2a2620;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
