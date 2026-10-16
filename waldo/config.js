@@ -7,8 +7,9 @@
  *     of the picture's width (x) and height (y). Top-left is 0,0 and
  *     bottom-right is 100,100. "r" is how big the tap zone is, as a
  *     percentage of the picture's width (3–5 is usually right).
- *  3. Add an entry to SCENES below. Remove the placeholder when you have
- *     at least one real picture.
+ *  3. Add an entry to SCENES below. Remove the placeholder scenes when you
+ *     have real pictures. Each round shows a different picture; all of them
+ *     are shown once before any repeats.
  *  Tip: open /waldo?mark=2 in a browser (2 = the 2nd scene in the list)
  *  and tap Waldo — it shows you the x and y numbers to copy in.
  */
@@ -44,13 +45,22 @@ window.BOOTH = {
 
   // Big Picture Search scenes
   SCENES: [
-    {
-      name: "Placeholder festival",
-      src: "/waldo/images/placeholder-scene.svg",
-      clue: "Placeholder picture: find the person with the GOLD STAR hat.",
-      x: 17.2, y: 61.5, r: 3.5,
-      placeholder: true,
-    },
+    { name: "Placeholder festival 1", src: "/waldo/images/scene-1.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 4.6, y: 59.6, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 2", src: "/waldo/images/scene-2.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 16.8, y: 76.0, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 3", src: "/waldo/images/scene-3.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 44.4, y: 47.4, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 4", src: "/waldo/images/scene-4.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 45.3, y: 75.0, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 5", src: "/waldo/images/scene-5.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 57.9, y: 55.7, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 6", src: "/waldo/images/scene-6.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 59.9, y: 68.9, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 7", src: "/waldo/images/scene-7.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 91.8, y: 54.8, r: 3.5, placeholder: true },
+    { name: "Placeholder festival 8", src: "/waldo/images/scene-8.svg",
+      clue: "Placeholder picture: find the person with the GOLD STAR hat.", x: 94.1, y: 92.1, r: 3.5, placeholder: true },
     // {
     //   name: "Beach day",
     //   src: "/waldo/images/beach.jpg",

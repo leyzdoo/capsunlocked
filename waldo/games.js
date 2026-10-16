@@ -128,13 +128,17 @@
   }
 
   /* ================= 1. BIG PICTURE SEARCH ================= */
-  let lastScene = -1;
+  let sceneBag = [], lastScene = -1; // deal scenes like cards: every one shows before repeats
+  function nextScene() {
+    if (!sceneBag.length) {
+      sceneBag = shuffle(B.SCENES.map((_, i) => i));
+      if (sceneBag.length > 1 && sceneBag[sceneBag.length - 1] === lastScene) sceneBag.unshift(sceneBag.pop());
+    }
+    return (lastScene = sceneBag.pop());
+  }
   function gameSearch() {
     const markIdx = parseInt(new URLSearchParams(location.search).get("mark"), 10);
-    let idx = MARK && markIdx >= 1 && markIdx <= B.SCENES.length ? markIdx - 1
-      : Math.floor(Math.random() * B.SCENES.length);
-    if (!MARK && B.SCENES.length > 1 && idx === lastScene) idx = (idx + 1) % B.SCENES.length;
-    lastScene = idx;
+    const idx = MARK && markIdx >= 1 && markIdx <= B.SCENES.length ? markIdx - 1 : nextScene();
     const sc = B.SCENES[idx];
     show("search", `
       <section class="w-play">

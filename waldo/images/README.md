@@ -10,5 +10,5 @@ and tap Waldo to get the numbers.
 For **Waldo's Hand**, set `handImage` in `config.js` to an approved hand
 picture (a PNG with a see-through background works best).
 
-`placeholder-scene.svg` is an original stand-in picture. Remove it from
-`SCENES` once a real picture is added.
+`scene-1.svg` to `scene-8.svg` are original stand-in pictures. Remove them
+from `SCENES` once real pictures are added.
