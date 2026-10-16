@@ -456,5 +456,9 @@
     else if (act === "settings") settings();
   });
 
-  if (MARK) gameSearch(); else attract();
+  // Deep link from the homepage: /waldo?play=search|hats|pairs|hand
+  const START = new URLSearchParams(location.search).get("play");
+  if (MARK) gameSearch();
+  else if (GAMES.some((g) => g.id === START)) play(START);
+  else attract();
 })();

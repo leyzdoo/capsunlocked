@@ -400,6 +400,136 @@ position:relative;
 .featured-grid{grid-template-columns:1fr; gap:6vw;}
 .featured-image-wrap{order:-1;}
 }
+
+/* ---------- WHERE'S WALDO BANNER ---------- */
+.waldo-feature{
+padding:7vw 7vw 8vw;
+background:var(--ink-soft);
+border-top:1px solid #262019;
+}
+.waldo-banner{
+max-width:1080px;
+margin:0 auto;
+background:#fcf7ed;
+color:#193b51;
+border-radius:14px;
+padding:clamp(1.4rem,3.5vw,2.6rem);
+box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+.waldo-head{
+display:flex;
+align-items:flex-end;
+justify-content:space-between;
+gap:1.5rem;
+flex-wrap:wrap;
+margin-bottom:1.6rem;
+}
+.waldo-banner .eyebrow{color:#cf3436;}
+.waldo-title{
+font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+font-weight:900;
+font-size:clamp(2.2rem,5.4vw,3.8rem);
+letter-spacing:-0.04em;
+line-height:1;
+margin:0.5rem 0 0.7rem;
+}
+.waldo-title span{color:#cf3436;}
+.waldo-head p{
+font-size:clamp(0.95rem,1.3vw,1.08rem);
+line-height:1.6;
+margin:0;
+max-width:46ch;
+}
+.waldo-cta{
+display:inline-block;
+font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+font-weight:800;
+font-size:1rem;
+background:#cf3436;
+color:#fff;
+text-decoration:none;
+padding:0.85rem 1.4rem;
+border:3px solid #193b51;
+border-radius:40px;
+box-shadow:4px 4px 0 #193b51;
+white-space:nowrap;
+}
+.waldo-cta:hover{transform:translate(1px,1px);box-shadow:3px 3px 0 #193b51;}
+.waldo-tiles{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:14px;
+}
+.waldo-tiles a{
+display:block;
+border:3px solid #193b51;
+border-radius:12px;
+overflow:hidden;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+.waldo-tiles a:hover{transform:translateY(-4px);box-shadow:4px 5px 0 #193b51;}
+.waldo-tiles img{display:block;width:100%;height:auto;}
+.waldo-note{
+font-family:'IBM Plex Mono',monospace;
+font-size:0.72rem;
+color:#526a75;
+margin:1.2rem 0 0;
+}
+.waldo-cta:focus-visible,.waldo-tiles a:focus-visible,.app-card a:focus-visible{
+outline:3px solid #1867c0;
+outline-offset:4px;
+}
+
+/* ---------- MORE TO PLAY ---------- */
+.more-apps{
+padding:8vw 7vw;
+background:var(--ink);
+border-top:1px solid #262019;
+}
+.more-apps-inner{max-width:1080px;margin:0 auto;}
+.more-apps .rule{width:34px;height:2px;background:var(--rust);border:none;margin:0 0 2rem 0;}
+.more-apps h2{
+font-family:'Special Elite','Courier New',monospace;
+font-weight:400;
+font-size:clamp(1.5rem,2.8vw,2.1rem);
+color:var(--paper);
+margin:0 0 2rem;
+}
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2vw;}
+.app-card{display:flex;flex-direction:column;gap:1rem;}
+.app-card img{
+display:block;width:100%;height:auto;
+border-radius:6px;
+border:1px solid rgba(160,138,95,0.35);
+box-shadow:0 14px 36px rgba(0,0,0,0.4);
+transition:transform 0.15s ease;
+}
+.app-card a:hover img{transform:translateY(-3px);}
+.app-card p{
+font-size:clamp(0.92rem,1.2vw,1rem);
+line-height:1.7;
+color:var(--paper-dim);
+margin:0;
+flex:1;
+}
+.app-card p strong{color:var(--paper);font-weight:500;}
+.app-card .featured-link{align-self:flex-start;}
+
+.menu-label{
+display:block;
+padding:0.55rem 1rem 0.35rem;
+font-family:'IBM Plex Mono',monospace;
+font-size:0.62rem;
+letter-spacing:0.22em;
+text-transform:uppercase;
+color:var(--brass);
+border-top:1px solid rgba(160,138,95,0.35);
+}
+
+@media (max-width: 860px){
+.waldo-tiles{grid-template-columns:repeat(2,1fr);}
+.app-grid{grid-template-columns:1fr;gap:9vw;}
+}
 </style>
 </head>
 <body>
@@ -411,6 +541,11 @@ position:relative;
       <a href="dashboard.html">Dashboard</a>
       <a href="portfolio.html">Portfolio</a>
       <a href="about.html">Bio</a>
+      <span class="menu-label">Play</span>
+      <a href="/waldo">Where's Waldo?</a>
+      <a href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener">Gamezzz ↗</a>
+      <a href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener">Guess ↗</a>
+      <a href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener">Meals ↗</a>
     </nav>
   </details>
 
@@ -459,6 +594,50 @@ position:relative;
 <a href="/tlaxcalatrail" aria-label="Play The Tlaxcala Trail">
 <img class="featured-image" src="tlaxcala-preview.svg" alt="Title screen of The Tlaxcala Trail, a bilingual kids' adventure game" loading="lazy">
 </a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="waldo-feature" aria-labelledby="waldoTitle">
+<div class="waldo-banner">
+<div class="waldo-head">
+<div>
+<p class="eyebrow">Trunk-or-Treat booth</p>
+<h2 class="waldo-title" id="waldoTitle">Where's <span>Waldo?</span></h2>
+<p>Four quick games for kids K–5, designed with my son for our Trunk-or-Treat booth. Pick one and play — no names, no sign-ins.</p>
+</div>
+<a class="waldo-cta" href="/waldo">Open the booth &rarr;</a>
+</div>
+<div class="waldo-tiles">
+<a href="/waldo?play=search" aria-label="Play Big Picture Search"><img src="teasers/waldo-search.svg" alt="Big Picture Search: a busy festival crowd with a magnifying glass" loading="lazy"></a>
+<a href="/waldo?play=hats" aria-label="Play Hat Trick"><img src="teasers/waldo-hats.svg" alt="Hat Trick: three top hats, one lifted to show a gold star" loading="lazy"></a>
+<a href="/waldo?play=pairs" aria-label="Play Perfect Pairs"><img src="teasers/waldo-pairs.svg" alt="Perfect Pairs: memory cards with a countdown timer" loading="lazy"></a>
+<a href="/waldo?play=hand" aria-label="Play Waldo's Hand"><img src="teasers/waldo-hand.svg" alt="Waldo's Hand: a hand popping out of one of six trunks" loading="lazy"></a>
+</div>
+<p class="waldo-note">Unofficial fan-made games.</p>
+</div>
+</section>
+
+<section class="more-apps" aria-labelledby="moreTitle">
+<div class="more-apps-inner">
+<hr class="rule">
+<h2 id="moreTitle">More to play.</h2>
+<div class="app-grid">
+<div class="app-card">
+<a href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener" aria-label="Open Gamezzz"><img src="teasers/gamezzz.svg" alt="Gamezzz: a colorful game board and two dice" loading="lazy"></a>
+<p><strong>Gamezzz</strong> — our family game hub. Pull up a chair, pick a game, and play.</p>
+<a class="featured-link" href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener">Open Gamezzz &#8599;</a>
+</div>
+<div class="app-card">
+<a href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener" aria-label="Open Guess"><img src="teasers/guess.svg" alt="Guess: a trivia question with four answer choices" loading="lazy"></a>
+<p><strong>Guess</strong> — a trivia game. Read the question, take your best shot, and see how many you get right.</p>
+<a class="featured-link" href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener">Open Guess &#8599;</a>
+</div>
+<div class="app-card">
+<a href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener" aria-label="Open Meals"><img src="teasers/meals.svg" alt="Meals: a week of dinners with tonight's pick highlighted" loading="lazy"></a>
+<p><strong>Meals</strong> — what's for dinner? A meal picker built from our favorite saved recipes.</p>
+<a class="featured-link" href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener">Open Meals &#8599;</a>
 </div>
 </div>
 </div>
