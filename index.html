@@ -496,6 +496,7 @@ color:var(--paper);
 margin:0 0 2rem;
 }
 .app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2vw;}
+.app-grid-2{grid-template-columns:repeat(2,1fr);gap:3vw;}
 .app-card{display:flex;flex-direction:column;gap:1rem;}
 .app-card img{
 display:block;width:100%;height:auto;
@@ -544,6 +545,7 @@ border-top:1px solid rgba(160,138,95,0.35);
       <span class="menu-label">Play</span>
       <a href="/waldo">Where's Waldo?</a>
       <a href="/kanoodle">Kanoodle Genius</a>
+      <a href="/primeclimb">Prime Climb</a>
       <a href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener">Boardzzz ↗</a>
       <a href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener">Guess ↗</a>
       <a href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener">Meals ↗</a>
@@ -617,6 +619,25 @@ border-top:1px solid rgba(160,138,95,0.35);
 <a href="/waldo?play=hand" aria-label="Play Waldo's Hand"><img src="teasers/waldo-hand.svg" alt="Waldo's Hand: a hand popping out of one of six trunks" loading="lazy"></a>
 </div>
 <p class="waldo-note">Unofficial fan-made games.</p>
+</div>
+</section>
+
+<section class="more-apps" aria-labelledby="puzzleTitle">
+<div class="more-apps-inner">
+<hr class="rule">
+<h2 id="puzzleTitle">Puzzles &amp; numbers.</h2>
+<div class="app-grid app-grid-2">
+<div class="app-card">
+<a href="/kanoodle" aria-label="Open Kanoodle Genius"><img src="teasers/kanoodle.svg" alt="Kanoodle Genius: a puzzle board half-filled with colored balls and one piece about to slot in" loading="lazy"></a>
+<p><strong>Kanoodle Genius</strong> — 40 new challenges for the puzzle set, flat boards and pyramids, each with exactly one answer.</p>
+<a class="featured-link" href="/kanoodle">Open Kanoodle Genius &rarr;</a>
+</div>
+<div class="app-card">
+<a href="/primeclimb" aria-label="Open Prime Climb"><img src="teasers/primeclimb.svg" alt="Prime Climb: a numbered path with primes highlighted, two pawns and a pair of dice" loading="lazy"></a>
+<p><strong>Prime Climb</strong> — a co-pilot for the board game. Learn the moves, take on the computer, and climb all the way to 101.</p>
+<a class="featured-link" href="/primeclimb">Open Prime Climb &rarr;</a>
+</div>
+</div>
 </div>
 </section>
 

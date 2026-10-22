@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" width="780" height="440">
+<rect width="780" height="440" fill="#17140f"/>
+<rect x="18" y="18" width="744" height="404" rx="14" fill="none" stroke="#a08a5f" stroke-opacity=".45" stroke-width="2"/>
+<rect x="58" y="66" width="412" height="268" rx="18" fill="#0d0c0a" stroke="#a08a5f" stroke-opacity=".5" stroke-width="2"/>
+<circle cx="96" cy="104" r="21" fill="#c24f36"/><circle cx="89" cy="97" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="144" cy="104" r="21" fill="#c24f36"/><circle cx="137" cy="97" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="192" cy="104" r="21" fill="#c24f36"/><circle cx="185" cy="97" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="240" cy="104" r="21" fill="#d9a441"/><circle cx="233" cy="97" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="288" cy="104" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="336" cy="104" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="384" cy="104" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="432" cy="104" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="96" cy="152" r="21" fill="#c24f36"/><circle cx="89" cy="145" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="144" cy="152" r="21" fill="#4f8fbf"/><circle cx="137" cy="145" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="192" cy="152" r="21" fill="#4f8fbf"/><circle cx="185" cy="145" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="240" cy="152" r="21" fill="#d9a441"/><circle cx="233" cy="145" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="288" cy="152" r="21" fill="#d9a441"/><circle cx="281" cy="145" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="336" cy="152" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="384" cy="152" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="432" cy="152" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="96" cy="200" r="21" fill="#6aa86a"/><circle cx="89" cy="193" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="144" cy="200" r="21" fill="#4f8fbf"/><circle cx="137" cy="193" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="192" cy="200" r="21" fill="#4f8fbf"/><circle cx="185" cy="193" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="240" cy="200" r="21" fill="#9a6bb0"/><circle cx="233" cy="193" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="288" cy="200" r="21" fill="#d9a441"/><circle cx="281" cy="193" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="336" cy="200" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="384" cy="200" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="432" cy="200" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="96" cy="248" r="21" fill="#6aa86a"/><circle cx="89" cy="241" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="144" cy="248" r="21" fill="#6aa86a"/><circle cx="137" cy="241" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="192" cy="248" r="21" fill="#9a6bb0"/><circle cx="185" cy="241" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="240" cy="248" r="21" fill="#9a6bb0"/><circle cx="233" cy="241" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="288" cy="248" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="336" cy="248" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="384" cy="248" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="432" cy="248" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="96" cy="296" r="21" fill="#6aa86a"/><circle cx="89" cy="289" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="144" cy="296" r="21" fill="#e07a9a"/><circle cx="137" cy="289" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="192" cy="296" r="21" fill="#e07a9a"/><circle cx="185" cy="289" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="240" cy="296" r="21" fill="#9a6bb0"/><circle cx="233" cy="289" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="288" cy="296" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="336" cy="296" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="384" cy="296" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="432" cy="296" r="21" fill="#262019" stroke="#a08a5f" stroke-opacity=".35"/>
+<circle cx="288" cy="104" r="21" fill="none" stroke="#ece4d3" stroke-opacity=".75" stroke-width="2" stroke-dasharray="5 5"/>
+<circle cx="336" cy="104" r="21" fill="none" stroke="#ece4d3" stroke-opacity=".75" stroke-width="2" stroke-dasharray="5 5"/>
+<circle cx="384" cy="104" r="21" fill="none" stroke="#ece4d3" stroke-opacity=".75" stroke-width="2" stroke-dasharray="5 5"/>
+<circle cx="384" cy="152" r="21" fill="none" stroke="#ece4d3" stroke-opacity=".75" stroke-width="2" stroke-dasharray="5 5"/>
+<circle cx="432" cy="152" r="21" fill="none" stroke="#ece4d3" stroke-opacity=".75" stroke-width="2" stroke-dasharray="5 5"/>
+<circle cx="548" cy="250" r="21" fill="#3fb3a8"/><circle cx="541" cy="243" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="596" cy="250" r="21" fill="#3fb3a8"/><circle cx="589" cy="243" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="644" cy="250" r="21" fill="#3fb3a8"/><circle cx="637" cy="243" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="644" cy="298" r="21" fill="#3fb3a8"/><circle cx="637" cy="291" r="6" fill="#fff" fill-opacity=".28"/>
+<circle cx="692" cy="298" r="21" fill="#3fb3a8"/><circle cx="685" cy="291" r="6" fill="#fff" fill-opacity=".28"/>
+<path d="M600 222 C600 180 560 160 520 158" fill="none" stroke="#a08a5f" stroke-width="2" stroke-dasharray="4 6"/><path d="M512 158 l14 -7 l0 14 z" fill="#a08a5f"/>
+<text x="60" y="400" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="15" fill="#a08a5f" letter-spacing="2">CHALLENGE 17 · ONE ANSWER ONLY</text>
+<text x="720" y="400" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="15" fill="#ece4d3" text-anchor="end">7 / 12 placed</text>
+</svg>
