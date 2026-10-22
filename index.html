@@ -558,30 +558,11 @@ border-top:1px solid rgba(160,138,95,0.35);
     <h1 class="hero-headline" id="typedHeadline" aria-label="Caps unlocked. And so much more.">
       <span id="typedText"></span><span class="cursor" aria-hidden="true"></span>
     </h1>
-
-    <p class="hero-sub">
-      Reflections and requirement frameworks for projects in flight.
-    </p>
-
-    <form class="hero-form" id="signupForm">
-      <label for="emailInput" class="visually-hidden" style="position:absolute;left:-9999px;">Email address</label>
-      <input type="email" id="emailInput" name="email" placeholder="your@email.com" required autocomplete="email">
-      <button type="submit">Start typing →</button>
-    </form>
-    <p class="form-note">Free while we're in the flow. No spam, obviously.</p>
   </div>
 
   <div class="hero-photo" role="img" aria-label="Close-up of a vintage black typewriter keyboard, its Caps Lock key relabeled Caps Unlocked"></div>
 </section>
 
-<section class="manifesto">
-  <div class="manifesto-inner">
-    <hr class="rule">
-    <p><strong>Held Shift too long.</strong> Forgot what you meant to say.</p>
-    <p><strong>Wrote it anyway.</strong> Left the typos in.</p>
-    <p><strong>Hit return.</strong> Called it finished.</p>
-  </div>
-</section>
 
 
 <section class="featured">
@@ -695,15 +676,6 @@ border-top:1px solid rgba(160,138,95,0.35);
       setTimeout(type, 250);
     }
 
-    var form = document.getElementById('signupForm');
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var btn = form.querySelector('button');
-      var original = btn.textContent;
-      btn.textContent = 'Noted →';
-      setTimeout(function(){ btn.textContent = original; }, 1800);
-      form.reset();
-    });
   })();
 </script>
 
