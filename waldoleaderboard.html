@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Waldo Leaderboard · Caps Unlocked</title>
+<meta name="description" content="Class leaderboard for the Where's Waldo Trunk-or-Treat booth games." />
+<style>
+  :root{
+    --red:#cf3436; --red-dk:#a52a2c; --navy:#193b51; --cream:#fcf7ed; --paper:#fffdf7;
+    --gold:#f2c230; --muted:#526a75; --line:#193b5130; --green:#3d765b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--navy);min-height:100vh;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .stripes{height:12px;background:repeating-linear-gradient(90deg,var(--red) 0 22px,#fff 22px 44px)}
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line)}
+  header a{color:var(--navy);text-decoration:none;font-weight:800;letter-spacing:1px;font-size:14px}
+  header h1{margin:0;font-size:clamp(26px,4.5vw,46px);letter-spacing:-1px;color:var(--red);flex:1;min-width:220px}
+  header h1 small{display:block;font-size:14px;letter-spacing:2px;color:var(--navy);font-weight:900;text-transform:uppercase}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted)}
+  .dot{width:10px;height:10px;border-radius:50%;background:#3ddc84;animation:blink 1.6s infinite}
+  .dot.off{background:#c9c9c9;animation:none}
+  @keyframes blink{50%{opacity:.25}}
+  .hatbtn{background:none;border:0;padding:4px;width:58px;height:58px;border-radius:14px}
+  .hatbtn:hover,.hatbtn:focus-visible{background:#fff0bd;outline:none}
+  .hatbtn svg{width:100%;height:100%}
+
+  .banner{margin:16px;padding:16px 18px;border-radius:18px;background:var(--red);color:#fff;border:3px solid var(--navy);
+    font-size:clamp(17px,2.6vw,28px);font-weight:800;display:flex;gap:12px;align-items:center;box-shadow:5px 5px 0 var(--navy)}
+  .banner.fresh{animation:pop .7s ease}
+  .banner .tag{background:#fff;color:var(--red);border-radius:10px;padding:2px 10px;font-size:.7em;white-space:nowrap}
+  @keyframes pop{0%{transform:scale(.95)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+
+  main{display:grid;gap:16px;padding:0 16px 24px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .card{background:var(--paper);border-radius:18px;padding:16px;border:3px solid var(--navy)}
+  .card h2{margin:0 0 4px;font-size:22px;display:flex;align-items:center;gap:8px}
+  .card .sub{margin:0 0 10px;color:var(--muted);font-size:13px;font-weight:600}
+  ol,ul{list-style:none;margin:0;padding:0}
+  .row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed var(--line)}
+  .row:last-child{border-bottom:0}
+  .rank{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:#eef1f2;flex:none}
+  .r1 .rank{background:var(--gold)} .r2 .rank{background:#cfd8dc} .r3 .rank{background:#e0a96d}
+  .team{font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .score{font-weight:900;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .grade{width:34px;font-weight:900;flex:none}
+  .empty{color:var(--muted);font-style:italic;font-weight:600}
+  .cup{background:linear-gradient(#fff6d6,var(--paper))}
+  .cup .score{color:var(--navy)}
+  .recent .row{font-size:14px}
+  .when{color:var(--muted);font-size:12px;white-space:nowrap}
+  .notice{margin:16px;padding:24px;border-radius:18px;border:3px dashed var(--navy);background:var(--paper);text-align:center;font-weight:700}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:0 16px 24px;font-weight:600}
+
+  /* admin */
+  dialog{border:3px solid var(--navy);border-radius:20px;padding:0;max-width:420px;width:calc(100% - 32px);background:var(--paper);color:var(--navy)}
+  dialog::backdrop{background:#193b5199}
+  .dlg{padding:20px}
+  .dlg h3{margin:0 0 4px;font-size:22px;color:var(--red)}
+  .dlg p{margin:6px 0 14px;color:var(--muted);font-size:14px}
+  .dlg label{display:block;font-weight:800;font-size:13px;margin:12px 0 4px}
+  .dlg input{width:100%;font:inherit;font-size:18px;padding:10px 12px;border:2px solid var(--navy);border-radius:12px;background:#fff}
+  .dlg .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .btn{border:3px solid var(--navy);border-radius:40px;padding:10px 18px;font-weight:800;background:var(--paper)}
+  .btn.red{background:var(--red);color:#fff;box-shadow:3px 3px 0 var(--navy)}
+  .btn.red.confirm{background:var(--navy)}
+  .msg{min-height:20px;font-weight:700;font-size:14px;margin-top:10px}
+  .msg.bad{color:var(--red)} .msg.good{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="stripes"></div>
+<header>
+  <a href="/">CAPS <b>UNLOCKED</b></a>
+  <h1><small id="compName">Trunk-or-Treat booth</small>Waldo Leaderboard</h1>
+  <span class="live"><span class="dot" id="dot"></span><span id="status">Connecting…</span></span>
+  <button class="hatbtn" id="hat" type="button" aria-label="Admin">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <defs><clipPath id="cap"><path d="M10 46 C10 22 22 10 32 10 C42 10 54 22 54 46 Z"/></clipPath></defs>
+      <g clip-path="url(#cap)">
+        <rect x="0" y="0" width="64" height="64" fill="#fff"/>
+        <rect x="0" y="12" width="64" height="7" fill="#cf3436"/>
+        <rect x="0" y="26" width="64" height="7" fill="#cf3436"/>
+        <rect x="0" y="40" width="64" height="7" fill="#cf3436"/>
+      </g>
+      <path d="M10 46 C10 22 22 10 32 10 C42 10 54 22 54 46 Z" fill="none" stroke="#193b51" stroke-width="3"/>
+      <rect x="7" y="44" width="50" height="10" rx="5" fill="#cf3436" stroke="#193b51" stroke-width="3"/>
+      <circle cx="32" cy="9" r="6" fill="#fff" stroke="#193b51" stroke-width="3"/>
+    </svg>
+  </button>
+</header>
+
+<section id="banner" class="banner" hidden></section>
+<div id="notice" class="notice" hidden></div>
+<main id="main"></main>
+<footer>Classrooms only, no kid names. Updates on its own every few seconds.</footer>
+
+<dialog id="admin">
+  <form class="dlg" method="dialog" id="adminForm">
+    <h3>Start a new competition</h3>
+    <p>Clears the board so every class starts fresh. Past rounds stay saved in the Google Sheet.</p>
+    <label for="pin">Admin PIN</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" required />
+    <label for="cname">Competition name</label>
+    <input id="cname" type="text" maxlength="40" placeholder="Trunk-or-Treat" />
+    <div class="btns">
+      <button class="btn red" id="resetBtn" type="button">Start new competition</button>
+      <button class="btn" value="cancel" formnovalidate>Close</button>
+    </div>
+    <div class="msg" id="msg" role="status"></div>
+  </form>
+</dialog>
+
+<script src="/waldo/config.js"></script>
+<script>
+(function(){
+  "use strict";
+  const B = window.BOOTH || {};
+  const params = new URLSearchParams(location.search);
+  const DEMO = params.has("demo");
+  const ENDPOINT = B.leaderboardUrl || "";
+  const REFRESH_MS = 8000;
+
+  const LIMITS = {}; (B.grades || []).forEach(g => LIMITS[g.id] = g.seconds);
+  const GRADES = ["K","1","2","3","4","5"];
+  const GAMES = {
+    search:{name:"Big Picture Search", icon:"🔍", better:"low",  fmt:s=>s.toFixed(1)+"s",          sub:"Fastest to find Waldo"},
+    hats:  {name:"Hat Trick",          icon:"🎩", better:"high", fmt:s=>s+" of 3 ★",             sub:"Most stars found (ties: first to do it)"},
+    pairs: {name:"Perfect Pairs",      icon:"🃏", better:"low",  fmt:s=>s.toFixed(1)+"s",          sub:"Fastest clear in each grade", byGrade:true},
+    hand:  {name:"Waldo's Hand",       icon:"🖐️", better:"high", fmt:s=>s+" hands",              sub:"Most hands caught in 30 seconds"},
+  };
+  const POINTS = [10,8,6,5,4,3,2,1]; // Class Cup points for 1st, 2nd, 3rd… in each game
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const team = r => `Team ${esc(r.teacher)} (${esc(r.grade)})`;
+  const ordinal = g => g==="K" ? "Kindergarten" : g + ({1:"st",2:"nd",3:"rd"}[g]||"th") + " grade";
+  const isBetter = (game,a,b) => GAMES[game].better==="low" ? a<b : a>b;
+  // Perfect Pairs counts as a share of each grade's time limit, so grades compete fairly in the Cup.
+  const cupValue = (game,r) => game==="pairs" ? r.score/(LIMITS[r.grade]||60) : r.score;
+  function ago(t){
+    const s = Math.max(0,Math.round((Date.now()-t)/1000));
+    if(s<60) return s<10 ? "just now" : s+"s ago";
+    if(s<3600) return Math.round(s/60)+"m ago";
+    return Math.round(s/3600)+"h ago";
+  }
+
+  function compute(rows){
+    const sorted = [...rows].sort((a,b)=>a.t-b.t);
+    const best = {}, leaders = {}, events = [];
+    for(const r of sorted){
+      const g = GAMES[r.game]; if(!g) continue;
+      const ck = r.teacher+"|"+r.grade;
+      (best[r.game] ??= {});
+      const cur = best[r.game][ck];
+      if(!cur || isBetter(r.game,r.score,cur.score)) best[r.game][ck] = r;
+      const board = g.byGrade ? r.game+"|"+r.grade : r.game;
+      const lead = leaders[board];
+      if(!lead || isBetter(r.game,r.score,lead.score)){
+        events.push({row:r, kind: lead && lead.ck===ck ? "record" : "leader"});
+        leaders[board] = {ck, score:r.score};
+      }
+    }
+    return {best, events, sorted};
+  }
+  function ranked(game,best){
+    return Object.values(best[game]||{}).sort((a,b)=>{
+      const va=cupValue(game,a), vb=cupValue(game,b);
+      if (va===vb) return a.t-b.t;
+      return GAMES[game].better==="low" ? va-vb : vb-va;
+    });
+  }
+
+  let lastEventKey = "";
+  function render(rows){
+    const {best, events, sorted} = compute(rows);
+    const banner = $("banner");
+    const ev = events[events.length-1];
+    if(ev){
+      const g = GAMES[ev.row.game];
+      const where = g.byGrade ? `${g.name} (${ordinal(ev.row.grade)})` : g.name;
+      const what = ev.kind==="leader" ? "is the new leader in" : "beat its own record in";
+      banner.innerHTML = `<span class="tag">${Date.now()-ev.row.t < 120000 ? "NEW!" : ago(ev.row.t)}</span>
+        <span>${g.icon} ${team(ev.row)} ${what} ${where}: ${g.fmt(ev.row.score)}</span>`;
+      banner.hidden = false;
+      const key = ev.row.t+"|"+ev.row.teacher;
+      if(key!==lastEventKey){ banner.classList.remove("fresh"); void banner.offsetWidth; banner.classList.add("fresh"); lastEventKey=key; }
+    } else {
+      banner.innerHTML = `<span>🔍 New competition! Play a game at the booth to put your class on the board.</span>`;
+      banner.hidden = false;
+    }
+
+    const cup = {};
+    for(const game of Object.keys(GAMES)){
+      ranked(game,best).slice(0,POINTS.length).forEach((r,i)=>{
+        const ck = r.teacher+"|"+r.grade;
+        (cup[ck] ??= {r, pts:0}).pts += POINTS[i];
+      });
+    }
+    const cupList = Object.values(cup).sort((a,b)=>b.pts-a.pts).slice(0,6);
+    const row = (i,label,score) => `<li class="row r${i+1}"><span class="rank">${i+1}</span><span class="team">${label}</span><span class="score">${score}</span></li>`;
+    const none = `<li class="row empty">No plays yet. Be the first!</li>`;
+
+    let html = `<section class="card cup"><h2>🏆 Class Cup</h2><p class="sub">Points for placing in all four games</p><ol>${
+      cupList.length ? cupList.map((c,i)=>row(i,team(c.r),c.pts+" pts")).join("") : none}</ol></section>`;
+    for(const [key,g] of Object.entries(GAMES)){
+      let body;
+      if(g.byGrade){
+        body = GRADES.map(gr=>{
+          const top = ranked(key,best).find(r=>r.grade===gr);
+          return `<li class="row"><span class="grade">${gr}</span><span class="team">${top?team(top):'<span class="empty">open</span>'}</span><span class="score">${top?g.fmt(top.score):""}</span></li>`;
+        }).join("");
+      } else {
+        const list = ranked(key,best).slice(0,5);
+        body = list.length ? list.map((r,i)=>row(i,team(r),g.fmt(r.score))).join("") : none;
+      }
+      html += `<section class="card"><h2>${g.icon} ${g.name}</h2><p class="sub">${g.sub}</p><ol>${body}</ol></section>`;
+    }
+    const recent = sorted.slice(-8).reverse();
+    html += `<section class="card recent"><h2>⏱️ Just played</h2><p class="sub">${sorted.length} round${sorted.length===1?"":"s"} played this competition</p><ul>${
+      recent.length ? recent.map(r=>`<li class="row"><span class="team">${team(r)}</span><span>${GAMES[r.game]?.icon||""} ${GAMES[r.game]?GAMES[r.game].fmt(r.score):esc(r.score)}</span><span class="when">${ago(r.t)}</span></li>`).join("") : none}</ul></section>`;
+    $("main").innerHTML = html;
+  }
+
+  function setStatus(text, on){ $("status").textContent = text; $("dot").classList.toggle("off", !on); }
+
+  /* ---------- live: read the Google Sheet ---------- */
+  let failures = 0;
+  async function load(){
+    try{
+      const res = await fetch(ENDPOINT + "?action=rows&_=" + Date.now(), {cache:"no-store"});
+      const data = await res.json();
+      const rows = (data.rows||[]).map(r=>({...r, t:new Date(r.t).getTime(), score:Number(r.score)}));
+      if (data.competition && data.competition.name) $("compName").textContent = data.competition.name;
+      render(rows);
+      failures = 0; setStatus("Live", true);
+    }catch(e){
+      failures++; setStatus(failures > 2 ? "Can't reach the scores. Retrying…" : "Reconnecting…", false);
+    }
+  }
+
+  /* ---------- admin: the striped hat ---------- */
+  const dlg = $("admin"), msg = $("msg"), resetBtn = $("resetBtn");
+  let armed = false;
+  function disarm(){ armed = false; resetBtn.classList.remove("confirm"); resetBtn.textContent = "Start new competition"; }
+  $("hat").addEventListener("click", () => {
+    msg.textContent = ""; msg.className = "msg"; disarm();
+    if (!ENDPOINT && !DEMO) { msg.textContent = "The leaderboard isn't connected yet."; msg.className = "msg bad"; }
+    dlg.showModal(); $("pin").focus();
+  });
+  dlg.addEventListener("close", () => { $("pin").value = ""; disarm(); });
+  resetBtn.addEventListener("click", async () => {
+    const pin = $("pin").value.trim();
+    const name = $("cname").value.trim() || "Trunk-or-Treat";
+    if (!pin) { msg.textContent = "Enter the admin PIN."; msg.className = "msg bad"; return; }
+    if (!armed) { armed = true; resetBtn.classList.add("confirm"); resetBtn.textContent = "Tap again to clear the board"; msg.textContent = ""; return; }
+    resetBtn.disabled = true; msg.textContent = "Starting…"; msg.className = "msg";
+    try {
+      let data;
+      if (DEMO) { data = pin === "1234" ? {ok:true} : {ok:false, error:"Wrong PIN (demo PIN is 1234)"}; if (data.ok) demoReset(name); }
+      else {
+        const res = await fetch(ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain"},
+          body: JSON.stringify({ action:"reset", pin, name }) });
+        data = await res.json();
+      }
+      if (data.ok) { msg.textContent = `New competition "${name}" started. The board is clear.`; msg.className = "msg good"; $("pin").value = ""; if (!DEMO) load(); }
+      else { msg.textContent = data.error || "That didn't work."; msg.className = "msg bad"; }
+    } catch (e) { msg.textContent = "Couldn't reach the scores. Check the internet and try again."; msg.className = "msg bad"; }
+    resetBtn.disabled = false; disarm();
+  });
+
+  /* ---------- demo (?demo=1): pretend plays with made-up classes ---------- */
+  let demoRows = [];
+  function demoReset(name){ demoRows = []; $("compName").textContent = name; render(demoRows); }
+  function runDemo(){
+    setStatus("Demo · pretend plays", true);
+    $("compName").textContent = "Demo";
+    const C = [["Maple","K"],["Oak","1"],["Cedar","2"],["Birch","2"],["Willow","3"],["Aspen","4"],["Spruce","5"],["Juniper","1"]];
+    const rnd = (a,b)=>a+Math.random()*(b-a);
+    const fake = t => {
+      const [teacher,grade] = C[Math.floor(Math.random()*C.length)];
+      const game = Object.keys(GAMES)[Math.floor(Math.random()*4)];
+      const score = {search:+rnd(9,80).toFixed(1), hats:Math.floor(rnd(0,4)),
+        pairs:+((LIMITS[grade]||60)*rnd(.45,.98)).toFixed(1), hand:Math.floor(rnd(20,60))}[game];
+      return {t, game, teacher, grade, score};
+    };
+    for(let i=30;i>0;i--) demoRows.push(fake(Date.now()-i*170000));
+    render(demoRows);
+    setInterval(()=>{ demoRows.push(fake(Date.now())); render(demoRows); }, 5000);
+  }
+
+  if (DEMO) runDemo();
+  else if (!ENDPOINT) {
+    setStatus("Not connected yet", false);
+    $("notice").hidden = false;
+    $("notice").textContent = "The leaderboard opens soon. Scores will show up here once the booth is connected.";
+  } else { load(); setInterval(load, REFRESH_MS); }
+})();
+</script>
+</body>
+</html>

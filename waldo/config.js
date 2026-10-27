@@ -31,6 +31,11 @@ window.BOOTH = {
     { id: "5", label: "5th grade", seconds: 25 },
   ],
 
+  // Leaderboard: the Google Apps Script web app link (ends in /exec).
+  // Both the games and capsunlocked.com/waldoleaderboard read it from here.
+  // While it's empty, finished rounds wait on the booth device and send once it's filled in.
+  leaderboardUrl: "",
+
   // Classrooms — after picking a game, kids pick their grade, then their teacher.
   // "team" is what shows on screen (and later on the leaderboard): Team Dargen (2)
   classrooms: [
