@@ -137,6 +137,17 @@ body.waldo {
 .w-grade span { font-size: 18px; font-weight: 700; }
 .w-grade small { font-size: 14px; color: var(--muted); }
 .w-grade:active { background: #fff0bd; }
+
+/* class picker (grade → teacher) */
+.w-teachers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 760px; margin: 24px auto; }
+.w-teachers .w-grade span { color: var(--red); }
+.w-team {
+  display: inline-block; margin: 0 0 8px; padding: 6px 16px; border-radius: 30px;
+  background: var(--gold); border: 2px solid var(--navy); font-size: 16px; font-weight: 700;
+}
+@media (max-width: 600px) { .w-teachers { grid-template-columns: 1fr; } }
+.w-forclass { display: inline-block; margin: 4px 0 0; padding: 6px 16px; border-radius: 30px; background: var(--gold); border: 2px solid var(--navy); font-weight: 800; font-size: 17px; }
+.w-sent { font-weight: 700; color: #3d765b; margin: 10px 0 0; }
 .w-timebar { max-width: 620px; height: 16px; margin: 0 auto 6px; border: 2px solid var(--navy); border-radius: 10px; overflow: hidden; background: var(--paper); }
 .w-timebar div { height: 100%; width: 100%; background: repeating-linear-gradient(45deg, var(--navy) 0 10px, #2e5a78 10px 20px); transition: width .1s linear; }
 .w-memory { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 620px; margin: 14px auto 0; }

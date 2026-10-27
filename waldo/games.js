@@ -63,9 +63,37 @@
     bumpIdle();
   }
   function status(msg) { const s = $("[data-status]"); if (s) s.textContent = msg; }
-  function endButtons(id) {
-    return `<div class="w-endbar">
-      <button class="w-primary" data-play="${id}">Play again ↻</button>
+  /* ---------- leaderboard: one row per finished round ---------- */
+  // Rounds wait in a queue on this device, so nothing is lost if the booth Wi-Fi drops.
+  let flushing = false;
+  async function flushScores() {
+    if (!B.leaderboardUrl || flushing) return;
+    flushing = true;
+    try {
+      let q = store.get("queue", []);
+      while (q.length) {
+        // text/plain + no-cors: the simple kind of request Apps Script accepts from another site
+        await fetch(B.leaderboardUrl, { method: "POST", mode: "no-cors",
+          headers: { "Content-Type": "text/plain" }, body: JSON.stringify(q[0]) });
+        q = store.get("queue", []); q.shift(); store.set("queue", q);
+      }
+    } catch (e) { /* offline: try again later */ }
+    flushing = false;
+  }
+  function sendScore(game, score) {
+    if (!player) return "";
+    const q = store.get("queue", []);
+    q.push({ game, score, teacher: player.team, grade: player.grade, device: "booth", at: Date.now() });
+    store.set("queue", q);
+    flushScores();
+    return `<p class="w-sent">★ Added to the leaderboard for <b>${teamName(player)}</b></p>`;
+  }
+  window.addEventListener("online", flushScores);
+  setInterval(flushScores, 30000);
+
+  function endButtons(id, note = "") {
+    return `${note}<div class="w-endbar">
+      <button class="w-primary" data-replay="${id}">Play again ↻</button>
       <button class="w-secondary" data-action="menu">Next player →</button></div>`;
   }
 
@@ -93,6 +121,7 @@
 
   /* ================= MENU (Camilo's 10-second pick) ================= */
   function menu() {
+    player = null; // new kid at the screen: they pick their class again
     const fav = mostPopular();
     show("menu", `
       <section class="w-menu">
@@ -100,6 +129,7 @@
           <h2>Pick your game!</h2>
           <div class="w-count" aria-hidden="true"><span data-count>${B.pickSeconds}</span></div>
         </div>
+        <p class="w-forclass">🏆 Play for your class! You'll pick your grade and teacher next.</p>
         <p class="w-small" data-autonote>If you don't pick, <b>${fav.title}</b> (most played) starts in ${B.pickSeconds} seconds.</p>
         <div class="w-games">
           ${GAMES.map((g, i) => `
@@ -122,9 +152,63 @@
     }, 200);
   }
 
-  function play(id) {
+  /* ================= CLASS PICKER: grade, then teacher ================= */
+  let player = null; // { grade, teacher, team } for the kid at the screen, or null if skipped
+  const teamName = (p) => `Team ${p.team} (${p.grade})`;
+  const gameTitle = (id) => GAMES.find((g) => g.id === id).title;
+
+  function play(id) { // chosen from the menu: pick the class first
     countPlay(id);
-    ({ search: gameSearch, hats: gameHats, pairs: gamePairs, hand: gameHand })[id]();
+    pickGrade(id);
+  }
+  function replay(id) { // "Play again": same kid, same class
+    countPlay(id);
+    start(id);
+  }
+  function start(id) {
+    if (id === "pairs" && player) pairsBoard(B.grades.find((g) => g.id === player.grade));
+    else ({ search: gameSearch, hats: gameHats, pairs: gamePairs, hand: gameHand })[id]();
+    if (player) {
+      const sec = app.querySelector("section");
+      if (sec) sec.insertAdjacentHTML("afterbegin", `<p class="w-team">Playing for <b>${teamName(player)}</b></p>`);
+    }
+  }
+  function pickGrade(id) {
+    player = null;
+    show("pick", `
+      <section class="w-play">
+        <p class="w-label">${gameTitle(id).toUpperCase()}</p>
+        <h1>What grade are you in?</h1>
+        <p class="w-clue">Play for your class!</p>
+        <div class="w-grades">
+          ${B.grades.map((g) => `<button class="w-grade" data-pickgrade="${g.id}"><b>${g.label}</b></button>`).join("")}
+        </div>
+        <div class="w-endbar"><button class="w-secondary" data-skip>Just play (no class)</button></div>
+      </section>`);
+    app.querySelectorAll("[data-pickgrade]").forEach((b) => b.addEventListener("click", () => pickTeacher(id, b.dataset.pickgrade)));
+    $("[data-skip]").addEventListener("click", () => start(id));
+  }
+  function pickTeacher(id, gradeId) {
+    const grade = B.grades.find((g) => g.id === gradeId);
+    const rooms = B.classrooms.filter((c) => c.grade === gradeId);
+    show("pick", `
+      <section class="w-play">
+        <p class="w-label">${gameTitle(id).toUpperCase()} · ${grade.label.toUpperCase()}</p>
+        <h1>Who is your teacher?</h1>
+        <div class="w-teachers">
+          ${rooms.map((c, i) => `<button class="w-grade" data-pickteacher="${i}"><b>${c.teacher}</b><span>Team ${c.team}</span></button>`).join("")}
+        </div>
+        <div class="w-endbar">
+          <button class="w-secondary" data-back>← Change grade</button>
+          <button class="w-secondary" data-skip>Just play (no class)</button>
+        </div>
+      </section>`);
+    app.querySelectorAll("[data-pickteacher]").forEach((b) => b.addEventListener("click", () => {
+      player = rooms[+b.dataset.pickteacher];
+      start(id);
+    }));
+    $("[data-back]").addEventListener("click", () => pickGrade(id));
+    $("[data-skip]").addEventListener("click", () => start(id));
   }
 
   /* ================= 1. BIG PICTURE SEARCH ================= */
@@ -184,7 +268,7 @@
         mark(sc.x, sc.y, "hit", "");
         $("[data-hintbox]").hidden = true;
         status(`You found him in ${t} seconds! Amazing spotting! ★`);
-        $("[data-end]").innerHTML = endButtons("search");
+        $("[data-end]").innerHTML = endButtons("search", sendScore("search", Math.round((Date.now() - start) / 100) / 10));
       } else {
         const m = mark(px, py, "miss", "✕");
         later(() => m.remove(), 900);
@@ -263,7 +347,7 @@
         $("[data-next]").addEventListener("click", () => { round++; startRound(); });
       } else {
         status(`All done! You found ${stars} of ${B.hatRounds} stars. ${win ? "★" : ""}`);
-        $("[data-end]").innerHTML = endButtons("hats");
+        $("[data-end]").innerHTML = endButtons("hats", sendScore("hats", stars));
       }
     }));
     place(); score();
@@ -326,8 +410,10 @@
     function finish(win) {
       done = true;
       btns.forEach((b) => (b.disabled = true));
+      let note = "";
       if (win) {
         const t = Date.now() - start;
+        note = sendScore("pairs", Math.round(t / 100) / 10);
         const all = store.get("best", {});
         const record = !all[grade.id] || t < all[grade.id];
         if (record) { all[grade.id] = t; store.set("best", all); }
@@ -335,7 +421,7 @@
       } else {
         status(`Time's up! You found ${matched} of 6 pairs. Try again!`);
       }
-      $("[data-end]").innerHTML = endButtons("pairs");
+      $("[data-end]").innerHTML = endButtons("pairs", note);
     }
     btns.forEach((b, i) => b.addEventListener("click", () => {
       if (done || open.length === 2 || open.includes(i) || b.classList.contains("matched")) return;
@@ -400,7 +486,7 @@
       const prev = store.get("handBest", 0);
       if (caught > prev) store.set("handBest", caught);
       status(`Time's up! You caught ${caught} hands! ${caught > prev ? "New booth record! 🏆" : ""}`);
-      $("[data-end]").innerHTML = endButtons("hand");
+      $("[data-end]").innerHTML = endButtons("hand", sendScore("hand", caught));
     }
     $("[data-start]").addEventListener("click", () => {
       $("[data-end]").innerHTML = "";
@@ -429,6 +515,8 @@
         <ul>${B.grades.map((g) => `<li>${g.label}: <b>${best[g.id] ? fmt(best[g.id]) : "—"}</b></li>`).join("")}</ul>
         <h3>Waldo's Hand booth record</h3>
         <ul><li><b>${store.get("handBest", 0) || "—"}</b></li></ul>
+        <h3>Leaderboard</h3>
+        <ul><li>${B.leaderboardUrl ? "Connected" : "Not connected yet (add leaderboardUrl in config.js)"} · rounds waiting to send: <b>${store.get("queue", []).length}</b></li></ul>
         <div class="w-endbar">
           <button class="w-secondary" data-reset="tally">Reset play counts</button>
           <button class="w-secondary" data-reset="scores">Reset best times &amp; records</button>
@@ -448,6 +536,8 @@
   document.addEventListener("click", (e) => {
     const p = e.target.closest("[data-play]");
     if (p) { play(p.dataset.play); return; }
+    const r = e.target.closest("[data-replay]");
+    if (r) { replay(r.dataset.replay); return; }
     const a = e.target.closest("[data-action]");
     if (!a) return;
     const act = a.dataset.action;
