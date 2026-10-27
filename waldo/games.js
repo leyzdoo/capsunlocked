@@ -65,7 +65,7 @@
   function status(msg) { const s = $("[data-status]"); if (s) s.textContent = msg; }
   function endButtons(id) {
     return `<div class="w-endbar">
-      <button class="w-primary" data-play="${id}">Play again ↻</button>
+      <button class="w-primary" data-replay="${id}">Play again ↻</button>
       <button class="w-secondary" data-action="menu">Next player →</button></div>`;
   }
 
@@ -93,6 +93,7 @@
 
   /* ================= MENU (Camilo's 10-second pick) ================= */
   function menu() {
+    player = null; // new kid at the screen: they pick their class again
     const fav = mostPopular();
     show("menu", `
       <section class="w-menu">
@@ -122,9 +123,63 @@
     }, 200);
   }
 
-  function play(id) {
+  /* ================= CLASS PICKER: grade, then teacher ================= */
+  let player = null; // { grade, teacher, team } for the kid at the screen, or null if skipped
+  const teamName = (p) => `Team ${p.team} (${p.grade})`;
+  const gameTitle = (id) => GAMES.find((g) => g.id === id).title;
+
+  function play(id) { // chosen from the menu: pick the class first
     countPlay(id);
-    ({ search: gameSearch, hats: gameHats, pairs: gamePairs, hand: gameHand })[id]();
+    pickGrade(id);
+  }
+  function replay(id) { // "Play again": same kid, same class
+    countPlay(id);
+    start(id);
+  }
+  function start(id) {
+    if (id === "pairs" && player) pairsBoard(B.grades.find((g) => g.id === player.grade));
+    else ({ search: gameSearch, hats: gameHats, pairs: gamePairs, hand: gameHand })[id]();
+    if (player) {
+      const sec = app.querySelector("section");
+      if (sec) sec.insertAdjacentHTML("afterbegin", `<p class="w-team">Playing for <b>${teamName(player)}</b></p>`);
+    }
+  }
+  function pickGrade(id) {
+    player = null;
+    show("pick", `
+      <section class="w-play">
+        <p class="w-label">${gameTitle(id).toUpperCase()}</p>
+        <h1>What grade are you in?</h1>
+        <p class="w-clue">Play for your class!</p>
+        <div class="w-grades">
+          ${B.grades.map((g) => `<button class="w-grade" data-pickgrade="${g.id}"><b>${g.label}</b></button>`).join("")}
+        </div>
+        <div class="w-endbar"><button class="w-secondary" data-skip>Just play (no class)</button></div>
+      </section>`);
+    app.querySelectorAll("[data-pickgrade]").forEach((b) => b.addEventListener("click", () => pickTeacher(id, b.dataset.pickgrade)));
+    $("[data-skip]").addEventListener("click", () => start(id));
+  }
+  function pickTeacher(id, gradeId) {
+    const grade = B.grades.find((g) => g.id === gradeId);
+    const rooms = B.classrooms.filter((c) => c.grade === gradeId);
+    show("pick", `
+      <section class="w-play">
+        <p class="w-label">${gameTitle(id).toUpperCase()} · ${grade.label.toUpperCase()}</p>
+        <h1>Who is your teacher?</h1>
+        <div class="w-teachers">
+          ${rooms.map((c, i) => `<button class="w-grade" data-pickteacher="${i}"><b>${c.teacher}</b><span>Team ${c.team}</span></button>`).join("")}
+        </div>
+        <div class="w-endbar">
+          <button class="w-secondary" data-back>← Change grade</button>
+          <button class="w-secondary" data-skip>Just play (no class)</button>
+        </div>
+      </section>`);
+    app.querySelectorAll("[data-pickteacher]").forEach((b) => b.addEventListener("click", () => {
+      player = rooms[+b.dataset.pickteacher];
+      start(id);
+    }));
+    $("[data-back]").addEventListener("click", () => pickGrade(id));
+    $("[data-skip]").addEventListener("click", () => start(id));
   }
 
   /* ================= 1. BIG PICTURE SEARCH ================= */
@@ -448,6 +503,8 @@
   document.addEventListener("click", (e) => {
     const p = e.target.closest("[data-play]");
     if (p) { play(p.dataset.play); return; }
+    const r = e.target.closest("[data-replay]");
+    if (r) { replay(r.dataset.replay); return; }
     const a = e.target.closest("[data-action]");
     if (!a) return;
     const act = a.dataset.action;

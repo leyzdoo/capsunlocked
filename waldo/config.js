@@ -31,6 +31,32 @@ window.BOOTH = {
     { id: "5", label: "5th grade", seconds: 25 },
   ],
 
+  // Classrooms — after picking a game, kids pick their grade, then their teacher.
+  // "team" is what shows on screen (and later on the leaderboard): Team Dargen (2)
+  classrooms: [
+    { grade: "K", teacher: "Angela Karim",        team: "Karim" },
+    { grade: "K", teacher: "Sheng-Hsuan Tung",    team: "Tung" },
+    { grade: "K", teacher: "Shawn Vuksich",       team: "Vuksich" },
+    { grade: "K", teacher: "Sheguo Wang",         team: "Wang" },
+    { grade: "1", teacher: "Stephanie Amato",     team: "Amato" },
+    { grade: "1", teacher: "Mengyi Chen",         team: "Chen" },
+    { grade: "1", teacher: "Julia Eggers",        team: "Eggers" },
+    { grade: "1", teacher: "Grace Yin",           team: "Yin" },
+    { grade: "2", teacher: "Huan Chen",           team: "Chen" },
+    { grade: "2", teacher: "Mary Dargen",         team: "Dargen" },
+    { grade: "2", teacher: "Kathrine England",    team: "England" },
+    { grade: "2", teacher: "Xin Tong",            team: "Tong" },
+    { grade: "3", teacher: "Jennifer Goodman",    team: "Goodman" },
+    { grade: "3", teacher: "Catherine Kerrigan",  team: "Kerrigan" },
+    { grade: "3", teacher: "Krista Toevs",        team: "Toevs" },
+    { grade: "4", teacher: "Sara Elms",           team: "Elms" },
+    { grade: "4", teacher: "Brennan Kochanowski", team: "Kochanowski" },
+    { grade: "4", teacher: "Colleen Scoggins",    team: "Scoggins" },
+    { grade: "5", teacher: "Annette Johnston",    team: "Johnston" },
+    { grade: "5", teacher: "Jody Little",         team: "Little" },
+    { grade: "5", teacher: "Daniel Silver",       team: "Silver" },
+  ],
+
   // Waldo's Hand
   handSeconds: 30,
   handStaysOutMs: 1500, // how long the hand stays out before it moves
