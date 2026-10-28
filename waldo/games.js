@@ -14,7 +14,7 @@
 
   const GAMES = [
     { id: "search", title: "Big Picture Search", icon: "🔍", tag: "LOOK CLOSELY",
-      text: "Find Waldo hiding somewhere in a giant, busy picture.", meta: "Great with friends", color: "red" },
+      text: "Find Waldo hiding in a busy beach, forest, school, ball field and more.", meta: "Harder each grade", color: "red" },
     { id: "hats", title: "Hat Trick", icon: "🎩", tag: "WATCH & FOLLOW",
       text: "Keep your eyes on the star while the hats shuffle.", meta: B.hatRounds + " rounds", color: "yellow" },
     { id: "pairs", title: "Perfect Pairs", icon: "🃏", tag: "REMEMBER & MATCH",
@@ -232,15 +232,30 @@
       if (B.mirrorScenes !== false && Math.random() < 0.5) { sc.flip = true; sc.x = 100 - sc.x; }
       return sc;
     }
-    if (window.WaldoScene) return window.WaldoScene.makeScene();
+    if (window.WaldoScene) {
+      // Harder by grade (config.js searchLevels); a new setting each round, no repeats until all are seen
+      const g = (player && player.grade) || B.searchDefaultGrade || "2";
+      return Object.assign(window.WaldoScene.makeScene((B.searchLevels || {})[g], nextTheme()), { grade: g });
+    }
     return B.SCENES[nextScene(B.SCENES)];
+  }
+  let themeBag = [], lastTheme = "";
+  function nextTheme() {
+    const all = (B.searchThemes || []).filter((t) => window.WaldoScene.themes.includes(t));
+    if (!all.length) return undefined;
+    if (!themeBag.length) {
+      themeBag = shuffle(all);
+      if (themeBag.length > 1 && themeBag[themeBag.length - 1] === lastTheme) themeBag.unshift(themeBag.pop());
+    }
+    return (lastTheme = themeBag.pop());
   }
   function gameSearch() {
     const markIdx = parseInt(new URLSearchParams(location.search).get("mark"), 10);
     const sc = MARK && markIdx >= 1 && markIdx <= B.SCENES.length ? B.SCENES[markIdx - 1] : pickScene();
+    const gradeLabel = sc.grade ? " · " + B.grades.find((x) => x.id === sc.grade).label.toUpperCase() : "";
     show("search", `
       <section class="w-play">
-        <p class="w-label">GAME 01 · BIG PICTURE SEARCH</p>
+        <p class="w-label">GAME 01 · BIG PICTURE SEARCH${gradeLabel}${sc.theme ? " · " + sc.name.toUpperCase() : ""}</p>
         <h1>${MARK ? "Marking mode" : "Find Waldo!"}</h1>
         <p class="w-clue">${MARK ? "Tap Waldo to get his x and y numbers for config.js." : sc.clue}</p>
         <div class="w-controls">
