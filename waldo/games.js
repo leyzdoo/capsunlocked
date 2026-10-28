@@ -153,7 +153,7 @@
   }
 
   /* ================= CLASS PICKER: grade, then teacher ================= */
-  let player = null; // { grade, teacher, team } for the kid at the screen, or null if skipped
+  let player = null; // { grade, team } for the kid at the screen, or null if skipped
   const teamName = (p) => `Team ${p.team} (${p.grade})`;
   const gameTitle = (id) => GAMES.find((g) => g.id === id).title;
 
@@ -196,7 +196,7 @@
         <p class="w-label">${gameTitle(id).toUpperCase()} · ${grade.label.toUpperCase()}</p>
         <h1>Who is your teacher?</h1>
         <div class="w-teachers">
-          ${rooms.map((c, i) => `<button class="w-grade" data-pickteacher="${i}"><b>${c.teacher}</b><span>Team ${c.team}</span></button>`).join("")}
+          ${rooms.map((c, i) => `<button class="w-grade" data-pickteacher="${i}"><b>${c.team}</b></button>`).join("")}
         </div>
         <div class="w-endbar">
           <button class="w-secondary" data-back>← Change grade</button>
