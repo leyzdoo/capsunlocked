@@ -34,7 +34,7 @@ window.BOOTH = {
   // Leaderboard: the Google Apps Script web app link (ends in /exec).
   // Both the games and capsunlocked.com/waldoleaderboard read it from here.
   // While it's empty, finished rounds wait on the booth device and send once it's filled in.
-  leaderboardUrl: "",
+  leaderboardUrl: "https://script.google.com/macros/s/AKfycbxcPbkvzTF6-e3jBL-qpCWbpvM7aP65AnRlBKi5ELbr-NQnUu6fDWz9zOzpSp7XQcNV/exec",
 
   // Classrooms — after picking a game, kids pick their grade, then their teacher.
   // "team" is what shows on screen (and later on the leaderboard): Team Dargen (2)
