@@ -128,7 +128,7 @@
   const LIMITS = {}; (B.grades || []).forEach(g => LIMITS[g.id] = g.seconds);
   const GRADES = ["K","1","2","3","4","5"];
   const GAMES = {
-    search:{name:"Big Picture Search", icon:"🔍", better:"low",  fmt:s=>s.toFixed(1)+"s",          sub:"Fastest to find Waldo"},
+    search:{name:"Big Picture Search", icon:"🔍", better:"low",  fmt:s=>s.toFixed(1)+"s",          sub:"Fastest find in each grade (pictures get harder by grade)", byGrade:true},
     hats:  {name:"Hat Trick",          icon:"🎩", better:"high", fmt:s=>s+" of 3 ★",             sub:"Most stars found (ties: first to do it)"},
     pairs: {name:"Perfect Pairs",      icon:"🃏", better:"low",  fmt:s=>s.toFixed(1)+"s",          sub:"Fastest clear in each grade", byGrade:true},
     hand:  {name:"Waldo's Hand",       icon:"🖐️", better:"high", fmt:s=>s+" hands",              sub:"Most hands caught in 30 seconds"},
@@ -195,17 +195,20 @@
     }
 
     const cup = {};
+    const award = (list) => list.slice(0,POINTS.length).forEach((r,i)=>{
+      const ck = r.teacher+"|"+r.grade;
+      (cup[ck] ??= {r, pts:0}).pts += POINTS[i];
+    });
     for(const game of Object.keys(GAMES)){
-      ranked(game,best).slice(0,POINTS.length).forEach((r,i)=>{
-        const ck = r.teacher+"|"+r.grade;
-        (cup[ck] ??= {r, pts:0}).pts += POINTS[i];
-      });
+      // Games with a different challenge per grade award points within each grade
+      if (GAMES[game].byGrade) GRADES.forEach(gr => award(ranked(game,best).filter(r=>r.grade===gr)));
+      else award(ranked(game,best));
     }
     const cupList = Object.values(cup).sort((a,b)=>b.pts-a.pts).slice(0,6);
     const row = (i,label,score) => `<li class="row r${i+1}"><span class="rank">${i+1}</span><span class="team">${label}</span><span class="score">${score}</span></li>`;
     const none = `<li class="row empty">No plays yet. Be the first!</li>`;
 
-    let html = `<section class="card cup"><h2>🏆 Class Cup</h2><p class="sub">Points for placing in all four games</p><ol>${
+    let html = `<section class="card cup"><h2>🏆 Class Cup</h2><p class="sub">Points for placing in all four games (in your grade for Search &amp; Pairs)</p><ol>${
       cupList.length ? cupList.map((c,i)=>row(i,team(c.r),c.pts+" pts")).join("") : none}</ol></section>`;
     for(const [key,g] of Object.entries(GAMES)){
       let body;

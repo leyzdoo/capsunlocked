@@ -80,6 +80,22 @@ window.BOOTH = {
   // Big Picture Search: flip real pictures left-to-right half the time so Waldo moves
   mirrorScenes: true,
 
+  // Big Picture Search gets harder by grade (only for the drawn crowds, not real pictures):
+  //  people = crowd size · decoys = gold hats with no star · tricky = stars on other-color hats
+  //  size = how big everyone is drawn · zone = how close a tap must be (% of picture width)
+  searchLevels: {
+    K: { people: 70,  decoys: 0,  tricky: 0, size: 1.45, zone: 5.5 },
+    1: { people: 110, decoys: 3,  tricky: 0, size: 1.3,  zone: 5 },
+    2: { people: 160, decoys: 6,  tricky: 0, size: 1.15, zone: 4.5 },
+    3: { people: 210, decoys: 9,  tricky: 2, size: 1.0,  zone: 4 },
+    4: { people: 260, decoys: 12, tricky: 4, size: 0.92, zone: 3.5 },
+    5: { people: 320, decoys: 15, tricky: 7, size: 0.85, zone: 3.5 },
+  },
+  searchDefaultGrade: "2", // used when a kid taps "Just play (no class)"
+  // Settings are dealt like cards (each shows once before any repeats).
+  // Remove any you don't want: festival, beach, forest, school, playground, river, baseball
+  searchThemes: ["festival", "beach", "forest", "school", "playground", "river", "baseball"],
+
   // Big Picture Search scenes
   SCENES: [
     { name: "Placeholder festival 1", src: "/waldo/images/scene-1.svg",
