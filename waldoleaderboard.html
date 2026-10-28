@@ -51,6 +51,8 @@
   .recent .row{font-size:14px}
   .when{color:var(--muted);font-size:12px;white-space:nowrap}
   .notice{margin:16px;padding:24px;border-radius:18px;border:3px dashed var(--navy);background:var(--paper);text-align:center;font-weight:700}
+  .backbar{text-align:center;margin:4px 16px 18px}
+  .backbar .btn{display:inline-block;text-decoration:none;font-size:18px;padding:12px 26px}
   footer{text-align:center;color:var(--muted);font-size:12px;padding:0 16px 24px;font-weight:600}
 
   /* admin */
@@ -94,6 +96,7 @@
 <section id="banner" class="banner" hidden></section>
 <div id="notice" class="notice" hidden></div>
 <main id="main"></main>
+<div class="backbar"><a class="btn red" href="/waldo" id="backBtn">← Back to the games</a></div>
 <footer>Classrooms only, no kid names. Updates on its own every few seconds.</footer>
 
 <dialog id="admin">
@@ -288,6 +291,14 @@
     for(let i=30;i>0;i--) demoRows.push(fake(Date.now()-i*170000));
     render(demoRows);
     setInterval(()=>{ demoRows.push(fake(Date.now())); render(demoRows); }, 5000);
+  }
+
+  // Opened from the booth: drift back to the games after a minute with no taps
+  if (params.get("from") === "booth") {
+    let idle;
+    const bump = () => { clearTimeout(idle); idle = setTimeout(() => { if (!dlg.open) location.href = "/waldo"; }, 60000); };
+    ["pointerdown","keydown"].forEach(ev => document.addEventListener(ev, bump, true));
+    bump();
   }
 
   if (DEMO) runDemo();
