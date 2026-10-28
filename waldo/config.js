@@ -10,6 +10,9 @@
  *  3. Add an entry to SCENES below. Remove the placeholder scenes when you
  *     have real pictures. Each round shows a different picture; all of them
  *     are shown once before any repeats.
+ *  Until a real picture is added, every round draws a brand-new crowd with the
+ *  gold-star person in a random spot (scene-maker.js); the placeholders below are unused.
+ *  Real pictures are shown in random order and mirrored half the time (mirrorScenes).
  *  Tip: open /waldo?mark=2 in a browser (2 = the 2nd scene in the list)
  *  and tap Waldo — it shows you the x and y numbers to copy in.
  */
@@ -73,6 +76,9 @@ window.BOOTH = {
   hatRounds: 3,
   hatSwaps: 5,
   hatSwapMs: 900,
+
+  // Big Picture Search: flip real pictures left-to-right half the time so Waldo moves
+  mirrorScenes: true,
 
   // Big Picture Search scenes
   SCENES: [

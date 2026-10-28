@@ -212,18 +212,32 @@
   }
 
   /* ================= 1. BIG PICTURE SEARCH ================= */
-  let sceneBag = [], lastScene = -1; // deal scenes like cards: every one shows before repeats
-  function nextScene() {
-    if (!sceneBag.length) {
-      sceneBag = shuffle(B.SCENES.map((_, i) => i));
+  // Real (approved) pictures are dealt like cards: every one shows before repeats.
+  // Until there are real pictures, a brand-new crowd is drawn each round (scene-maker.js)
+  // with the gold-star person somewhere random.
+  let sceneBag = [], lastScene = -1;
+  const realScenes = () => B.SCENES.filter((s) => !s.placeholder);
+  function nextScene(list) {
+    if (!sceneBag.length || sceneBag.some((i) => i >= list.length)) {
+      sceneBag = shuffle(list.map((_, i) => i));
       if (sceneBag.length > 1 && sceneBag[sceneBag.length - 1] === lastScene) sceneBag.unshift(sceneBag.pop());
     }
     return (lastScene = sceneBag.pop());
   }
+  function pickScene() {
+    const real = realScenes();
+    if (real.length) {
+      const sc = Object.assign({}, real[nextScene(real)]);
+      // Mirror the picture half the time, so Waldo isn't always on the same side
+      if (B.mirrorScenes !== false && Math.random() < 0.5) { sc.flip = true; sc.x = 100 - sc.x; }
+      return sc;
+    }
+    if (window.WaldoScene) return window.WaldoScene.makeScene();
+    return B.SCENES[nextScene(B.SCENES)];
+  }
   function gameSearch() {
     const markIdx = parseInt(new URLSearchParams(location.search).get("mark"), 10);
-    const idx = MARK && markIdx >= 1 && markIdx <= B.SCENES.length ? markIdx - 1 : nextScene();
-    const sc = B.SCENES[idx];
+    const sc = MARK && markIdx >= 1 && markIdx <= B.SCENES.length ? B.SCENES[markIdx - 1] : pickScene();
     show("search", `
       <section class="w-play">
         <p class="w-label">GAME 01 · BIG PICTURE SEARCH</p>
@@ -234,7 +248,7 @@
           <span class="w-score" data-clock>0s</span>
         </div>
         <div class="w-scene" data-scene>
-          <img src="${sc.src}" alt="A busy, detailed picture with lots of people. ${sc.clue}" draggable="false" />
+          <img src="${sc.src}" alt="A busy, detailed picture with lots of people. ${sc.clue}" draggable="false"${sc.flip ? ' style="transform:scaleX(-1)"' : ""} />
           <div class="w-hintbox" data-hintbox hidden></div>
         </div>
         <p class="w-feedback" role="status" data-status>Look carefully. Tap him when you spot him!</p>
