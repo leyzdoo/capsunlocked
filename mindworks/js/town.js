@@ -252,6 +252,34 @@ export function buildHouse(tier) {
     const pm = new THREE.Mesh(new THREE.ExtrudeGeometry(ped, { depth: .5, bevelEnabled: false }), S.trimWhite); pm.position.set(0, .6 + ch + .6, fz + pd - .4); pm.castShadow = true; g.add(pm);
     front = pd + 1.2;
   }
+  /* ---- back porch: covered deck with railing, a back door, and a porch swing ---- */
+  {
+    const bz = -fz, pw = Math.min(w * .62, 9), pd = 2.8, deckM = mat('wood', ['#a07a55', 7, 46], pw / 2, pd / 2, { roughness: .7 });
+    g.add(box(1.2, 2.4, .12, std(0x5a3a24, .5), 0, 1.7, bz - .06));
+    g.add(box(1.6, 2.7, .1, S.trimWhite, 0, 1.85, bz - .01));
+    const deck = box(pw, .16, pd, deckM, 0, .08, bz - pd / 2); g.add(deck);
+    const rail = S.trimWhite, posts = [];
+    [-1, 1].forEach(s => { posts.push([s * (pw / 2 - .12), bz - pd + .12]); posts.push([s * (pw / 2 - .12), bz - .2]); });
+    posts.forEach(([x, z]) => g.add(box(.16, 2.9, .16, rail, x, 1.53, z)));
+    [-1, 1].forEach(s => {
+      g.add(box(.07, .07, pd, rail, s * (pw / 2 - .12), 1.0, bz - pd / 2));
+      for (let k = 0; k < 8; k++) g.add(box(.04, .84, .04, rail, s * (pw / 2 - .12), .58, bz - .3 - k * (pd - .5) / 7));
+      const fl = pw / 2 - 1.1; g.add(box(fl, .07, .07, rail, s * (1.1 + fl / 2), 1.0, bz - pd + .12));
+      for (let k = 0; k < Math.floor(fl / .3); k++) g.add(box(.04, .84, .04, rail, s * (1.2 + k * .3), .58, bz - pd + .12));
+    });
+    const pr = box(pw + .4, .16, pd + .4, roofMat('gable', T.roof[1], pw, pd), 0, 3.05, bz - pd / 2); pr.rotation.x = -.1; g.add(pr);
+    // porch swing hanging from the roof
+    const sw = new THREE.Group(), wd = mat('wood', ['#7a5236', 3, 47], 1, 1);
+    sw.add(box(1.5, .08, .5, wd, 0, .55, 0)); sw.add(box(1.5, .45, .06, wd, 0, .8, -.22));
+    [-1, 1].forEach(k => { const ch = new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, 2.4, 4), std(0x333333, .4, .8)); ch.position.set(k * .7, 1.75, 0); sw.add(ch); });
+    sw.position.set(-pw / 4, 0, bz - pd + .9); g.add(sw);
+    // two steps down to the yard
+    g.add(box(1.6, .1, .5, S.stone, 0, .05, bz - pd - .25));
+    posts.forEach(([x, z]) => cols.push([x - .12, x + .12, z - .12, z + .12]));
+    cols.push([-pw / 2, -1.1, bz - pd + .02, bz - pd + .22], [1.1, pw / 2, bz - pd + .02, bz - pd + .22]);
+    [-1, 1].forEach(s => cols.push([s > 0 ? pw / 2 - .22 : -pw / 2, s > 0 ? pw / 2 : -pw / 2 + .22, bz - pd, bz]));
+    g.userData.porchSwing = sw;
+  }
   if (T.tower) {
     const tw = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 4, 24), wallMat('stone', T.wall[1], 6, 2)); tw.position.set(0, h + 2.4, -1); tw.castShadow = true; g.add(tw);
     for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, wn = new THREE.Mesh(new THREE.PlaneGeometry(.6, 1.4), S.glassDark); wn.position.set(Math.sin(a) * 1.81, h + 2.6, -1 + Math.cos(a) * 1.81); wn.rotation.y = a; g.add(wn); }
@@ -315,6 +343,40 @@ function lotExtras(T, tier, lot, side, frontZ, r) {
     g.add(box(.9, 1, .9, S.stone, sx, .5, sz)); const ball = new THREE.Mesh(new THREE.SphereGeometry(.45, 20, 14), std(0xc9a64a, .25, 1)); ball.position.set(sx, 1.45, sz); ball.castShadow = true; g.add(ball);
     cols.push({ x1: sx - .5, x2: sx + .5, z1: sz - .5, z2: sz + .5 });
   });
+  /* ---- the backyard: side fences, back fence, lawn toys ---- */
+  {
+    const backAbs = Math.abs(frontZ) + T.d, yardD = 11, bf = backAbs + yardD, Z = a => side * a;
+    const fm = T.fence === 'iron' ? S.black : std(0xf4f1ea, .7), hgt = T.fence === 'iron' ? 1.4 : 1.1, sp = T.fence === 'iron' ? .25 : .35;
+    const runX = (z, xa, xb) => { const len = Math.abs(xb - xa), n = Math.floor(len / sp); for (let k = 0; k <= n; k++) g.add(box(T.fence === 'iron' ? .04 : .09, hgt, .05, fm, Math.min(xa, xb) + k * len / n, hgt / 2, z)); [.3, hgt - .2].forEach(y => g.add(box(len, .06, .05, fm, (xa + xb) / 2, y, z))); cols.push({ x1: Math.min(xa, xb), x2: Math.max(xa, xb), z1: z - .15, z2: z + .15 }); };
+    const runZ = (x, za, zb) => { const len = Math.abs(zb - za), n = Math.floor(len / sp); for (let k = 0; k <= n; k++) g.add(box(.05, hgt, T.fence === 'iron' ? .04 : .09, fm, x, hgt / 2, Math.min(za, zb) + k * len / n)); [.3, hgt - .2].forEach(y => g.add(box(.05, .06, len, fm, x, y, (za + zb) / 2))); cols.push({ x1: x - .15, x2: x + .15, z1: Math.min(za, zb), z2: Math.max(za, zb) }); };
+    runX(Z(bf), x0 - half, x0 + half);
+    runZ(x0 - half, Z(SETBACK + .3), Z(bf)); runZ(x0 + half, Z(SETBACK + .3), Z(bf));
+    // patio pavers off the back porch
+    const pav = new THREE.Mesh(new THREE.BoxGeometry(6, .05, 3), mat('concrete', ['#b9b2a6', 128, 48], 2, 1));
+    pav.position.set(x0, .03, Z(backAbs + 4.3)); pav.receiveShadow = true; g.add(pav);
+    // picnic table + grill on the patio
+    const wd = mat('wood', ['#8a6440', 4, 49], 1, 1), pt = new THREE.Group();
+    pt.add(box(1.8, .06, .8, wd, 0, .76, 0)); [-1, 1].forEach(k => { pt.add(box(1.8, .05, .3, wd, 0, .45, k * .65)); pt.add(box(.08, .76, .08, wd, -.75, .38, k * .3)); pt.add(box(.08, .76, .08, wd, .75, .38, k * .3)); });
+    pt.position.set(x0 - 1.2, 0, Z(backAbs + 4.3)); g.add(pt); cols.push({ x1: x0 - 2.2, x2: x0 - .2, z1: Z(backAbs + 4.3) - .9, z2: Z(backAbs + 4.3) + .9 });
+    const gr = new THREE.Group(); gr.add(box(.8, .5, .5, S.black, 0, .95, 0)); gr.add(box(.8, .08, .5, std(0x666666, .4, .8), 0, .72, 0)); [-1, 1].forEach(k => gr.add(box(.05, .7, .05, S.black, k * .35, .35, 0)));
+    gr.position.set(x0 + 2, 0, Z(backAbs + 4)); g.add(gr); cols.push({ x1: x0 + 1.5, x2: x0 + 2.5, z1: Z(backAbs + 4) - .35, z2: Z(backAbs + 4) + .35 });
+    // swing set
+    const ss = new THREE.Group(), metal = std(0xd04a3a, .5, .4), L = 3.4;
+    [-1, 1].forEach(k => [-1, 1].forEach(j => { const leg = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 2.6, 8), metal); leg.position.set(k * L / 2, 1.2, j * .5); leg.rotation.x = j * .38; leg.castShadow = true; ss.add(leg); }));
+    const bar = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, L + .2, 8), metal); bar.rotation.z = Math.PI / 2; bar.position.y = 2.42; ss.add(bar);
+    [-.7, .7].forEach(x => { [-.22, .22].forEach(dx => { const rope = new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, 1.9, 4), std(0x333333)); rope.position.set(x + dx, 1.47, 0); ss.add(rope); }); ss.add(box(.55, .05, .22, std(0x2b2b2b, .6), x, .52, 0)); });
+    ss.position.set(x0 - half * .5, 0, Z(backAbs + 8)); g.add(ss); cols.push({ x1: x0 - half * .5 - 1.9, x2: x0 - half * .5 + 1.9, z1: Z(backAbs + 8) - .9, z2: Z(backAbs + 8) + .9 });
+    // trampoline
+    const tr = new THREE.Group();
+    const ringT = new THREE.Mesh(new THREE.TorusGeometry(1.7, .07, 8, 40), std(0x2f6fd8, .5)); ringT.rotation.x = Math.PI / 2; ringT.position.y = .75; tr.add(ringT);
+    const mat2 = new THREE.Mesh(new THREE.CircleGeometry(1.6, 40), std(0x111111, .9)); mat2.rotation.x = -Math.PI / 2; mat2.position.y = .74; tr.add(mat2);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2, lg = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .75, 6), S.black); lg.position.set(Math.cos(a) * 1.65, .37, Math.sin(a) * 1.65); tr.add(lg); }
+    tr.position.set(x0 + half * .5, 0, Z(backAbs + 7.5)); g.add(tr); cols.push({ x1: x0 + half * .5 - 1.8, x2: x0 + half * .5 + 1.8, z1: Z(backAbs + 7.5) - 1.8, z2: Z(backAbs + 7.5) + 1.8 });
+    // a shade tree + a vegetable garden along the back fence
+    const t1 = tree(r, 1.2); t1.position.set(x0 + half - 2.2, 0, Z(bf - 2)); g.add(t1); cols.push({ x1: t1.position.x - .4, x2: t1.position.x + .4, z1: t1.position.z - .4, z2: t1.position.z + .4 });
+    const bed = box(4.5, .3, 1.1, std(0x4a3626, 1), x0, .15, Z(bf - .9)); g.add(bed); cols.push({ x1: x0 - 2.25, x2: x0 + 2.25, z1: Z(bf - .9) - .55, z2: Z(bf - .9) + .55 });
+    for (let i = 0; i < 12; i++) { const pl = new THREE.Mesh(new THREE.SphereGeometry(.16, 8, 6), std(i % 3 ? 0x3f7d2f : 0xd8452f, .8)); pl.position.set(x0 - 2 + i * .36, .42, Z(bf - .9) + (i % 2 ? .25 : -.25)); g.add(pl); }
+  }
   return { group: g, cols };
 }
 
@@ -459,7 +521,7 @@ export function createTown(renderer) {
     scene.add(m);
   });
   // invisible world bounds
-  base.push({ x1: -75, x2: 75, z1: -40, z2: -39 }, { x1: -75, x2: 75, z1: 39, z2: 40 }, { x1: -76, x2: -75, z1: -40, z2: 40 }, { x1: 75, x2: 76, z1: -40, z2: 40 });
+  base.push({ x1: -75, x2: 75, z1: -40, z2: -39 }, { x1: -40, x2: 75, z1: 39, z2: 40 }, { x1: -76, x2: -75, z1: -40, z2: 60 }, { x1: 75, x2: 76, z1: -40, z2: 40 });
 
   const town = {
     scene, doors, colliders: base.slice(), camBlockers: base.slice(), plaques, sun: dir, houseTier: -1,
