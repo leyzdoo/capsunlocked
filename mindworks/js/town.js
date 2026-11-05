@@ -445,7 +445,7 @@ export const BUILDINGS = [
   { id: 'picture', name: 'Picture Puzzles', side: -1, x: -12, w: 15, d: 13, floors: 4, wall: { kind: 'brick', args: ['#b8875c', '#ded3c3', 52] }, signBg: '#3a1d12', signFg: '#ffd7bd', awning: ['#c55a2c', '#f6eadb'], door: 0x5a2a16 },
   { id: 'pattern', name: 'Patterns', side: -1, x: 12, w: 15, d: 13, floors: 3, wall: { kind: 'concrete', args: ['#d8cfbf', 160, 53], tile: 3 }, signBg: '#2b2410', signFg: '#ffd463', trim: 'white', door: 0x3a3320 },
   { id: 'chess', name: 'Chess', side: -1, x: 36, w: 15, d: 13, floors: 4, wall: { kind: 'brick', args: ['#5b5f66', '#b9bcc0', 54] }, signBg: '#1a1530', signFg: '#d7cfff', awning: ['#3d3470', '#e9e6f5'], door: 0x241e45 },
-  { id: 'home', name: 'Home', side: 1, x: -57, lotW: 34, house: true },
+  { id: 'home', name: 'Home', side: 1, x: -57, lotW: 36, house: true },
   { id: 'store', name: 'Game Store', side: 1, x: -24, w: 14, d: 13, floors: 2, wall: { kind: 'brick', args: ['#a24a3a', '#d8cbbb', 55] }, signBg: '#3d2d00', signFg: '#ffd34d', awning: ['#c7962a', '#fff6dc'], trim: 'white', door: 0x5c4300 },
   { id: 'pong', name: 'Ping Pong', side: 1, x: 0, w: 15, d: 13, floors: 3, wall: { kind: 'brick', args: ['#6f7f8c', '#c9d0d6', 56] }, signBg: '#0f2b45', signFg: '#cfe8ff', awning: ['#2f6fa8', '#eef5fb'], door: 0x14385a },
   { id: 'jigsaw', name: 'Jigsaw', side: 1, x: 24, w: 15, d: 13, floors: 4, wall: { kind: 'brick', args: ['#a8566d', '#e2d4d6', 57] }, signBg: '#3b0f22', signFg: '#ffd0e4', awning: ['#b8436f', '#fbecf2'], trim: 'white', door: 0x4a1028 }
