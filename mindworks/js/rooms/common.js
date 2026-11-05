@@ -10,7 +10,7 @@ let envTex = null;
 export function env() { if (!envTex) { const p = new THREE.PMREMGenerator(G.renderer); envTex = p.fromScene(new RoomEnvironment(), .04).texture; } return envTex; }
 
 /** room shell centred on the origin; floor at y=0, door in the middle of the +z wall */
-export function makeRoom({ w = 16, d = 14, h = 4.2, floor = ['wood', ['#a0703f', 6, 7]], floorTile = 2.4, wall = '#ece6da', wallTex = null, trim = '#f6f2ea', light = 0xfff1dc, lamps = 4, doorColor = 0x5a3a24, windows = true } = {}) {
+export function makeRoom({ ceiling = true, w = 16, d = 14, h = 4.2, floor = ['wood', ['#a0703f', 6, 7]], floorTile = 2.4, wall = '#ece6da', wallTex = null, trim = '#f6f2ea', light = 0xfff1dc, lamps = 4, doorColor = 0x5a3a24, windows = true } = {}) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0e0d1c);
   scene.environment = env();
@@ -22,7 +22,7 @@ export function makeRoom({ w = 16, d = 14, h = 4.2, floor = ['wood', ['#a0703f',
     [.3, h, d, -w / 2 - .15, h / 2, 0], [.3, h, d, w / 2 + .15, h / 2, 0]
   ];
   walls.forEach(a => { const m = box(a[0], a[1], a[2], wm, a[3], a[4], a[5]); m.castShadow = false; scene.add(m); });
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(w, d), std(0xf4f1ea, .95)); ceil.rotation.x = Math.PI / 2; ceil.position.y = h; scene.add(ceil);
+  if (ceiling) { const ceil = new THREE.Mesh(new THREE.PlaneGeometry(w, d), std(0xf4f1ea, .95)); ceil.rotation.x = Math.PI / 2; ceil.position.y = h; scene.add(ceil); }
   // baseboards + crown
   const tm = std(trim, .6);
   [[w, -d / 2 + .02, 0], [w, d / 2 - .02, 0]].forEach(([len, z]) => { scene.add(box(len, .14, .04, tm, 0, .07, z)); scene.add(box(len, .12, .06, tm, 0, h - .06, z)); });

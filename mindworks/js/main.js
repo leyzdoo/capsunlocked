@@ -204,7 +204,8 @@ function walk(dt) {
     // ease the camera round behind you when walking forward
     if (!cam.drag && my > .5) { let dy = player.root.rotation.y + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.2); }
   }
-  collide(p, .38, active.colliders);
+  collide(p, .38, active.collidersAt ? active.collidersAt(p) : active.colliders);
+  if (active.heightAt) { const ty = active.heightAt(p); p.y += (ty - p.y) * Math.min(1, dt * 16); if (Math.abs(ty - p.y) < .005) p.y = ty; }
   player.speedBlend(speed / 3.3);
   // camera
   const C = active.cam || { dist: 6.5, pitch: .38 };
@@ -231,7 +232,7 @@ function walk(dt) {
 function updatePrompt() {
   const list = active.interact ? active.interact() : [];
   const p = player.root.position; let best = null, bd = 1e9;
-  for (const it of list) { const d = Math.hypot(it.pos.x - p.x, it.pos.z - p.z); if (d < it.r && d < bd) { bd = d; best = it; } }
+  for (const it of list) { if (Math.abs((it.pos.y || 0) - p.y) > 1.2) continue; const d = Math.hypot(it.pos.x - p.x, it.pos.z - p.z); if (d < it.r && d < bd) { bd = d; best = it; } }
   const show = !!best && !modalOpen() && !switching;
   $('prompt').classList.toggle('hide', !show);
   if (show && promptFor !== best.label + best.sub) { promptFor = best.label + best.sub; $('promptBtn').textContent = best.label; $('promptSub').textContent = best.sub || ''; }
