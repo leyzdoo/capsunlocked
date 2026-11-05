@@ -90,7 +90,7 @@ export async function enter({ player }) {
     add(pi, w / 2 - 3, d / 2 - 3.2, Math.PI, 1.6, 2.3);
     const r = rng(7);
     [-1, 1].forEach(s => { const c = document.createElement('canvas'); c.width = 480; c.height = 320; Scenes.paint(c.getContext('2d'), 480, 320, ['lake', 'mountains', 'castle', 'garden'][Math.floor(r() * 4)], 5 + s, 'sunset'); const p = painting(2.2, 1.46, c); p.position.set(s * w / 4, 2.6, backZ + .05); if (s < 0 || tier < 6) S.add(p); });
-    [-1, 1].forEach(s => { const col = new THREE.Mesh(new THREE.CylinderGeometry(.3, .35, h, 20), std(0xf4f1ea, .4)); col.position.set(s * 2.2, h / 2, d / 2 - 3); col.castShadow = true; S.add(col); cols.push({ x1: s * 2.2 - .4, x2: s * 2.2 + .4, z1: d / 2 - 3.4, z2: d / 2 - 2.6 }); });
+    [-1, 1].forEach(s => { const col = new THREE.Mesh(new THREE.CylinderGeometry(.3, .35, 2 * h, 20), std(0xf4f1ea, .4)); col.position.set(s * 2.2, h, d / 2 - 3); col.castShadow = true; S.add(col); cols.push({ x1: s * 2.2 - .4, x2: s * 2.2 + .4, z1: d / 2 - 3.4, z2: d / 2 - 2.6 }); });
     const ch2 = chandelier(1.4); ch2.position.set(0, h - 1.1, d / 2 - 5); S.add(ch2);
   }
   if (tier >= 6) {
@@ -104,6 +104,12 @@ export async function enter({ player }) {
     // gold trim around the ceiling
     S.add(box(w, .18, .1, std(0xc9a64a, .3, 1), 0, h - .3, backZ + .06));
   }
+  if (upstairs) S.children.forEach(o => { // lights in the open part hang from the high ceiling
+    if (o.position.z <= upstairs.edge + .2) return;
+    if (Math.abs(o.position.y - (h - .03)) < .02) o.position.y = 2 * h - .03;
+    else if (o.isPointLight && Math.abs(o.position.y - (h - .4)) < .02) o.position.y = 2 * h - .4;
+    else if (o.name === 'chandelier' && o.position.y < h) o.position.y = 2 * h - 1.5;
+  });
   // a welcome mat + the way out
   add(rug(1.4, .8, '#5a4a3a'), 0, d / 2 - .7);
   let t = 0;
@@ -113,9 +119,11 @@ export async function enter({ player }) {
     heightAt: upstairs ? p => upstairs.heightAt(p) : null,
     help: tier < 6 ? 'Upgrade your house at the Game Store — next: ' + HOUSE_TIERS[tier + 1].name : 'You own the biggest house in town!',
     start: new THREE.Vector3(0, 0, d / 2 - 3.2), startYaw: Math.PI, camYaw: 0, camBlockers: R.colliders,
+    loftEdge: upstairs ? upstairs.edge : null,
     camClamp(p, target) {
       const up = target.y > h * .75;
-      p.y = up ? THREE.MathUtils.clamp(p.y, h + .4, 2 * h - .3) : Math.min(p.y, (upstairs && upstairs.onStairs(target) ? 2 * h : h) - .3);
+      const open = upstairs && (upstairs.onStairs(target) || p.z > upstairs.edge + .3);
+      p.y = up ? THREE.MathUtils.clamp(p.y, h + .4, 2 * h - .3) : Math.min(p.y, (open ? 2 * h : h) - .3);
     },
     interact: () => [{ pos: R.door, r: 1.5, label: 'Go back outside', sub: T.name, fn: () => G.backToTown() }],
     update(dt) {
@@ -137,10 +145,12 @@ function buildUpstairs(S, { tier, w, d, h, fancy, cols, add }) {
   const ox1 = -w / 2, ox2 = -w / 2 + sw + .5, oz1 = zBack, oz2 = d / 2;
   const floorM = fancy ? mat('tiles', ['#f2efe9', '#dcd6cc', 6, 86], 3, 3, { roughness: .4 }) : mat('wood', ['#9a6a40', 6, 87], 3, 3, { roughness: .55 });
   const slabT = .22, slab = (x1, x2, z1, z2) => { if (x2 - x1 < .01 || z2 - z1 < .01) return; const m = box(x2 - x1, slabT, z2 - z1, floorM, (x1 + x2) / 2, h - slabT / 2, (z1 + z2) / 2); m.castShadow = false; m.material = floorM.clone(); m.material.map = floorM.map.clone(); m.material.map.repeat.set((x2 - x1) / 3, (z2 - z1) / 3); m.material.map.needsUpdate = true; S.add(m); };
-  slab(-w / 2, w / 2, -d / 2, oz1); slab(ox2, w / 2, oz1, d / 2);
+  slab(-w / 2, w / 2, -d / 2, oz1);   // the loft covers the back part only — the front is open two storeys
+  const edgeX1 = sx + sw / 2 + .02;
+  S.add(box(w / 2 - edgeX1, .42, .2, std(fancy ? 0xf4f1ea : 0x8a5a35, .5), (edgeX1 + w / 2) / 2, h - .21, oz1 + .02)); // the overhang's edge beam
   // underside (ceiling of the ground floor) looks like plaster
-  const under = std(0xf4f1ea, .95);
-  [[-w / 2, w / 2, -d / 2, oz1], [ox2, w / 2, oz1, d / 2]].forEach(([x1, x2, z1, z2]) => { const c = new THREE.Mesh(new THREE.PlaneGeometry(x2 - x1, z2 - z1), under); c.rotation.x = Math.PI / 2; c.position.set((x1 + x2) / 2, h - slabT - .001, (z1 + z2) / 2); S.add(c); });
+  const under = std(0xf4f1ea, .95); under.emissive.setHex(0x8a8780);   // lit softly so the overhang isn't a dark band
+  [[-w / 2, w / 2, -d / 2, oz1]].forEach(([x1, x2, z1, z2]) => { const c = new THREE.Mesh(new THREE.PlaneGeometry(x2 - x1, z2 - z1), under); c.rotation.x = Math.PI / 2; c.position.set((x1 + x2) / 2, h - slabT - .001, (z1 + z2) / 2); S.add(c); });
   // upstairs walls + ceiling
   const wallM = mat('plaster', [['#e7eef5', '#e9e4f2', '#f2ece0', '#f4ead7', '#f3efe8'][Math.min(4, tier - 2)], 9], w / 3, h / 3, { roughness: .92 });
   [[w, h, .3, 0, h * 1.5, -d / 2 - .15], [w, h, .3, 0, h * 1.5, d / 2 + .15], [.3, h, d, -w / 2 - .15, h * 1.5, 0], [.3, h, d, w / 2 + .15, h * 1.5, 0]]
@@ -156,14 +166,13 @@ function buildUpstairs(S, { tier, w, d, h, fancy, cols, add }) {
   [-1, 1].forEach(s => { for (let i = 0; i < Math.floor(d / 5); i++) { const z = -d / 2 + 2.5 + i * 5; if (s < 0 && z > oz1 - 1) continue;
     const gw = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.6), new THREE.MeshBasicMaterial({ color: 0xcfe6ff })); gw.position.set(s * (w / 2 - .02), h + 1.7, z); gw.rotation.y = -s * Math.PI / 2; S.add(gw);
     S.add(box(.08, 1.8, 1.6, trim, s * (w / 2 - .01), h + 1.7, z)); S.add(box(.06, 1.6, .05, trim, s * (w / 2 - .06), h + 1.7, z)); } });
-  // railing around the stairwell (open side + far end)
-  const rail = std(fancy ? 0xf4f1ea : 0x5a3c26, .5), Y = h;
-  const railX = ox2, upCols = [], groundCols = [], stairCols = [];
-  S.add(box(.08, .08, oz2 - oz1, rail, railX, Y + 1, (oz1 + oz2) / 2));
-  for (let z = oz1 + .1; z < oz2; z += .35) S.add(box(.05, 1, .05, rail, railX, Y + .5, z));
-  S.add(box(.14, 1.1, .14, rail, railX, Y + .55, oz2 - .1));
-  upCols.push({ x1: railX - .1, x2: railX + .1, z1: oz1 + 1.4, z2: oz2 });             // leave the top of the stairs open
-  upCols.push({ x1: ox1, x2: ox2, z1: oz1 + 1.2, z2: oz2 });                            // can't step into the hole
+  // railing along the front edge of the loft (you look down into the living room from here)
+  const rail = std(fancy ? 0xf4f1ea : 0x5a3c26, .5), Y = h, upCols = [], groundCols = [], stairCols = [];
+  S.add(box(w / 2 - edgeX1, .08, .1, rail, (edgeX1 + w / 2) / 2, Y + 1.02, oz1 - .05));
+  S.add(box(w / 2 - edgeX1, .05, .05, rail, (edgeX1 + w / 2) / 2, Y + .12, oz1 - .05));
+  for (let x = edgeX1 + .1; x < w / 2; x += .16) S.add(box(.04, .9, .04, rail, x, Y + .55, oz1 - .05));
+  [edgeX1 + .07, w / 2 - .1].forEach(x => S.add(box(.14, 1.15, .14, rail, x, Y + .58, oz1 - .05)));
+  upCols.push({ x1: edgeX1 - .05, x2: w / 2, z1: oz1 - .15, z2: d / 2 });                 // the edge: only the stairs lead down
   // ground floor: the stair's side and back are solid; you go up from the front
   groundCols.push({ x1: sx + sw / 2, x2: sx + sw / 2 + .12, z1: zBack, z2: zFront - .2 });
   groundCols.push({ x1: -w / 2, x2: sx + sw / 2 + .12, z1: zBack - .12, z2: zBack + .4 });
@@ -191,21 +200,19 @@ function buildUpstairs(S, { tier, w, d, h, fancy, cols, add }) {
   put(rug(3, 2.2, ['#3b5a7a', '#6b5a3a', '#4a3b6b', '#8a5a3a', '#2f3a5a'][tier - 2]), w / 2 - bedW / 2 - 1.4, -d / 2 + bedL + 1.2);
   // wardrobe on the right wall
   const ward = new THREE.Group(); ward.add(box(.6, 2.1, 1.6, wood, 0, 1.05, 0)); ward.add(box(.02, 1.9, .02, std(0x222222), .31, 1.05, 0));
-  put(ward, w / 2 - .32, Math.min(d / 2 - 1.2, -d / 2 + bedL + 2.2), 0, .65, 1.6);
-  put(plant(1), w / 2 - .5, d / 2 - .6, 0, .5, .5);
-  // a game corner for the bigger houses
-  if (tier >= 3) {
-    put(sofa(0x4a6b8a, 2), 0, d / 2 - 1.2 - (tier >= 5 ? 1 : 0), Math.PI, 2.2, 1);
-    const tvU = new THREE.Group(); tvU.add(box(1.8, 1.0, .06, std(0x111111, .3, .5), 0, 1.5, 0)); const sc = new THREE.Mesh(new THREE.PlaneGeometry(1.7, .92), new THREE.MeshBasicMaterial({ color: 0x3a6fd8 })); sc.position.set(0, 1.5, .035); tvU.add(sc);
-    put(tvU, 0, d / 2 - 4.2 - (tier >= 5 ? 1 : 0), Math.PI);
-  }
+  put(ward, w / 2 - .32, Math.min(oz1 - 1.0, -d / 2 + bedL + 2.2), 0, .65, 1.6);
+  put(plant(1), -w / 2 + .5, -d / 2 + .5, 0, .5, .5);
+  // a sofa at the railing for the bigger houses — sit and look down into the living room
+  if (tier >= 3) put(sofa(0x4a6b8a, 2), 0, oz1 - 1.1, 0, 2.2, 1);
+  // a big chandelier hanging in the open, two-storey space
+  const bigCh = chandelier(1.3); bigCh.position.set(w / 6, 2 * h - 1.5, (oz1 + d / 2) / 2); S.add(bigCh);
   if (tier >= 5) { const ch = chandelier(1.1); ch.position.set(w / 4, 2 * h - .9, -d / 4); S.add(ch); }
   const onStairs = p => p.x > -w / 2 && p.x < sx + sw / 2 + .05 && p.z < zFront + .05 && p.z > zBack - .05;
   const lower = cols, upperWalls = [
     { x1: -w / 2 - 1, x2: w / 2 + 1, z1: -d / 2 - 1, z2: -d / 2 }, { x1: -w / 2 - 1, x2: w / 2 + 1, z1: d / 2, z2: d / 2 + 1 },
     { x1: -w / 2 - 1, x2: -w / 2, z1: -d / 2, z2: d / 2 }, { x1: w / 2, x2: w / 2 + 1, z1: -d / 2, z2: d / 2 }];
   return {
-    onStairs,
+    onStairs, edge: oz1,
     collidersAt(p) {
       if (onStairs(p) && p.y > .05 && p.y < h - .05) return stairCols.concat(upperWalls);
       return p.y > h * .5 ? upperWalls.concat(upCols) : lower.concat(groundCols);

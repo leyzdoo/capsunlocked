@@ -96,7 +96,7 @@ export function painting(w, h, canvas) {
   const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, roughness: .7 })); p.position.z = .03; g.add(p); return g;
 }
 export function chandelier(s = 1) {
-  const g = new THREE.Group(), gold = std(0xd4af37, .25, 1);
+  const g = new THREE.Group(), gold = std(0xd4af37, .25, 1); g.name = 'chandelier';
   const chain = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .8, 6), gold); chain.position.y = .4; g.add(chain);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(.6 * s, .04, 8, 32), gold); ring.rotation.x = Math.PI / 2; g.add(ring);
   for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; const b = new THREE.Mesh(new THREE.SphereGeometry(.07, 10, 8), new THREE.MeshBasicMaterial({ color: 0xfff1c8 })); b.position.set(Math.cos(a) * .6 * s, .1, Math.sin(a) * .6 * s); g.add(b);
