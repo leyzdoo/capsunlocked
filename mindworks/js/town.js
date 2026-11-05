@@ -1,6 +1,7 @@
 // The Mindworks town: a street lined with real-looking buildings. Each game is a building with a door.
 import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mat, signTexture, stripes, rng, COLORS } from './tex.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -35,7 +36,7 @@ function shopBuilding(o) {
   const S = shared(), g = new THREE.Group();
   const w = o.w, d = o.d, floors = o.floors, fh = 3.6, h = floors * fh + .6;
   // main mass
-  const wall = texBox(w, h, d, o.wall.kind, o.wall.args, o.wall.tile || 2.4, o.wall.tile || 2.4, 0, h / 2, 0, { bump: 1.4 });
+  const wall = texBox(w, h, d, o.wall.kind, o.wall.args, o.wall.tile || 1.3, o.wall.tile || 1.3, 0, h / 2, 0, { bump: 1.4 });
   g.add(wall);
   // plinth + cornice + parapet
   g.add(box(w + .12, .55, d + .12, S.stone, 0, .275, 0));
@@ -138,7 +139,7 @@ export const HOUSE_TIERS = [
 const STORY = 3.2;
 function wallMat(kind, color, w, h) {
   if (kind === 'siding') return mat('siding', [color, 31], w / 3, h / 3, { bump: 1.6, roughness: .8 });
-  if (kind === 'brick') return mat('brick', [color, '#cfc3b3', 36], w / 2.4, h / 2.4, { bump: 1.4 });
+  if (kind === 'brick') return mat('brick', [color, '#cfc3b3', 36], w / 1.3, h / 1.3, { bump: 1.4 });
   if (kind === 'stucco') return mat('concrete', [color, 0, 37], w / 4, h / 4, { bump: .4, roughness: .95 });
   return mat('concrete', [color, 128, 38], w / 3, h / 3, { bump: .7, roughness: .85 }); // dressed stone blocks
 }
@@ -195,7 +196,7 @@ function column(g, x, y0, z, hgt, T) {
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.26, .32, hgt, 20), m); shaft.position.set(x, y0 + hgt / 2, z); shaft.castShadow = true; g.add(shaft);
   g.add(box(.8, .25, .8, m, x, y0 + .12, z)); g.add(box(.85, .3, .85, T.gold ? std(0xc9a64a, .35, .9) : m, x, y0 + hgt - .1, z));
 }
-function buildHouse(tier) {
+export function buildHouse(tier) {
   const T = HOUSE_TIERS[Math.max(0, Math.min(HOUSE_TIERS.length - 1, tier))], S = shared(), g = new THREE.Group();
   const { w, d, stories } = T, fz = d / 2, cols = [];
   const h = block(g, T, w, d, stories, 0, 0, T.roof[0], 'door');
@@ -318,16 +319,17 @@ function lotExtras(T, tier, lot, side, frontZ, r) {
 }
 
 /* ---------------- props ---------------- */
-const leafMats = [0x3f6e2a, 0x4a7d31, 0x355f24, 0x5a8a3a].map(c => std(c, .85));
-const leafGeo = new THREE.IcosahedronGeometry(1, 1);
-(function wobble() { const p = leafGeo.attributes.position, r = rng(77); for (let i = 0; i < p.count; i++) { const s = .85 + r() * .3; p.setXYZ(i, p.getX(i) * s, p.getY(i) * s, p.getZ(i) * s); } leafGeo.computeVertexNormals(); })();
+const leafMats = [0x2f5a1f, 0x3a6a26, 0x2a4f1c, 0x46772c].map(c => std(c, .9));
+const leafGeo = (function () { let g = new THREE.IcosahedronGeometry(1, 4); g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g); const p = g.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const n = Math.sin(v.x * 5.1) * Math.cos(v.y * 4.3) * Math.sin(v.z * 6.7) * .13 + Math.sin(v.x * 11 + v.z * 9) * .05; v.multiplyScalar(1 + n); p.setXYZ(i, v.x, v.y, v.z); }
+  g.computeVertexNormals(); return g; })();
 function tree(r, s = 1) {
   const g = new THREE.Group();
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.14 * s, .24 * s, 3.2 * s, 8), mat('wood', ['#5a4030', 3, 41], 1, 2));
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.14 * s, .24 * s, 3.2 * s, 8), mat('concrete', ['#4a3628', 0, 41], 1, 3, { bump: 3, roughness: 1 }));
   trunk.position.y = 1.6 * s; trunk.castShadow = true; g.add(trunk);
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 11; i++) {
     const l = new THREE.Mesh(leafGeo, leafMats[Math.floor(r() * 4)]);
-    const sc = (1.1 + r() * .9) * s; l.scale.set(sc, sc * .85, sc);
+    const sc = (.9 + r() * .8) * s; l.scale.set(sc, sc * .8, sc);
     l.position.set((r() - .5) * 2.2 * s, (3.4 + r() * 2.2) * s, (r() - .5) * 2.2 * s); l.rotation.set(r() * 3, r() * 3, 0);
     l.castShadow = true; l.receiveShadow = true; g.add(l);
   }
@@ -379,7 +381,7 @@ function car(color, r) {
 export const BUILDINGS = [
   { id: 'maze', name: 'Mazes', side: -1, x: -36, w: 15, d: 13, floors: 3, wall: { kind: 'brick', args: ['#8e3b2c', '#cfc3b3', 51] }, signBg: '#103d33', signFg: '#e8fff6', awning: ['#1f7a5a', '#f2efe6'], trim: 'white', door: 0x1d4d3d },
   { id: 'picture', name: 'Picture Puzzles', side: -1, x: -12, w: 15, d: 13, floors: 4, wall: { kind: 'brick', args: ['#b8875c', '#ded3c3', 52] }, signBg: '#3a1d12', signFg: '#ffd7bd', awning: ['#c55a2c', '#f6eadb'], door: 0x5a2a16 },
-  { id: 'pattern', name: 'Patterns', side: -1, x: 12, w: 15, d: 13, floors: 3, wall: { kind: 'concrete', args: ['#d8cfbf', 160, 53], tile: 4 }, signBg: '#2b2410', signFg: '#ffd463', trim: 'white', door: 0x3a3320 },
+  { id: 'pattern', name: 'Patterns', side: -1, x: 12, w: 15, d: 13, floors: 3, wall: { kind: 'concrete', args: ['#d8cfbf', 160, 53], tile: 3 }, signBg: '#2b2410', signFg: '#ffd463', trim: 'white', door: 0x3a3320 },
   { id: 'chess', name: 'Chess', side: -1, x: 36, w: 15, d: 13, floors: 4, wall: { kind: 'brick', args: ['#5b5f66', '#b9bcc0', 54] }, signBg: '#1a1530', signFg: '#d7cfff', awning: ['#3d3470', '#e9e6f5'], door: 0x241e45 },
   { id: 'home', name: 'Home', side: 1, x: -57, lotW: 34, house: true },
   { id: 'store', name: 'Game Store', side: 1, x: -24, w: 14, d: 13, floors: 2, wall: { kind: 'brick', args: ['#a24a3a', '#d8cbbb', 55] }, signBg: '#3d2d00', signFg: '#ffd34d', awning: ['#c7962a', '#fff6dc'], trim: 'white', door: 0x5c4300 },
@@ -418,7 +420,7 @@ export function createTown(renderer) {
   [-24, 0, 24].forEach(x => { for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.5, 9), white); m.rotation.x = -Math.PI / 2; m.position.set(x - 2.6 + i * .75, .025, 0); scene.add(m); } });
   // sidewalks + curbs
   [-1, 1].forEach(s => {
-    const sw = new THREE.Mesh(new THREE.BoxGeometry(L, .18, 5.3), mat('concrete', ['#c4c0b8', 85, 61], L / 1.8, 5.3 / 1.8, { bump: .8 }));
+    const sw = new THREE.Mesh(new THREE.BoxGeometry(L, .18, 5.3), mat('concrete', ['#c4c0b8', 256, 61], L / 3.2, 5.3 / 3.2, { bump: .8 }));
     sw.position.set(0, .09, s * 7.65); sw.receiveShadow = true; scene.add(sw);
     const curb = box(L, .2, .25, shared().stone, 0, .1, s * 5.1); curb.material = curb.material.clone(); scene.add(curb);
   });
@@ -440,6 +442,7 @@ export function createTown(renderer) {
     plaques[b.id] = g.userData.plaque;
   });
   const colliders = base;
+  const buildingBoxes = base.slice();
   // street trees, lights, benches, cars
   for (let x = -66; x <= 66; x += 12) [-1, 1].forEach(s => {
     if (BUILDINGS.some(b => Math.abs(b.x - x) < 3)) return;
@@ -459,7 +462,7 @@ export function createTown(renderer) {
   base.push({ x1: -75, x2: 75, z1: -40, z2: -39 }, { x1: -75, x2: 75, z1: 39, z2: 40 }, { x1: -76, x2: -75, z1: -40, z2: 40 }, { x1: 75, x2: 76, z1: -40, z2: 40 });
 
   const town = {
-    scene, doors, colliders: base.slice(), plaques, sun: dir, houseTier: -1,
+    scene, doors, colliders: base.slice(), camBlockers: base.slice(), plaques, sun: dir, houseTier: -1,
     spawn: { pos: V(home.x, 0, home.side * (SETBACK - 1.8)), yaw: Math.PI },
     setHouse(tier) {
       tier = Math.max(0, Math.min(HOUSE_TIERS.length - 1, tier | 0));
@@ -478,7 +481,7 @@ export function createTown(renderer) {
       scene.add(lot.group);
       const dl = g.userData.door.clone().applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position); dl.y = 0;
       doors.find(d => d.id === 'home').pos.copy(dl);
-      town.colliders = base.concat(cols, lot.cols);
+      town.colliders = base.concat(cols, lot.cols); town.camBlockers = buildingBoxes.concat(cols);
       town._house = g; town._lot = lot.group; town.houseTier = tier;
     },
     followShadow(p) { dir.position.copy(p).add(sun.clone().multiplyScalar(60)); dir.target.position.copy(p); }

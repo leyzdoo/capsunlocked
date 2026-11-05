@@ -16,9 +16,9 @@ export function makeCharacter(look = 'player', color = 0x3f7fd9) {
   const root = new THREE.Group();
   let model, mixer = null, actions = {};
   if (source) {
+    if (!source.userData.h) { source.scene.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(source.scene, true); source.userData.h = bb.max.y - bb.min.y; }
     model = SkeletonUtils.clone(source.scene);
-    const box = new THREE.Box3().setFromObject(model), h = box.max.y - box.min.y;
-    model.scale.setScalar(1.72 / h);
+    model.scale.multiplyScalar(1.72 / source.userData.h);
     model.traverse(o => {
       if (!o.isMesh) return;
       o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;

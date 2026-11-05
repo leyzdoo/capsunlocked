@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mindworks · Caps Unlocked</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "/mindworks/vendor/three.module.min.js", "three/addons/": "/mindworks/vendor/addons/" } }
+</script>
+<style>
+:root{
+  --bg:#17153a; --bg2:#221f52; --panel:#2a2763; --panel2:#332f75; --line:rgba(255,255,255,.14);
+  --ink:#fdfbff; --muted:#b7b2e6; --dim:#8a85c2;
+  --maze:#2fd3a7; --picture:#ff8a5b; --pattern:#ffc53d; --chess:#9d8cff; --pong:#4fb0ff; --jigsaw:#ff6fae;
+  --coin:#ffd34d; --good:#4be08a; --bad:#ff5d73; --shadow:0 10px 30px rgba(5,3,30,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#0d0c22;color:var(--ink);font-family:Nunito,system-ui,sans-serif;
+  overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+h1,h2,h3,.btn,.brand{font-family:Fredoka,Nunito,sans-serif}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,textarea{font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hide{display:none!important}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 22px;border-radius:16px;
+  font-size:19px;font-weight:600;background:var(--panel2);box-shadow:inset 0 -4px 0 rgba(0,0,0,.25);transition:transform .08s}
+.btn:active{transform:translateY(2px)}
+.btn.primary{background:linear-gradient(180deg,#7d6bff,#5a47e6)}
+.btn.go{background:linear-gradient(180deg,#45e39a,#22b872);color:#06301c}
+.btn.ghost{background:rgba(255,255,255,.06);box-shadow:none;border:2px solid var(--line)}
+.btn.small{min-height:44px;font-size:16px;padding:0 14px;border-radius:13px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.coin{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffd34d 45%,#d99a00);box-shadow:inset 0 -2px 0 rgba(0,0,0,.2);display:inline-block;flex:none}
+
+/* login */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:40;padding:16px;
+  background:radial-gradient(1200px 700px at 15% -10%,#3a2f8f 0%,transparent 60%),radial-gradient(900px 600px at 110% 110%,#1f4f8f 0%,transparent 55%),var(--bg);overflow:auto}
+#login .card{max-width:440px;width:100%;background:var(--panel);border-radius:28px;padding:28px 24px;box-shadow:var(--shadow)}
+.brand{font-size:44px;font-weight:700;text-align:center;margin:0}
+.brand span{background:linear-gradient(90deg,var(--maze),var(--pong),var(--chess),var(--jigsaw),var(--pattern));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{text-align:center;color:var(--muted);margin:6px 0 20px}
+.tabs{display:flex;background:var(--bg2);border-radius:16px;padding:5px;margin-bottom:16px}
+.tabs button{flex:1;min-height:44px;border-radius:12px;font-family:Fredoka;font-size:17px;font-weight:600;color:var(--muted)}
+.tabs button.on{background:var(--panel2);color:var(--ink)}
+.field{display:block;margin-bottom:14px}
+.field span{display:block;font-size:14px;font-weight:700;color:var(--muted);margin:0 0 6px 4px}
+.field input{width:100%;height:56px;border-radius:15px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);padding:0 16px;font-size:20px;outline:none;-webkit-user-select:text;user-select:text}
+.field input:focus{border-color:#7d6bff}
+.swatches{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.swatches button{width:46px;height:46px;border-radius:50%;border:3px solid transparent;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)}
+.swatches button.on{border-color:#fff}
+.err{color:var(--bad);min-height:22px;font-weight:700;text-align:center;margin:4px 0 8px}
+.note{font-size:13px;color:var(--dim);text-align:center;margin-top:14px}
+
+/* loading */
+#loading{position:fixed;inset:0;z-index:39;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--bg)}
+#loading .bar{width:240px;height:10px;border-radius:99px;background:var(--bg2);overflow:hidden}
+#loading .bar i{display:block;height:100%;width:10%;background:linear-gradient(90deg,var(--maze),var(--pong));transition:width .3s}
+
+/* HUD */
+#hud{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:max(12px,env(safe-area-inset-top));z-index:10;pointer-events:none}
+#hud > *{pointer-events:auto}
+.chip{display:inline-flex;align-items:center;gap:8px;background:rgba(18,16,46,.78);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:16px}
+.chip.coins{color:var(--coin);font-family:Fredoka;font-size:19px}
+#hudTitle{font-family:Fredoka;font-size:19px}
+.spacer{flex:1}
+.icon-btn{width:48px;height:48px;border-radius:14px;background:rgba(18,16,46,.78);backdrop-filter:blur(6px);border:1px solid var(--line);display:grid;place-items:center;font-size:21px}
+#prompt{position:fixed;left:50%;bottom:max(34px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;display:flex;flex-direction:column;align-items:center;gap:8px}
+#prompt .btn{min-width:240px;font-size:20px;min-height:58px}
+#prompt small{background:rgba(18,16,46,.78);padding:6px 12px;border-radius:10px;color:var(--muted);font-weight:700}
+#roomHelp{position:fixed;left:50%;top:max(74px,calc(env(safe-area-inset-top) + 62px));transform:translateX(-50%);z-index:11;text-align:center;max-width:90vw;pointer-events:none}
+#roomHelp .chip{font-size:15px;font-weight:700}
+#roomBtns{position:fixed;right:14px;bottom:max(18px,env(safe-area-inset-bottom));z-index:11;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+
+/* joystick */
+#joy{position:fixed;left:26px;bottom:max(30px,env(safe-area-inset-bottom));width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.45);z-index:11;touch-action:none}
+#knob{position:absolute;left:45px;top:45px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 4px 10px rgba(0,0,0,.3)}
+#runBtn{position:fixed;left:180px;bottom:max(40px,env(safe-area-inset-bottom));z-index:11;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.45);font-weight:800;font-size:13px}
+#runBtn.on{background:rgba(255,211,77,.45)}
+
+/* modal + toast */
+#overlay{position:fixed;inset:0;background:rgba(8,6,30,.62);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;backdrop-filter:blur(3px)}
+#overlay.on{display:flex}
+.modal{background:var(--panel);border-radius:28px;padding:26px 22px;max-width:440px;width:100%;text-align:center;box-shadow:var(--shadow);animation:pop .25s ease-out;max-height:90vh;overflow:auto}
+.modal h2{font-size:30px;margin:6px 0}
+.modal p{color:var(--muted);font-size:18px;margin:6px 0 18px}
+.modal .big{font-size:58px;line-height:1}
+.modal .acts{display:flex;flex-direction:column;gap:10px}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}
+#toast{position:fixed;left:50%;top:80px;transform:translateX(-50%) translateY(-160px);background:#0e0c26;border:1px solid var(--line);padding:12px 20px;border-radius:14px;font-weight:800;z-index:60;transition:transform .3s;max-width:90vw;text-align:center}
+#toast.on{transform:translateX(-50%) translateY(0)}
+
+/* side panel (store, progress, jigsaw picker) */
+#panel{position:fixed;inset:0;z-index:30;background:rgba(8,6,30,.55);display:none;align-items:center;justify-content:center;padding:16px}
+#panel.on{display:flex}
+#panel .sheet{background:var(--panel);border-radius:26px;box-shadow:var(--shadow);width:min(980px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+#panel .head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+#panel .head h2{margin:0;font-size:24px;flex:1}
+#panel .body{overflow:auto;padding:16px 18px 24px;-webkit-overflow-scrolling:touch}
+.sec h3{font-size:21px;margin:18px 0 10px;display:flex;align-items:center;gap:10px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.item{background:var(--bg2);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.item .t{font-family:Fredoka;font-size:19px;font-weight:600}
+.item .d{color:var(--muted);font-size:14px;flex:1}
+.item .own{color:var(--good);font-weight:800;font-size:14px}
+.item .btn{min-height:46px;font-size:17px}
+.houses{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.hz{background:var(--bg2);border-radius:16px;padding:10px;text-align:center;border:3px solid transparent;position:relative}
+.hz.cur{border-color:var(--good)}
+.hz.next{border-color:var(--coin)}
+.hz canvas{width:100%;display:block;border-radius:10px;background:#cfe3f4}
+.hz b{display:block;font-family:Fredoka;font-size:16px;margin-top:6px}
+.hz small{color:var(--muted);font-weight:700}
+.prog{display:grid;gap:10px}
+.prow{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:14px;padding:12px 14px}
+.prow b{font-family:Fredoka;font-size:18px;min-width:140px}
+.prow .bar{flex:1;height:12px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.prow .bar i{display:block;height:100%;border-radius:99px}
+.prow span{font-family:Fredoka;font-weight:600;min-width:64px;text-align:right}
+textarea.desc{width:100%;min-height:90px;border-radius:18px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);padding:14px 16px;font-size:20px;resize:none;outline:none;-webkit-user-select:text;user-select:text}
+.sugs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.sugs button{background:var(--panel2);border-radius:999px;padding:8px 14px;font-weight:800}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:14px}
+.opt{background:var(--bg2);border-radius:16px;padding:8px;border:3px solid transparent;text-align:center}
+.opt.on{border-color:var(--jigsaw)}
+.opt canvas{width:100%;border-radius:10px;display:block}
+.opt b{display:block;margin-top:6px;font-family:Fredoka}
+.sizes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.sizes .on{background:var(--jigsaw);color:#2a0618}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="loading"><div class="brand" style="font-size:38px"><span>Mindworks</span></div><div class="bar"><i id="loadBar"></i></div><div class="note" id="loadTxt">Building the town…</div></div>
+
+<section id="login" class="hide">
+  <div class="card">
+    <h1 class="brand"><span>Mindworks</span></h1>
+    <p class="tag">Walk around town and play the games inside each building. Reach level 25 in all five to open the Jigsaw.</p>
+    <div class="tabs"><button id="tabIn" class="on">Sign in</button><button id="tabNew">New player</button></div>
+    <label class="field"><span>Player name</span><input id="inName" autocomplete="off" autocapitalize="words" maxlength="20" placeholder="e.g. Camilo"></label>
+    <label class="field"><span>4-number PIN</span><input id="inPin" inputmode="numeric" type="password" maxlength="4" placeholder="••••"></label>
+    <div id="colorPick" class="hide"><div class="field"><span>Pick your color</span></div><div class="swatches" id="swatches"></div></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" id="loginGo" style="width:100%">Sign in</button>
+    <p class="note" id="saveNote"></p>
+  </div>
+</section>
+
+<div id="hud" class="hide">
+  <span class="chip" id="hudTitle">Mindworks</span>
+  <span class="spacer"></span>
+  <span class="chip coins"><i class="coin"></i><span id="hudCoins">0</span></span>
+  <button class="icon-btn" id="btnProgress" aria-label="My progress" title="My progress">🏆</button>
+  <button class="icon-btn" id="btnHome" aria-label="Go home" title="Go home">🏠</button>
+  <button class="icon-btn" id="btnOut" aria-label="Sign out" title="Sign out">⏻</button>
+</div>
+<div id="prompt" class="hide"><button class="btn go" id="promptBtn">Go in</button><small id="promptSub"></small></div>
+<div id="roomHelp" class="hide"><span class="chip" id="roomHelpTxt"></span></div>
+<div id="roomBtns" class="hide"></div>
+<div id="joy" class="hide"><div id="knob"></div></div>
+<button id="runBtn" class="hide">RUN</button>
+
+<div id="panel"><div class="sheet"><div class="head"><h2 id="panelTitle">Store</h2><span class="chip coins" id="panelCoins"><i class="coin"></i><span>0</span></span><button class="icon-btn" id="panelClose" aria-label="Close">✕</button></div><div class="body" id="panelBody"></div></div></div>
+<div id="overlay"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script type="module" src="/mindworks/js/main.js"></script>
+</body>
+</html>
