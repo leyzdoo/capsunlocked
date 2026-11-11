@@ -518,6 +518,22 @@ flex:1;
 .app-card p strong{color:var(--paper);font-weight:500;}
 .app-card .featured-link{align-self:flex-start;}
 
+/* ---------- BIRDHOUSE WIDGET ---------- */
+.bird-widget{display:grid;grid-template-columns:1.05fr 1fr;gap:3.2vw;align-items:start;}
+.bird-widget > a img{display:block;width:100%;height:auto;border-radius:6px;border:1px solid rgba(160,138,95,0.35);box-shadow:0 14px 36px rgba(0,0,0,0.4);transition:transform 0.15s ease;}
+.bird-widget > a:hover img{transform:translateY(-3px);}
+.bird-widget .bw-lead{font-size:clamp(0.95rem,1.25vw,1.05rem);line-height:1.7;color:var(--paper-dim);margin:0 0 1.4rem;}
+.bird-widget .bw-lead strong{color:var(--paper);font-weight:500;}
+.bw-label{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);margin:0 0 0.6rem;}
+.bw-birds{display:flex;flex-wrap:wrap;gap:0.45rem;margin:0 0 1.4rem;padding:0;list-style:none;}
+.bw-birds li{font-size:0.82rem;color:var(--paper);border:1px solid rgba(160,138,95,0.45);border-radius:999px;padding:0.28rem 0.75rem;}
+.bw-steps{list-style:none;margin:0 0 1.4rem;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem 1rem;}
+.bw-steps a{display:flex;gap:0.5rem;align-items:baseline;color:var(--paper-dim);text-decoration:none;font-size:0.88rem;padding:0.2rem 0;border-bottom:1px dotted rgba(160,138,95,0.35);}
+.bw-steps a:hover{color:var(--paper);border-bottom-color:var(--rust-bright);}
+.bw-steps span{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--rust-bright);}
+.bw-note{font-size:0.82rem;color:var(--faded);margin:0 0 1.2rem;line-height:1.6;}
+@media (max-width: 860px){.bird-widget{grid-template-columns:1fr;gap:7vw;}.bw-steps{grid-template-columns:repeat(2,1fr);}}
+
 .menu-label{
 display:block;
 padding:0.55rem 1rem 0.35rem;
@@ -622,6 +638,41 @@ border-top:1px solid rgba(160,138,95,0.35);
 <a href="/primeclimb" aria-label="Open Prime Climb"><img src="teasers/primeclimb.svg" alt="Prime Climb: a numbered path with primes highlighted, two pawns and a pair of dice" loading="lazy"></a>
 <p><strong>Prime Climb</strong> — a co-pilot for the board game. Learn the moves, take on the computer, and climb all the way to 101.</p>
 <a class="featured-link" href="/primeclimb">Open Prime Climb &rarr;</a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="more-apps" aria-labelledby="birdTitle">
+<div class="more-apps-inner">
+<hr class="rule">
+<h2 id="birdTitle">Out in the yard.</h2>
+<div class="bird-widget">
+<a href="/birdhouse" aria-label="Open Birdhouse Explorer"><img src="teasers/birdhouse.svg" alt="Birdhouse Explorer: a red-roofed birdhouse on a tree trunk with a chickadee on the branch" loading="lazy"></a>
+<div>
+<p class="bw-lead"><strong>Birdhouse Explorer</strong> — an interactive field journal for young builders. Meet five birds that live near Bethany, survey your own yard, score the options, then plan, build and install a nest box with an adult and keep track of who moves in.</p>
+<p class="bw-label">Your wild neighbors</p>
+<ul class="bw-birds">
+<li>Chestnut-backed chickadee</li>
+<li>Red-breasted nuthatch</li>
+<li>Violet-green swallow</li>
+<li>House wren</li>
+<li>Northern flicker</li>
+</ul>
+<p class="bw-label">Nine chapters</p>
+<ol class="bw-steps">
+<li><a href="/birdhouse#chapter-1"><span>01</span>Explore</a></li>
+<li><a href="/birdhouse#chapter-2"><span>02</span>Meet the birds</a></li>
+<li><a href="/birdhouse#chapter-3"><span>03</span>Investigate</a></li>
+<li><a href="/birdhouse#chapter-4"><span>04</span>Compare</a></li>
+<li><a href="/birdhouse#chapter-5"><span>05</span>Choose</a></li>
+<li><a href="/birdhouse#chapter-6"><span>06</span>Plan</a></li>
+<li><a href="/birdhouse#chapter-7"><span>07</span>Build</a></li>
+<li><a href="/birdhouse#chapter-8"><span>08</span>Observe</a></li>
+<li><a href="/birdhouse#chapter-9"><span>09</span>Winter box</a></li>
+</ol>
+<p class="bw-note">Each bird links to an official Audubon build plan. Notes and checklists save in your browser, and you can download a backup or print the journal as a PDF.</p>
+<a class="featured-link" href="/birdhouse">Open Birdhouse Explorer &rarr;</a>
 </div>
 </div>
 </div>

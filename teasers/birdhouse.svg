@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" width="780" height="440">
+<rect width="780" height="440" fill="#17140f"/>
+<rect x="18" y="18" width="744" height="404" rx="14" fill="none" stroke="#a08a5f" stroke-opacity=".45" stroke-width="2"/>
+<!-- distant firs -->
+<g fill="#2c3a2c">
+<path d="M70 360L112 210L154 360Z"/><path d="M130 360L178 180L226 360Z"/><path d="M640 360L676 240L712 360Z"/>
+</g>
+<g fill="#3d4f3a">
+<path d="M190 360L228 236L266 360Z"/><path d="M598 360L630 262L662 360Z"/>
+</g>
+<!-- ground -->
+<path d="M18 360Q200 340 390 356T762 348V422H18Z" fill="#221d15"/>
+<!-- trunk -->
+<path d="M430 422L438 60L486 60L496 422Z" fill="#725b43"/>
+<path d="M448 70Q456 200 446 320T452 420M472 66Q466 180 478 290T470 420" fill="none" stroke="#3c3328" stroke-width="6" opacity=".8"/>
+<!-- branch -->
+<path d="M486 150Q560 130 640 96" fill="none" stroke="#725b43" stroke-width="10" stroke-linecap="round"/>
+<g fill="#7f8f5a"><ellipse cx="610" cy="104" rx="16" ry="8" transform="rotate(-25 610 104)"/><ellipse cx="640" cy="92" rx="14" ry="7" transform="rotate(-30 640 92)"/></g>
+<!-- birdhouse -->
+<rect x="402" y="214" width="120" height="132" fill="#d9c8a3" stroke="#a08a5f" stroke-width="3"/>
+<path d="M388 222L462 152L536 222" fill="#a8402c" stroke="#7a2e20" stroke-width="4" stroke-linejoin="round"/>
+<circle cx="462" cy="262" r="17" fill="#17140f"/>
+<line x1="408" y1="320" x2="516" y2="320" stroke="#a08a5f" stroke-width="2" opacity=".6"/>
+<!-- chickadee on branch -->
+<g transform="translate(560 120)">
+<ellipse cx="0" cy="0" rx="26" ry="18" fill="#a65b32"/>
+<ellipse cx="-4" cy="6" rx="20" ry="12" fill="#ece4d3"/>
+<circle cx="-22" cy="-12" r="14" fill="#ece4d3"/>
+<path d="M-36 -14A14 14 0 0 1 -10 -22L-14 -10Z" fill="#0d0c0a"/>
+<path d="M-34 -4Q-28 4 -20 2L-24 -6Z" fill="#0d0c0a"/>
+<circle cx="-26" cy="-14" r="2.4" fill="#ece4d3"/>
+<path d="M-36 -12L-46 -9L-36 -7Z" fill="#0d0c0a"/>
+<path d="M22 -4L48 -14L44 4Z" fill="#5a5148"/>
+</g>
+<!-- field-journal labels -->
+<g font-family="IBM Plex Mono, Courier New, monospace" fill="#a08a5f" font-size="15" letter-spacing="3">
+<text x="56" y="70">FIELD JOURNAL / 01</text>
+<text x="56" y="96" fill="#8d8471" font-size="13">WEST HILLS · OREGON</text>
+</g>
+<g font-family="Special Elite, Courier New, monospace" fill="#ece4d3" font-size="34">
+<text x="56" y="150">Observe first.</text>
+<text x="56" y="192" fill="#c24f36">Then design.</text>
+</g>
+<!-- chapter dots -->
+<g fill="#a08a5f">
+<circle cx="62" cy="252" r="5"/><circle cx="84" cy="252" r="5"/><circle cx="106" cy="252" r="5"/><circle cx="128" cy="252" r="5" fill-opacity=".45"/><circle cx="150" cy="252" r="5" fill-opacity=".45"/><circle cx="172" cy="252" r="5" fill-opacity=".45"/><circle cx="194" cy="252" r="5" fill-opacity=".45"/><circle cx="216" cy="252" r="5" fill-opacity=".45"/><circle cx="238" cy="252" r="5" fill-opacity=".45"/>
+</g>
+<text x="56" y="282" font-family="IBM Plex Mono, Courier New, monospace" fill="#8d8471" font-size="12" letter-spacing="2">9 CHAPTERS · 5 BIRDS</text>
+</svg>
