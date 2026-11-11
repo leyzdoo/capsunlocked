@@ -34,12 +34,12 @@ const W3 = {
     campKind: 'village'
   },
   yosemite: {
-    seed: 37, hills: 4, detail: 2, treeType: 'pine', treeCount: 1900, forestCut: -.05, forestScale: .014,
+    seed: 37, hills: 4, detail: 2, treeType: 'pine', treeCount: 1300, forestCut: .05, forestScale: .014,
     bushes: 300, grass: 16000, rocks: 420, cliffs: true,
     river: { z: 6, w: 7, amp: 18, name: 'Merced River' },
     water: 0x2f5a66, start: { x: 20, z: -14 },
     colors: { meadow: 0x76823f, meadow2: 0x9a9358, forest: 0x4a4430, rock: 0xb3ada0, bank: 0x8f8466, special: 0xc9c3b6 },
-    fog: [40, 200], ring: 0x8a93a3, ringH: 30,
+    fog: [70, 340], ring: 0x8a93a3, ringH: 30,
     geysers: [],
     exit: { x: -186, z: 10, label: 'Wawona Road', town: 'Wawona', axis: 'x' },
     camps: [['Upper Pines Campground', 110, 30], ['Bridalveil Creek Camp', -90, -40], ['Housekeeping Camp', 40, 60]],
@@ -172,7 +172,7 @@ function buildTerrain(){
   for (let i = 0; i < n; i++){
     const x = pos.getX(i), z = pos.getZ(i), y = pos.getY(i), ny = nor.getY(i);
     a.setHex(C.meadow); b.setHex(C.meadow2); tmp.copy(a).lerp(b, smooth(-.3, .5, noise.fbm(x * .02 + 3, z * .02, 3)));
-    const fm = forestMask(x, z); if (fm > cfg.forestCut) tmp.lerp(a.setHex(C.forest), smooth(cfg.forestCut, cfg.forestCut + .15, fm));
+    const fm = forestMask(x, z); if (fm > cfg.forestCut && !(cfg.cliffs && Math.abs(z - riverZ(x)) < 30)) tmp.lerp(a.setHex(C.forest), smooth(cfg.forestCut, cfg.forestCut + .15, fm));
     if (y < .9) tmp.lerp(a.setHex(C.bank), smooth(.9, -.2, y));
     for (const [gx, gz] of cfg.geysers){ const d = Math.hypot(x - gx, z - gz); if (d < 26) tmp.lerp(a.setHex(C.special), smooth(26, 8, d)); }
     if (ny < .8) tmp.lerp(a.setHex(C.rock), smooth(.8, .6, ny));
@@ -248,6 +248,7 @@ function buildVegetation(){
     if (h < .6 || slopeAt(x, z) > 1.1) continue;
     const dense = fm > cfg.forestCut ? 1 : .06;
     if (rng() > dense) continue;
+    if (cfg.cliffs && Math.abs(z - riverZ(x)) < 34 && rng() < .85) continue;
     if (!clearOf(x, z, 2)) continue;
     list.push({ x, z, s: cfg.treeType === 'broad' ? 9 + rng() * 14 : 9 + rng() * 13 });
   }
@@ -297,7 +298,7 @@ function buildVegetation(){
   k = 0; bt = 0;
   while (k < cfg.rocks && bt++ < cfg.rocks * 10){
     const x = (rng() * 2 - 1) * (HALF - 4), z = (rng() * 2 - 1) * (HALF - 4), h = heightAt(x, z);
-    if (h < -.2 || !clearOf(x, z, 1)) continue;
+    if (h < -.2 || slopeAt(x, z) > .9 || !clearOf(x, z, 1)) continue;
     const s = .3 + Math.pow(rng(), 3) * 3;
     m4.compose(ps.set(x, h + s * .1, z), q.setFromEuler(new T.Euler(rng(), rng() * 6, rng() * .5)), sc.set(s * (1 + rng()), s, s * (1 + rng() * .6)));
     rocks.setMatrixAt(k, m4); const v = .45 + rng() * .25; col.setRGB(v, v * .97, v * .92); rocks.setColorAt(k, col); k++;
@@ -817,6 +818,7 @@ window.World3D = {
   campDistance(){ return Math.hypot(player.x - campPos.x, player.z - campPos.z); },
   goCamp(){ player.x = campPos.x - 1; player.z = campPos.z + 8; player.yaw = Math.atan2(-(campPos.x + 2 - player.x), -(campPos.z - 1 - player.z)); player.pitch = -.12; },
   drawBigMap(c){ drawMap(c.getContext('2d'), c.width, true); },
-  exitInfo(){ return cfg.exit; }
+  exitInfo(){ return cfg.exit; },
+  _tp(x, z, yaw, pitch){ player.x = x; player.z = z; player.yaw = yaw; player.pitch = pitch || 0; }
 };
 })();
