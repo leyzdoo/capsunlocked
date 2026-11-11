@@ -36,7 +36,7 @@ main{max-width:1220px;margin:0 auto;padding:38px 44px 70px}.eyebrow{text-transfo
 .bird-modal::backdrop{background:rgba(10,24,20,.72)}
 .bird-modal-close{position:sticky;top:12px;float:right;margin:12px 12px -60px 0;z-index:2;width:42px;height:42px;border:1px solid var(--deep);border-radius:50%;background:var(--white);color:var(--deep);font-size:24px;cursor:pointer}
 .bird-modal-content{display:grid;grid-template-columns:42% 58%}
-.bird-modal-image{width:100%;height:100%;min-height:450px;object-fit:cover}
+.bird-modal-image{display:block;width:100%;height:100%;min-height:450px;object-fit:contain;object-position:center center;background:#e9e7dc}
 .bird-modal-copy{padding:31px 32px 35px}
 .bird-modal-copy .bird-doodle{max-width:150px}
 .bird-modal-copy h2{font-size:clamp(25px,3vw,36px);line-height:1.05;margin:8px 0;text-transform:none}
@@ -44,7 +44,7 @@ main{max-width:1220px;margin:0 auto;padding:38px 44px 70px}.eyebrow{text-transfo
 .bird-modal-facts{margin:20px 0;display:grid;gap:10px}
 .bird-modal-facts div{border-top:1px solid var(--line);padding-top:8px;font-size:13px;line-height:1.45}
 .bird-modal-facts strong{display:block;text-transform:uppercase;letter-spacing:.1em;font-size:10px;margin-bottom:2px}
-@media(max-width:720px){.score-guides{grid-template-columns:1fr}.bird-modal-content{grid-template-columns:1fr}.bird-modal-image{height:215px;min-height:0}.bird-modal-copy{padding:23px}.bird-modal-copy .bird-doodle{max-width:120px}}
+@media(max-width:720px){.score-guides{grid-template-columns:1fr}.bird-modal-content{grid-template-columns:1fr}.bird-modal-image{height:min(55vh,340px);min-height:0}.bird-modal-copy{padding:23px}.bird-modal-copy .bird-doodle{max-width:120px}}
 @media print{.score-guide .score-guide-inner{display:block}.bird-modal{display:none!important}}
 </style></head>
 <body>
