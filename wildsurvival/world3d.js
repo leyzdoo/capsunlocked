@@ -26,7 +26,7 @@ const W3 = {
     bushes: 2600, grass: 3500, rocks: 60,
     river: { z: 22, w: 15, amp: 34, name: 'Tambopata River' },
     water: 0x6b5634, start: { x: -10, z: -4 },
-    colors: { meadow: 0x3f5d27, meadow2: 0x55692c, forest: 0x2f3f1c, rock: 0x6d6658, bank: 0x6a5233, special: 0x6a5233 },
+    colors: { meadow: 0x46522a, meadow2: 0x5f5631, forest: 0x3d3a22, rock: 0x6d6658, bank: 0x6a5233, special: 0x6a5233 },
     fog: [18, 120], ring: null,
     geysers: [],
     exit: { x: 186, z: 0, label: 'river port road', town: 'Puerto Maldonado', axis: 'x' },
@@ -278,6 +278,8 @@ function buildVegetation(){
   });
   trunks.castShadow = crown.castShadow = true; crown.receiveShadow = true;
   scene.add(trunks); scene.add(crown); treeInst = { trunks, crown };
+  if (cfg.treeType === 'broad') buildJungleExtras(list);
+
   // bushes / understory
   const bg = blobGeo(13, 1, .65), bushes = new T.InstancedMesh(bg, new T.MeshLambertMaterial({ color: 0xffffff }), cfg.bushes);
   let k = 0, bt = 0;
@@ -322,6 +324,40 @@ function buildVegetation(){
     grass.setMatrixAt(k, m4); col.setHSL(.13 + rng() * .1, .25, .45 + rng() * .35); grass.setColorAt(k, col); k++;
   }
   grass.count = k; scene.add(grass);
+}
+
+
+function buildJungleExtras(list){
+  const m4 = new T.Matrix4(), q = new T.Quaternion(), sc = new T.Vector3(), ps = new T.Vector3(), col = new T.Color(), e = new T.Euler();
+  // buttress roots at the base of big trees
+  const rootGeo = new T.ConeGeometry(1, 1, 5, 1, true); rootGeo.translate(0, .5, 0);
+  const roots = new T.InstancedMesh(rootGeo, new T.MeshLambertMaterial({ map: barkTex(), side: T.DoubleSide }), list.length);
+  list.forEach((t, i) => { const s = t.s * .07; m4.compose(ps.set(t.x, t.y - .1, t.z), q.setFromAxisAngle(new T.Vector3(0, 1, 0), i), sc.set(s * 1.4, s * 3, s * 1.4)); roots.setMatrixAt(i, t.alive ? m4 : new T.Matrix4().makeScale(0, 0, 0)); });
+  roots.castShadow = true; scene.add(roots); treeInst.roots = roots;
+  // hanging lianas
+  const vineGeo = new T.CylinderGeometry(.035, .035, 1, 4); vineGeo.translate(0, -.5, 0);
+  const vines = new T.InstancedMesh(vineGeo, new T.MeshLambertMaterial({ color: 0x3a4a22 }), 900); let k = 0;
+  for (const t of list){ if (k >= 900) break; if (rng() < .45) continue; const n = 1 + (rng() * 3 | 0);
+    for (let j = 0; j < n && k < 900; j++){ const a = rng() * 6.28, r = t.s * (.12 + rng() * .15), top = t.y + t.s * .8, len = t.s * (.4 + rng() * .45);
+      m4.compose(ps.set(t.x + Math.cos(a) * r, top, t.z + Math.sin(a) * r), q.setFromEuler(e.set((rng() - .5) * .15, 0, (rng() - .5) * .15)), sc.set(1, len, 1)); vines.setMatrixAt(k++, m4); } }
+  vines.count = k; scene.add(vines);
+  // palms: curved trunk + drooping fronds
+  const frondGeo = new T.SphereGeometry(1, 8, 4); frondGeo.scale(.18, .03, 1); frondGeo.translate(0, 0, 1);
+  const P = 260, palmTrunk = new T.InstancedMesh(new T.CylinderGeometry(.12, .18, 1, 7).translate(0, .5, 0), new T.MeshLambertMaterial({ map: barkTex(), color: 0xb0a080 }), P);
+  const fronds = new T.InstancedMesh(frondGeo, new T.MeshLambertMaterial({ color: 0xffffff, side: T.DoubleSide }), P * 8);
+  let p = 0, f = 0, tries = 0;
+  while (p < P && tries++ < P * 20){
+    const x = (rng() * 2 - 1) * (HALF - 4), z = (rng() * 2 - 1) * (HALF - 4), y = heightAt(x, z);
+    if (y < .5 || slopeAt(x, z) > .8 || !clearOf(x, z, 2)) continue;
+    const h = 5 + rng() * 7, lean = (rng() - .5) * .35, ang = rng() * 6.28;
+    m4.compose(ps.set(x, y - .1, z), q.setFromEuler(e.set(lean, ang, lean * .5)), sc.set(1, h, 1)); palmTrunk.setMatrixAt(p, m4);
+    const top = new T.Vector3(0, h, 0).applyEuler(e.set(lean, ang, lean * .5)).add(new T.Vector3(x, y - .1, z));
+    for (let j = 0; j < 8; j++){ const fa = j / 8 * 6.28 + rng() * .3, len = 1.8 + rng() * .8;
+      q.setFromEuler(new T.Euler(.45 + rng() * .35, fa, 0, 'YXZ')); m4.compose(top, q, sc.set(len * .9, len, len)); fronds.setMatrixAt(f, m4);
+      col.setHSL(.25 + rng() * .06, .5, .22 + rng() * .1); fronds.setColorAt(f, col); f++; }
+    trees.push({ x, z, s: h, i: -1, alive: true, y, r: .3 }); addTreeGrid(trees[trees.length - 1]); p++;
+  }
+  palmTrunk.count = p; fronds.count = f; palmTrunk.castShadow = fronds.castShadow = true; scene.add(palmTrunk); scene.add(fronds);
 }
 
 /* ---------- small model helpers ---------- */
@@ -726,7 +762,7 @@ function loop(t){
 /* ---------- what is near the player ---------- */
 function query(){
   const near = { camp: Math.hypot(player.x - campPos.x, player.z - campPos.z) < 9 };
-  let best = null, bd = 3.4; for (const t of nearTrees(player.x, player.z, 4)){ const d = Math.hypot(t.x - player.x, t.z - player.z); if (d < bd){ bd = d; best = t; } } near.tree = best;
+  let best = null, bd = 3.4; for (const t of nearTrees(player.x, player.z, 4)){ if (t.i < 0) continue; const d = Math.hypot(t.x - player.x, t.z - player.z); if (d < bd){ bd = d; best = t; } } near.tree = best;
   near.trees = nearTrees(player.x, player.z, 14).length;
   let wd = false; for (let a = 0; a < 6.28 && !wd; a += .8) if (heightAt(player.x + Math.cos(a) * 4.5, player.z + Math.sin(a) * 4.5) < -.4) wd = true; near.water = wd;
   let ba = null, bad = 32; const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
@@ -775,7 +811,7 @@ window.World3D = {
   stop(){ running = false; cancelAnimationFrame(raf); keys = {}; if (scene){ scene.traverse(o => { if (o.geometry) o.geometry.dispose(); }); } },
   resize(){ if (!renderer) return; const c = document.getElementById('gl'), r = c.parentElement.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); },
   query, setShelter(l){ buildShelter(l); },
-  chop(t){ t.alive = false; (S.cut = S.cut || []).push(t.i); const m = new T.Matrix4().makeScale(0, 0, 0); treeInst.trunks.setMatrixAt(t.i, m); treeInst.crown.setMatrixAt(t.i, m); treeInst.trunks.instanceMatrix.needsUpdate = treeInst.crown.instanceMatrix.needsUpdate = true; buildMapBase(); },
+  chop(t){ t.alive = false; (S.cut = S.cut || []).push(t.i); const m = new T.Matrix4().makeScale(0, 0, 0); treeInst.trunks.setMatrixAt(t.i, m); treeInst.crown.setMatrixAt(t.i, m); treeInst.trunks.instanceMatrix.needsUpdate = treeInst.crown.instanceMatrix.needsUpdate = true; if (treeInst.roots){ treeInst.roots.setMatrixAt(t.i, m); treeInst.roots.instanceMatrix.needsUpdate = true; } buildMapBase(); },
   killAnimal(a){ a.alive = false; scene.remove(a.g); const id = a.id; setTimeout(() => { if (running) spawnAnimal(id, false); }, 45000); },
   scare(a){ a.tx = a.x + (a.x - player.x) * 3; a.tz = a.z + (a.z - player.z) * 3; },
   campDistance(){ return Math.hypot(player.x - campPos.x, player.z - campPos.z); },

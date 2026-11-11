@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wild Survival · Caps Unlocked</title>
+<base href="/wildsurvival/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -1008,10 +1009,12 @@ function startWorld(id, fresh=false){
   applyStore(); save();
   $('#g-title').textContent = W.title; Q = {};
   render();
-  if (!window.THREE){ $('#loading').textContent = 'Could not load the 3D engine. Check your connection and reload.'; return; }
+  if (!window.THREE || !window.World3D){ $('#loading').textContent = 'Could not load the 3D engine. Check your connection and reload.'; return; }
   $('#loading').hidden = false;
   setTimeout(() => {
-    World3D.start(id, S, HOOKS); $('#loading').hidden = true; render();
+    try { World3D.start(id, S, HOOKS); }
+    catch (err){ $('#loading').innerHTML = '<div style="text-align:center;padding:20px;font-family:Inter,sans-serif;font-size:15px;letter-spacing:0;color:#ece7da">Something went wrong building the world.<br><small style="color:#9ea89a">' + String(err && err.message || err).replace(/</g,'&lt;') + '</small></div>'; return; }
+    $('#loading').hidden = true; render();
     if (S.log.length <= 1) modal(`<h3>${W.title}</h3><p>${W.intro}</p>
       <p style="color:var(--muted);font-size:14px">You start at your campsite with a tent and a fire. Walk around with ${matchMedia('(pointer:coarse)').matches ? 'the joystick (drag the screen to look)' : 'W A S D (drag the screen to look)'}. Chop trees, hunt, find ${W.style === 'stilt' ? 'river villages' : 'campgrounds'} to trade, and look for the road back to civilization. Keep the fire burning at night!</p>
       <div class="row"><button class="btn gold" data-close>Start surviving</button></div>`);
