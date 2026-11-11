@@ -76,6 +76,30 @@
   .acts .btn small{display:block;font-weight:500;color:var(--muted);font-size:11px;margin-top:2px}
   .acts .btn:disabled small{color:#8a8a8a}
 
+  /* ---------- 3D scene ---------- */
+  .game{height:calc(100vh - 62px)}
+  .stage{min-height:0}
+  .scene3d{position:relative;flex:1;min-height:360px;background:#0b0f0c;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+  .scene3d #gl{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+  .scene3d .where{position:absolute;left:14px;top:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);border-radius:8px;padding:7px 12px;pointer-events:none}
+  .scene3d .where b{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:1.5px;font-weight:400;display:block;line-height:1}
+  .scene3d .where small{color:#c9cfc4;font-size:12px}
+  #minimap{position:absolute;right:12px;top:12px;width:170px;height:170px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer}
+  .cross{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;pointer-events:none;opacity:.7}
+  .cross::before,.cross::after{content:"";position:absolute;background:#fff;box-shadow:0 0 2px #000}
+  .cross::before{left:6px;top:0;width:2px;height:14px}.cross::after{top:6px;left:0;height:2px;width:14px}
+  .hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(0,0,0,.6);border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;pointer-events:none}
+  .hint:empty{display:none}
+  #joy{position:absolute;left:22px;bottom:22px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.45);touch-action:none;display:none}
+  #knob{position:absolute;left:38px;top:38px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.75);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  #useBtn{position:absolute;right:20px;bottom:24px;padding:14px 18px;font-size:15px;border-radius:999px;max-width:46%}
+  .help{position:absolute;left:12px;bottom:10px;font-size:11px;color:rgba(255,255,255,.75);text-shadow:0 1px 2px #000;pointer-events:none}
+  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0b0f0c;font-family:"Bebas Neue",sans-serif;font-size:30px;letter-spacing:2px;color:var(--gold)}
+  .loading[hidden]{display:none}
+  .stage .log{flex:0 0 auto;max-height:150px;min-height:90px}
+  @media (pointer:coarse){ #joy{display:block} .help{display:none} .hint{bottom:150px} }
+  @media (max-width:900px){ .game{height:auto} .scene3d{height:62vh;flex:none} #minimap{width:120px;height:120px} }
+
   /* ---------- store ---------- */
   .shop{max-width:1100px;margin:0 auto;padding:18px 24px 40px}
   .tabs{display:flex;gap:8px;margin-bottom:16px}
@@ -160,10 +184,16 @@
   </div>
   <div class="game">
     <div class="stage">
-      <div class="scene" id="scene">
-        <canvas id="fx"></canvas>
-        <div class="where"><b id="g-where">Upper Geyser Basin</b><small id="g-sky">Morning · clear</small></div>
-        <div class="credit" id="g-credit"></div>
+      <div class="scene3d" id="scene3d">
+        <canvas id="gl"></canvas>
+        <div class="where"><b id="g-where">Your camp</b><small id="g-sky">Morning</small></div>
+        <canvas id="minimap" width="180" height="180" title="Open the big map"></canvas>
+        <div class="cross"></div>
+        <div class="hint" id="hint"></div>
+        <div id="joy"><div id="knob"></div></div>
+        <button id="useBtn" class="btn gold" hidden>Use</button>
+        <div class="help" id="help">Walk: W A S D or arrows · Look: drag the screen · Run: Shift · Use: E</div>
+        <div class="loading" id="loading">Building the world…</div>
       </div>
       <div class="log" id="log"></div>
     </div>
@@ -173,7 +203,7 @@
       <div class="sec"><h3>Camp</h3><div class="acts" id="a-camp"></div></div>
       <div class="sec"><h3>Gather &amp; hunt</h3><div class="acts" id="a-gather"></div></div>
       <div class="sec"><h3>Food</h3><div class="acts" id="a-food"></div></div>
-      <div class="sec"><h3>Build</h3><div class="acts" id="a-build"></div></div>
+      <div class="sec"><h3>Upgrade campsite</h3><div class="acts" id="a-build"></div></div>
       <div class="sec"><h3>Explore</h3><div class="acts" id="a-explore"></div></div>
     </aside>
   </div>
@@ -202,6 +232,8 @@
 <div class="veil" id="veil" role="dialog" aria-modal="true"><div class="box" id="box"></div></div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="world3d.js"></script>
 <script>
 /* ============================================================
    Storage + money
@@ -291,7 +323,9 @@ const CATALOG = [
   { id:'firstaid',name:'First-aid kit',                price:15,  kw:'first aid medicine bandage health', desc:'Use it to heal +40 health and cure sickness.' },
   { id:'beans',   name:'Can of beans',                 price:3,   kw:'food beans can eat',          desc:'Ready to eat. +25 food.' },
   { id:'spray',   name:'Bear spray',                   price:50,  kw:'bear spray safety',           desc:'Cuts the damage when an animal charges you in half.' },
-  { id:'kit',     name:'Cabin kit (pre-cut logs, nails, roof)', names:{ amazon:'Stilt hut kit (posts, planks, palm roof)' }, price:150, kw:'cabin kit house hut build logs nails roof', desc:'Build your big shelter in 6 hours instead of cutting 30 logs.' },
+  { id:'walltent', name:'Campsite upgrade: canvas wall tent', names:{ amazon:'Campsite upgrade: palm-roof shelter' }, price:80, kw:'upgrade campsite campground tent wall shelter palm', desc:'Bigger and warmer than your tent, and keeps rain off your fire.' },
+  { id:'kit',     name:'Campsite upgrade: log cabin kit', names:{ amazon:'Campsite upgrade: stilt hut kit' }, price:150, kw:'upgrade campsite campground cabin kit house hut build logs nails roof', desc:'Build a cabin in 5 hours instead of chopping 30 logs.' },
+  { id:'lodge',   name:'Campsite upgrade: log lodge kit', names:{ amazon:'Campsite upgrade: river lodge kit' }, price:400, kw:'upgrade campsite campground lodge house big porch', desc:'Turn your cabin into a big lodge with a front porch. The best camp in the park.' },
   { id:'net',     name:'Mosquito net', only:['amazon'], price:8, kw:'mosquito net bugs sleep fever', desc:'Sleep without bug bites. No more jungle fever.' },
   { id:'tarp',    name:'Rain tarp', only:['amazon'], price:14, kw:'tarp rain cover dry', desc:'Keeps rain off your fire even without a shelter.' }
 ];
@@ -430,22 +464,28 @@ const WORLDS = {
 /* ============================================================
    Game state
    ============================================================ */
-let S = null, W = null, worldId = null;
+let S = null, W = null, worldId = null, Q = {};
 const clamp = (v, a=0, b=100) => Math.max(a, Math.min(b, v));
 const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const pad = n => String(n).padStart(2, '0');
+const SHELTERS = {
+  log:   ['', 'tent', 'canvas wall tent', 'log cabin', 'log lodge'],
+  stilt: ['', 'tent', 'palm shelter', 'stilt hut', 'river lodge']
+};
+const shelterName = l => SHELTERS[W.style][l];
+const WARM = [0, 3, 5, 8, 10];
 
 function newGame(id){
-  const w = WORLDS[id];
   return {
-    world:id, region:w.start, day:1, hour:8, health:100, food:75, warmth:70, energy:90,
-    wood:4, logs:0, raw:0, cooked:0, berries:0, beans:0, matches:0, firstaid:0, kit:0,
-    hides:{}, tools:{ hatchet:true, spear:true, flint:true }, camps:{}, kills:0, earnedPins:0, sick:0, rain:0,
-    log:[], over:false
+    world:id, day:1, hour:8, health:100, food:75, warmth:70, energy:90,
+    wood:6, logs:0, raw:0, cooked:0, berries:0, beans:0, matches:0, firstaid:0, kit:0, walltent:0, lodge:0,
+    hides:{}, tools:{ hatchet:true, spear:true, flint:true }, camp:{ fuel:55, lit:true, shelter:1 }, kills:0, earnedPins:0, sick:0, rain:0,
+    pos:null, cut:[], explored:'', found:[], seenExit:false, escaped:false, walked:0, log:[], over:false
   };
 }
-function camp(){ return S.camps[S.region] || (S.camps[S.region] = { fuel:0, lit:false, shelter:0 }); }
-function save(){ store.set('ws_save_' + worldId, S); }
+function camp(){ return S.camp; }
+function atCamp(){ return !!Q.camp; }
+function save(){ if (S) store.set('ws3_save_' + worldId, S); }
 function timeStr(h){ const hh = Math.floor(h), mm = Math.floor((h - hh) * 60); return pad(hh) + ':' + pad(mm); }
 function isNight(h){ return h < 6.5 || h >= 20; }
 function partOfDay(h){ return h < 5 ? 'Night' : h < 8 ? 'Dawn' : h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : h < 20 ? 'Evening' : 'Night'; }
@@ -453,6 +493,7 @@ function partOfDay(h){ return h < 5 ? 'Night' : h < 8 ? 'Dawn' : h < 12 ? 'Morni
 function say(msg, cls=''){
   S.log.unshift({ t:`D${S.day} ${timeStr(S.hour)}`, msg, cls });
   if (S.log.length > 120) S.log.length = 120;
+  renderLog();
 }
 function award(tokens, why){
   const p = T(tokens); addPins(p); S.earnedPins += p;
@@ -462,31 +503,26 @@ function award(tokens, why){
 /* ---------- time passing ---------- */
 function pass(hours, sleeping=false){
   let left = hours;
-  while (left > 0.0001 && !S.over){ const dt = Math.min(0.5, left); tick(dt, sleeping); left -= dt; }
+  while (left > 0.00001 && !S.over){ const dt = Math.min(0.5, left); tick(dt, sleeping); left -= dt; }
 }
 function tick(dt, sleeping){
-  // every fire in every camp burns
-  for (const [rid, c] of Object.entries(S.camps)){
-    if (!c.lit) continue;
-    c.fuel -= (c.shelter === 2 ? 5 : 7) * dt;
-    if (c.fuel <= 0){ c.fuel = 0; c.lit = false; if (rid === S.region) say('Your fire burned out.', 'bad'); }
-  }
-  const c = camp(), night = isNight(S.hour);
+  const c = camp(), night = isNight(S.hour), near = atCamp();
+  if (c.lit){ c.fuel -= (c.shelter >= 3 ? 5 : 7) * dt; if (c.fuel <= 0){ c.fuel = 0; c.lit = false; say('Your campfire burned out.', 'bad'); } }
   // weather
   if (S.rain > 0){ S.rain -= dt; if (S.rain <= 0){ S.rain = 0; say('The rain stops. Everything drips.'); } }
   else if (Math.random() < W.rain * dt){ S.rain = 1 + Math.random() * 2.5; say(W.style === 'stilt' ? '🌧 A tropical downpour hammers the jungle.' : '🌧 Cold rain starts falling.', 'bad'); }
-  if (S.rain > 0 && c.lit && c.shelter === 0 && !S.tools.tarp){
-    c.fuel -= 14 * dt; if (c.fuel <= 0){ c.fuel = 0; c.lit = false; say('The rain drowns your fire! Build a shelter to keep it dry.', 'bad'); }
+  if (S.rain > 0 && c.lit && c.shelter < 2 && !S.tools.tarp){
+    c.fuel -= 14 * dt; if (c.fuel <= 0){ c.fuel = 0; c.lit = false; say('The rain drowns your campfire! A wall tent or rain tarp keeps it dry.', 'bad'); }
   }
-  // night predator
-  if (night && !c.lit && c.shelter < 2 && Math.random() < .035 * dt){
+  // night predator if you're out in the dark with no fire
+  if (night && !(near && c.lit) && !(near && c.shelter >= 3) && Math.random() < .03 * dt){
     const dmg = S.tools.spray ? 12 : 25; S.health = clamp(S.health - dmg);
-    say(`🐾 ${W.predator.msg} −${dmg} health. Keep a fire burning at night!`, 'bad');
+    say(`🐾 ${W.predator.msg} −${dmg} health. Stay by your fire at night!`, 'bad');
   }
   let dw = night ? -W.nightCold : 1.5;
-  if (S.rain > 0 && c.shelter === 0) dw -= 3;
-  if (c.lit) dw += 8;
-  dw += [0, 3.5, 8][c.shelter];
+  if (S.rain > 0 && !(near && c.shelter >= 2)) dw -= 3;
+  if (near && c.lit) dw += 8;
+  if (near || sleeping) dw += WARM[c.shelter] * (near ? 1 : 0);
   if (sleeping && S.tools.blanket) dw += 3;
   S.warmth = clamp(S.warmth + dw * dt);
   S.food   = clamp(S.food - (sleeping ? 1.2 : 2.5) * dt);
@@ -494,10 +530,9 @@ function tick(dt, sleeping){
   let dh = 0;
   if (S.food <= 0) dh -= 5;
   if (S.warmth <= 12) dh -= 5;
-  if (S.sick > 0){ dh -= 3; S.sick = Math.max(0, S.sick - dt); if (S.sick === 0) say('Your stomach finally settles.', 'good'); }
+  if (S.sick > 0){ dh -= 3; S.sick = Math.max(0, S.sick - dt); if (S.sick === 0) say('You feel better.', 'good'); }
   if (S.food > 40 && S.warmth > 35 && S.sick <= 0) dh += 1.5;
   S.health = clamp(S.health + dh * dt);
-  const before = S.hour;
   S.hour += dt;
   if (S.hour >= 24){ S.hour -= 24; S.day++; newDay(); }
   if (S.health <= 0) gameOver();
@@ -521,110 +556,125 @@ function gameOver(){
 }
 
 /* ============================================================
-   Actions
+   Actions (buttons light up based on what you're standing near)
    ============================================================ */
 function need(energy){ return S.energy >= energy ? null : 'Too tired — sleep first'; }
-function act(fn){ return () => { if (S.over) return; fn(); save(); render(); }; }
+const campOnly = () => atCamp() ? null : 'Walk back to your camp';
 
 const ACTIONS = {
   camp: [
-    { id:'light', label:'Light fire', sub:() => S.matches ? 'Match (sure thing)' : 'Flint · 1 hr · may fail',
-      ok:() => camp().lit ? 'Already burning' : S.wood < 2 ? 'Need 2 wood' : null,
+    { id:'light', label:'Light fire', sub:() => S.matches ? 'Match (sure thing)' : 'Flint · may fail',
+      ok:() => campOnly() || (camp().lit ? 'Already burning' : S.wood < 2 ? 'Need 2 wood' : null),
       run(){ const c = camp();
         if (S.matches > 0){ S.matches--; pass(.25); }
-        else { pass(1); if (Math.random() > .65){ say('Sparks fly but the tinder won’t catch. Try again.', 'bad'); S.wood--; return; } }
+        else { pass(.5); if (Math.random() > .65){ say('Sparks fly but the tinder won’t catch. Try again.', 'bad'); S.wood--; return; } }
         S.wood -= 2; c.lit = true; c.fuel = 35; say('🔥 The fire catches and starts to crackle.', 'good'); } },
     { id:'feed', label:'Add wood to fire', sub:() => `Fire ${Math.round(camp().fuel)}%`,
-      ok:() => !camp().lit ? 'Light the fire first' : S.wood < 1 ? 'No wood' : camp().fuel >= 98 ? 'Fire is full' : null,
-      run(){ const c = camp(); S.wood--; c.fuel = clamp(c.fuel + 20); pass(.1); say('You add a piece of wood. The flames jump up.'); } },
-    { id:'sleep', label:() => isNight(S.hour) ? 'Sleep till morning' : 'Rest 2 hours', sub:() => camp().lit ? 'Fire keeps you warm' : 'Cold without a fire',
-      ok:() => null,
+      ok:() => campOnly() || (!camp().lit ? 'Light the fire first' : S.wood < 1 ? 'No wood' : camp().fuel >= 98 ? 'Fire is full' : null),
+      run(){ const c = camp(); S.wood--; c.fuel = clamp(c.fuel + 20); pass(.05); say('You add a log. The flames jump up.'); } },
+    { id:'sleep', label:() => isNight(S.hour) ? `Sleep in ${shelterName(camp().shelter) || 'the open'}` : 'Rest 2 hours',
+      sub:() => atCamp() ? (camp().lit ? 'Fire keeps you warm' : 'Cold without a fire') : 'Sleep at camp to stay warm',
+      ok:() => isNight(S.hour) ? campOnly() : null,
       run(){ const hrs = isNight(S.hour) ? ((S.hour >= 20 ? 24 - S.hour + 7 : 7 - S.hour)) : 2;
         if (W.bugs && !S.tools.net && hrs > 3 && Math.random() < .3){ S.sick = 6; say('🦟 Mosquitoes feast on you all night. You wake with a fever. (A mosquito net would help.)', 'bad'); }
-        say(isNight(S.hour) ? 'You curl up by the fire and sleep.' : 'You rest for a while.');
-        pass(hrs, true); if (!S.over) say(isNight(S.hour) ? 'You wake in the dark.' : 'You wake up. Energy restored.'); } },
+        say(isNight(S.hour) ? `You crawl into your ${shelterName(camp().shelter)} and sleep.` : 'You rest for a while.');
+        pass(hrs, true); if (!S.over) say('You wake up. Energy restored.'); } },
     { id:'heal', label:'Use first-aid kit', sub:() => `${S.firstaid} left`,
       ok:() => S.firstaid < 1 ? 'Buy one in the store' : null,
       run(){ S.firstaid--; S.health = clamp(S.health + 40); S.sick = 0; say('You clean and bandage yourself. +40 health.', 'good'); } }
   ],
   gather: [
-    { id:'sticks', label:'Gather sticks', sub:'1 hr · +3–5 wood', ok:() => need(6),
-      run(){ const n = rnd(3, 5) - (W.regions[S.region].trees === 'few' ? 1 : 0); S.wood += n; S.energy = clamp(S.energy - 6); pass(1); say(`You collect ${n} pieces of dry wood.`); } },
-    { id:'chop', label:'Chop down a tree', sub:() => (S.tools.axe ? (W.style === 'stilt' ? 'Machete' : 'Axe') : (W.style === 'stilt' ? 'Knife' : 'Hatchet')) + ' · 2 hr · logs', ok:() => need(18),
+    { id:'sticks', label:'Gather sticks', sub:'30 min · +3–5 wood', ok:() => (Q.trees ? null : 'No trees nearby') || need(5),
+      run(){ const n = rnd(3, 5); S.wood += n; S.energy = clamp(S.energy - 5); pass(.5); say(`You collect ${n} pieces of dry wood.`); } },
+    { id:'chop', label:'Chop down tree', sub:() => (S.tools.axe ? (W.style === 'stilt' ? 'Machete' : 'Axe') : (W.style === 'stilt' ? 'Knife' : 'Hatchet')) + ' · logs',
+      ok:() => (Q.tree ? null : 'Walk up to a tree') || need(15),
       run(){ const logs = 2 + (S.tools.axe ? 1 : 0);
-        if (W.style === 'stilt' && !S.tools.axe && Math.random() < .3){ S.energy = clamp(S.energy - 18); pass(2.5); say('The hardwood is like iron. Your small blade barely dents it. A machete would help.', 'bad'); return; } S.logs += logs; S.wood += 3; S.energy = clamp(S.energy - 18); pass(S.tools.axe ? 1.5 : 2.5);
-        say(`🪓 Timber! You get ${logs} logs and 3 wood.`); } },
-    { id:'hunt', label:'Go hunting', sub:() => (S.tools.bow ? 'Bow' : 'Spear') + ' · 3 hr', ok:() => need(20), run: hunt },
-    { id:'fish', label:() => W.fishLabel || (W.title.startsWith('Amazon') ? 'Fish for piranha' : 'Fish the river'), sub:() => (S.tools.line ? 'Line & hooks' : 'Spear') + ' · 2 hr', ok:() => !W.regions[S.region].fish ? 'No water here' : need(10),
-      run(){ S.energy = clamp(S.energy - 10); pass(2);
+        if (W.style === 'stilt' && !S.tools.axe && Math.random() < .3){ S.energy = clamp(S.energy - 15); pass(1.5); say('The hardwood is like iron. Your small blade barely dents it. A machete would help.', 'bad'); return; }
+        World3D.chop(Q.tree); Q.tree = null;
+        S.logs += logs; S.wood += 3; S.energy = clamp(S.energy - 15); pass(S.tools.axe ? 1 : 1.5);
+        say(`🪓 Timber! The tree crashes down. +${logs} logs, +3 wood.`); } },
+    { id:'hunt', label:() => Q.animal ? `Hunt ${ANIMALS[Q.animal.id].name.toLowerCase()}` : 'Hunt',
+      sub:() => Q.animal ? `${Math.round(Q.animalDist)} m away · ${S.tools.bow ? 'bow' : 'spear'}` : (S.tools.bow ? 'Bow' : 'Spear'),
+      ok:() => (Q.animal ? null : 'Look at an animal') || need(10), run: hunt },
+    { id:'fish', label:() => W.fishLabel || (W.style === 'stilt' ? 'Fish for piranha' : 'Fish the river'), sub:() => (S.tools.line ? 'Line & hooks' : 'Spear') + ' · 1 hr',
+      ok:() => (Q.water ? null : 'Walk to the water') || need(8),
+      run(){ S.energy = clamp(S.energy - 8); pass(1);
         const n = (Math.random() < (S.tools.line ? .75 : .35)) ? (S.tools.line ? rnd(1, 3) : 1) : 0;
         if (!n){ say(`Nothing is biting. The ${W.fish} are too fast.`, 'bad'); return; }
         S.raw += n; S.kills += n; say(`${W.fishIcon} You catch ${n} ${W.fish}.`, 'good'); award(2 * n, `caught ${n} ${W.fish}`); } },
-    { id:'forage', label:() => W.forage.label, sub:() => W.forage.sub, ok:() => need(8),
-      run(){ S.energy = clamp(S.energy - 8); pass(2); const n = rnd(0, 3); S.berries += n;
-        say(n ? `You find ${n} ${W.forage.found}.` : 'Nothing here but leaves. You come back empty-handed.', n ? 'good' : 'bad'); } }
+    { id:'forage', label:() => W.forage.label, sub:'1 hr', ok:() => need(6),
+      run(){ S.energy = clamp(S.energy - 6); pass(1); const n = rnd(0, 3); S.berries += n;
+        say(n ? `You find ${n} ${W.forage.found}.` : 'Nothing here but leaves. Try somewhere else.', n ? 'good' : 'bad'); } }
   ],
   food: [
-    { id:'cook', label:'Roast meat on fire', sub:() => `${S.raw} raw · 1 hr`,
-      ok:() => S.raw < 1 ? 'No raw meat' : !camp().lit ? 'Light the fire first' : null,
-      run(){ const n = Math.min(S.raw, 4); S.raw -= n; S.cooked += n; pass(1); camp().fuel = clamp(camp().fuel - 5);
+    { id:'cook', label:'Roast meat on fire', sub:() => `${S.raw} raw · 30 min`,
+      ok:() => S.raw < 1 ? 'No raw meat' : campOnly() || (!camp().lit ? 'Light the fire first' : null),
+      run(){ const n = Math.min(S.raw, 4); S.raw -= n; S.cooked += n; pass(.5); camp().fuel = clamp(camp().fuel - 5);
         say(`🍖 You roast ${n} portion${n > 1 ? 's' : ''} of meat over the flames.`, 'good'); } },
     { id:'eat', label:'Eat roasted meat', sub:'+30 food', ok:() => S.cooked < 1 ? 'Nothing roasted' : S.food > 95 ? 'Too full' : null,
-      run(){ S.cooked--; S.food = clamp(S.food + 30); pass(.25); say('You eat hot roasted meat. Much better.'); } },
+      run(){ S.cooked--; S.food = clamp(S.food + 30); pass(.2); say('You eat hot roasted meat. Much better.'); } },
     { id:'berries', label:() => W.forage.eat, sub:'+8 food', ok:() => S.berries < 1 ? 'None left' : S.food > 97 ? 'Too full' : null,
-      run(){ S.berries--; S.food = clamp(S.food + 8); pass(.1); say('Sweet and tart.'); } },
+      run(){ S.berries--; S.food = clamp(S.food + 8); pass(.05); say('Sweet and filling.'); } },
     { id:'beans', label:'Eat camp food', sub:'+25 food', ok:() => S.beans < 1 ? 'Buy in store' : S.food > 95 ? 'Too full' : null,
-      run(){ S.beans--; S.food = clamp(S.food + 25); pass(.25); say('You eat some camp food. Not fancy, but it works.'); } },
+      run(){ S.beans--; S.food = clamp(S.food + 25); pass(.2); say('You eat some camp food. Not fancy, but it works.'); } },
     { id:'raw', label:'Eat raw meat', sub:'+15 food · risky', ok:() => S.raw < 1 ? 'No raw meat' : S.food > 95 ? 'Too full' : null,
-      run(){ S.raw--; S.food = clamp(S.food + 15); pass(.25);
+      run(){ S.raw--; S.food = clamp(S.food + 15); pass(.2);
         if (Math.random() < .4){ S.sick = 5; say('🤢 Bad idea. You feel sick.', 'bad'); } else say('You choke down raw meat.'); } }
   ],
   build: [
-    { id:'leanto', label:() => W.build1, sub:'10 wood · 3 hr',
-      ok:() => camp().shelter >= 1 ? 'Already built here' : S.wood < 10 ? `Need 10 wood (${S.wood})` : need(20),
-      run(){ S.wood -= 10; S.energy = clamp(S.energy - 20); pass(3); camp().shelter = 1; say(W.style === 'stilt' ? '⛺ You lash poles together and thatch a roof with palm fronds. Finally, somewhere dry!' : '⛺ You lash poles together and cover them with pine boughs. A real shelter!', 'good'); award(15, 'built a ' + W.shelters[1]); } },
-    { id:'cabin', label:() => W.build2, sub:() => S.kit ? 'Cabin kit · 6 hr' : '30 logs + 10 wood · 14 hr',
-      ok:() => camp().shelter >= 2 ? 'Already built here' : S.kit ? need(35) : S.logs < 30 ? `Need 30 logs (${S.logs})` : S.wood < 10 ? `Need 10 wood (${S.wood})` : need(60),
-      run(){ if (S.kit){ S.kit--; S.energy = clamp(S.energy - 35); pass(6); } else { S.logs -= 30; S.wood -= 10; S.energy = clamp(S.energy - 60); pass(14); }
-        if (S.over) return; camp().shelter = 2; say(W.style === 'stilt' ? '🏠 Your stilt hut is finished! Up off the wet ground, safe from snakes and floods.' : '🏠 Your log cabin is finished! Warm, dry, with a stone hearth.', 'good'); award(75, 'built a ' + W.shelters[2]); } }
+    { id:'walltent', label:() => 'Set up ' + shelterName(2), sub:() => S.walltent ? 'From your supplies · 1 hr' : 'Buy the upgrade in the store',
+      ok:() => camp().shelter >= 2 ? 'Already upgraded' : !S.walltent ? 'Buy it in the store' : campOnly() || need(10),
+      run(){ S.walltent--; S.energy = clamp(S.energy - 10); pass(1); upgradeCamp(2); } },
+    { id:'cabin', label:() => 'Build ' + shelterName(3), sub:() => S.kit ? 'Cabin kit · 5 hr' : '30 logs + 10 wood · 12 hr',
+      ok:() => camp().shelter >= 3 ? 'Already built' : campOnly() || (S.kit ? need(30) : S.logs < 30 ? `Need 30 logs (${S.logs})` : S.wood < 10 ? `Need 10 wood (${S.wood})` : need(50)),
+      run(){ if (S.kit){ S.kit--; S.energy = clamp(S.energy - 30); pass(5); } else { S.logs -= 30; S.wood -= 10; S.energy = clamp(S.energy - 50); pass(12); }
+        if (!S.over) upgradeCamp(3); } },
+    { id:'lodge', label:() => 'Build ' + shelterName(4), sub:() => S.lodge ? 'Lodge kit · 6 hr' : 'Buy the lodge kit in the store',
+      ok:() => camp().shelter >= 4 ? 'Already built' : camp().shelter < 3 ? 'Build the cabin first' : !S.lodge ? 'Buy it in the store' : campOnly() || need(30),
+      run(){ S.lodge--; S.energy = clamp(S.energy - 30); pass(6); if (!S.over) upgradeCamp(4); } }
   ],
   explore: [
-    { id:'map', label:'Travel (map)', sub:'3 hr · new area', ok:() => need(15), run: openMap },
-    { id:'shop', label:'Supply store', sub:'Search & buy gear', ok:() => null, run: openStore },
-    { id:'trade', label:'Look for a village', sub:'4 hr · trade furs', ok:() => need(15),
-      run(){ S.energy = clamp(S.energy - 15); pass(4); if (S.over) return;
-        if (Math.random() < .55) openVillage(); else say('You hike for hours but find no one.', 'bad'); } }
+    { id:'map', label:'Big map', sub:'Where am I?', ok:() => null, run: openMap },
+    { id:'shop', label:'Supply store', sub:'Gear & camp upgrades', ok:() => null, run: () => openStore() },
+    { id:'trade', label:() => Q.campground ? `Trade at ${Q.campground.name.split(' ')[0]}` : 'Trade', sub:() => Q.campground ? 'Sell furs, buy food' : 'Find a campground or village',
+      ok:() => Q.campground ? null : 'Find a campground', run: () => openVillage(Q.campground) },
+    { id:'home', label:'Hike back to camp', sub:() => `${Math.round(World3D.campDistance())} m away`,
+      ok:() => atCamp() ? 'You’re at camp' : need(5),
+      run(){ const d = World3D.campDistance(); S.energy = clamp(S.energy - Math.min(25, d / 15)); pass(d / 3000); World3D.goCamp(); say('You follow your own trail back to camp.'); } }
   ]
 };
-
-/* ---------- hunting ---------- */
-function pickAnimal(){
-  const pool = Object.entries(W.regions[S.region].animals); let total = pool.reduce((a, [, w]) => a + w, 0), r = Math.random() * total;
-  for (const [id, w] of pool){ if ((r -= w) <= 0) return id; } return pool[0][0];
+function upgradeCamp(level){
+  camp().shelter = level; World3D.setShelter(level);
+  const msg = {
+    2: W.style === 'stilt' ? '⛺ Your palm-roof shelter is up. The rain can’t reach your fire now.' : '⛺ Your canvas wall tent is up, with a stove pipe and a dry spot for the fire.',
+    3: W.style === 'stilt' ? '🏠 Your stilt hut is finished! Up off the wet ground, safe from floods.' : '🏠 Your log cabin is finished! Warm, dry, with a stone chimney.',
+    4: W.style === 'stilt' ? '🏡 Your river lodge is finished — big rooms, a deck, and a view of the river.' : '🏡 Your log lodge is finished — a real home in the wilderness, with a big front porch.'
+  }[level];
+  say(msg, 'good'); award([0, 0, 20, 75, 150][level], 'upgraded your campsite to a ' + shelterName(level));
 }
+
+/* ---------- hunting the animal you're looking at ---------- */
 function hunt(){
-  S.energy = clamp(S.energy - 20); pass(2.5); if (S.over) return;
-  if (Math.random() < .2){ say('You track for hours but see nothing.', 'bad'); return; }
-  const id = pickAnimal(), a = ANIMALS[id], chance = clamp((a.chance + (S.tools.bow ? .25 : 0)) * 100, 5, 95) / 100;
-  modal(`<h3>You spot something</h3>
-    <div class="animal">${animalSVG(id)}<div><b style="font-size:18px">${a.name}</b><br><small style="color:var(--muted)">About ${a.far} away</small><p style="margin-top:6px">${a.desc}</p></div></div>
-    <p>Chance to bring it down: <b>${Math.round(chance * 100)}%</b> with your ${S.tools.bow ? 'bow' : 'spear'}. Reward: <b>${a.tokens} tokens</b>, ${a.meat} meat${a.danger ? `. <span style="color:var(--red)">If you miss, it might charge you.</span>` : ''}</p>
-    <div class="row"><button class="btn gold" id="h-go">Take the shot</button><button class="btn" id="h-no">Let it go</button></div>`,
-    box => {
-      box.querySelector('#h-no').onclick = () => { closeModal(); say(`You let the ${a.name.toLowerCase()} walk away.`); pass(.5); save(); render(); };
-      box.querySelector('#h-go').onclick = () => {
-        closeModal(); pass(.5);
-        if (Math.random() < chance){
-          S.raw += a.meat; S.hides[a.hide] = (S.hides[a.hide] || 0) + 1; S.kills++;
-          say(`🎯 You brought down the ${a.name.toLowerCase()}! +${a.meat} raw meat and a ${HIDES[a.hide].name.toLowerCase()}.`, 'good');
-          award(a.tokens, `hunted a ${a.name.toLowerCase()}`);
-        } else if (Math.random() < a.danger){
-          const dmg = S.tools.spray ? 15 : 35; S.health = clamp(S.health - dmg);
-          say(`💥 You missed — and the ${a.name.toLowerCase()} charged! −${dmg} health.${S.tools.spray ? ' Bear spray saved you from worse.' : ''}`, 'bad');
-          if (S.health <= 0) gameOver();
-        } else say(`You missed. The ${a.name.toLowerCase()} bolts into the trees.`, 'bad');
-        save(); render();
-      };
+  const target = Q.animal; if (!target) return;
+  const a = ANIMALS[target.id], d = Q.animalDist;
+  const chance = clamp((a.chance + (S.tools.bow ? .25 : 0) + (d < 12 ? .12 : d > 24 ? -.1 : 0)) * 100, 5, 95) / 100;
+  modal(`<h3>${a.name}</h3>
+    <div class="animal">${animalSVG(target.id)}<div><small style="color:var(--muted)">${Math.round(d)} meters away</small><p style="margin-top:6px">${a.desc}</p></div></div>
+    <p>Chance to bring it down: <b>${Math.round(chance * 100)}%</b> with your ${S.tools.bow ? 'bow' : 'spear'}${d > 20 ? ' (sneak closer for a better shot)' : ''}. Reward: <b>${a.tokens} tokens</b>, ${a.meat} meat${a.danger ? `. <span style="color:var(--red)">If you miss, it might charge you.</span>` : ''}</p>
+    <div class="row"><button class="btn gold" id="h-go">Take the shot</button><button class="btn" data-close>Not yet</button></div>`,
+    box => box.querySelector('#h-go').onclick = () => {
+      closeModal(); S.energy = clamp(S.energy - 10); pass(.5);
+      if (Math.random() < chance){
+        World3D.killAnimal(target);
+        S.raw += a.meat; S.hides[a.hide] = (S.hides[a.hide] || 0) + 1; S.kills++;
+        say(`🎯 You brought down the ${a.name.toLowerCase()}! +${a.meat} raw meat and a ${HIDES[a.hide].name.toLowerCase()}.`, 'good');
+        award(a.tokens, `hunted a ${a.name.toLowerCase()}`);
+      } else if (Math.random() < a.danger){
+        const dmg = S.tools.spray ? 15 : 35; S.health = clamp(S.health - dmg); World3D.scare(target);
+        say(`💥 You missed — and the ${a.name.toLowerCase()} charged! −${dmg} health.${S.tools.spray ? ' Bear spray saved you from worse.' : ''}`, 'bad');
+        if (S.health <= 0) gameOver();
+      } else { World3D.scare(target); say(`You missed. The ${a.name.toLowerCase()} bolts away.`, 'bad'); }
+      save(); render();
     });
 }
 function animalSVG(id){
@@ -632,52 +682,36 @@ function animalSVG(id){
   const shapes = {
     hare:  '<ellipse cx="60" cy="52" rx="24" ry="14"/><circle cx="84" cy="44" r="9"/><ellipse cx="84" cy="26" rx="3" ry="12" transform="rotate(10 84 26)"/><ellipse cx="90" cy="27" rx="3" ry="12" transform="rotate(20 90 27)"/><ellipse cx="44" cy="62" rx="14" ry="5"/>',
     grouse:'<ellipse cx="58" cy="50" rx="24" ry="15"/><circle cx="82" cy="38" r="8"/><path d="M88 38 l7 2 l-7 2z"/><path d="M34 46 l-18 -8 l4 16z"/><path d="M56 64 v10 M62 64 v10" stroke="'+f+'" stroke-width="2"/>',
-    deer:  '<ellipse cx="56" cy="46" rx="26" ry="13"/><path d="M78 40 l10 -18 l6 2 l-6 20z"/><ellipse cx="92" cy="22" rx="8" ry="5"/><path d="M88 16 l-4 -9 M94 16 l2 -9" stroke="'+f+'" stroke-width="2"/><path d="M38 56 v24 M46 56 v24 M66 56 v24 M74 56 v24" stroke="'+f+'" stroke-width="4"/>',
+    deer:  '<ellipse cx="56" cy="46" rx="26" ry="13"/><path d="M78 40 l10 -18 l6 2 l-6 20z"/><ellipse cx="92" cy="22" rx="8" ry="5"/><path d="M38 56 v24 M46 56 v24 M66 56 v24 M74 56 v24" stroke="'+f+'" stroke-width="4"/>',
     elk:   '<ellipse cx="54" cy="48" rx="30" ry="15"/><path d="M78 40 l12 -16 l7 3 l-8 20z"/><ellipse cx="96" cy="24" rx="9" ry="6"/><path d="M92 18 q-14 -14 -8 -16 M92 18 q-4 -10 -18 -12 M98 18 q6 -14 18 -14 M98 18 q2 -8 12 -16" stroke="'+f+'" stroke-width="2.5" fill="none"/><path d="M34 58 v24 M42 58 v24 M64 58 v24 M72 58 v24" stroke="'+f+'" stroke-width="5"/>',
-    bison: '<path d="M20 60 q0 -30 30 -34 q30 -12 50 8 q14 4 14 22 l-6 6 q-6 4 -16 2 l-2 20 h-6 l-2 -16 h-30 l-2 16 h-6 l-2 -18 q-12 -2 -14 -6z"/><path d="M100 34 q8 -6 6 -12" stroke="'+f+'" stroke-width="3" fill="none"/>',
+    bison: '<path d="M20 60 q0 -30 30 -34 q30 -12 50 8 q14 4 14 22 l-6 6 q-6 4 -16 2 l-2 20 h-6 l-2 -16 h-30 l-2 16 h-6 l-2 -18 q-12 -2 -14 -6z"/>',
+    bear:  '<path d="M18 62 q0 -26 32 -30 q26 -4 42 8 q14 0 18 10 q2 8 -8 8 l-4 0 l-2 20 h-7 l-1 -14 h-34 l-2 14 h-7 l-2 -14 q-12 0 -16 -2z"/>',
     squirrel:'<path d="M40 70 q-6 -24 16 -30 q16 -2 22 8 l10 -2 q4 4 -2 8 l-6 2 q2 10 -4 14 h-30z"/><path d="M40 68 q-30 -10 -20 -44 q10 -10 20 4 q-8 18 6 30z"/>',
-    capybara:'<path d="M22 58 q-2 -26 30 -30 q30 -4 50 6 q14 6 14 18 q0 6 -8 8 l-6 0 l-1 14 h-6 l-2 -12 h-36 l-2 12 h-6 l-2 -14 q-12 -2 -14 -6z"/><circle cx="106" cy="38" r="3"/>',
+    capybara:'<path d="M22 58 q-2 -26 30 -30 q30 -4 50 6 q14 6 14 18 q0 6 -8 8 l-6 0 l-1 14 h-6 l-2 -12 h-36 l-2 12 h-6 l-2 -14 q-12 -2 -14 -6z"/>',
     agouti:'<path d="M28 60 q4 -26 36 -26 q24 2 34 14 l10 4 q2 6 -8 6 l-6 0 l-4 16 h-5 l-1 -12 h-26 l-6 12 h-6 l2 -14 q-12 0 -20 0z"/>',
-    peccary:'<path d="M18 58 q2 -24 34 -26 q30 -2 44 10 l14 8 l-2 6 l-10 0 l-6 2 l-2 14 h-6 l-1 -12 h-30 l-2 12 h-6 l-2 -14 q-12 0 -16 0z"/><path d="M106 50 l6 -2" stroke="#eee" stroke-width="2"/>',
+    peccary:'<path d="M18 58 q2 -24 34 -26 q30 -2 44 10 l14 8 l-2 6 l-10 0 l-6 2 l-2 14 h-6 l-1 -12 h-30 l-2 12 h-6 l-2 -14 q-12 0 -16 0z"/>',
     tapir: '<path d="M14 60 q0 -30 36 -32 q34 -2 50 10 q8 4 10 14 l6 8 l-4 2 l-8 -6 l-6 2 l-2 22 h-7 l-1 -18 h-36 l-2 18 h-7 l-2 -18 q-12 -2 -14 -6z"/>',
-    caiman:'<path d="M4 60 q20 -8 50 -10 q30 -2 50 4 l14 4 q-10 4 -24 4 q-20 4 -40 4 q-26 0 -50 -6z"/><path d="M20 62 l-4 10 M40 64 l-2 10 M66 62 l2 10 M80 62 l4 10" stroke="#c9b99a" stroke-width="3"/><circle cx="96" cy="52" r="2.5" fill="#222"/>',
-    bear:  '<path d="M18 62 q0 -26 32 -30 q26 -4 42 8 q14 0 18 10 q2 8 -8 8 l-4 0 l-2 20 h-7 l-1 -14 h-34 l-2 14 h-7 l-2 -14 q-12 0 -16 -2z"/><circle cx="98" cy="34" r="4"/>'
+    caiman:'<path d="M4 60 q20 -8 50 -10 q30 -2 50 4 l14 4 q-10 4 -24 4 q-20 4 -40 4 q-26 0 -50 -6z"/>'
   };
   return `<svg viewBox="0 0 120 90" width="120" height="90" fill="${f}">${shapes[id] || ''}</svg>`;
 }
 
-/* ---------- map ---------- */
+/* ---------- big map ---------- */
 function openMap(){
-  modal(`<h3>Map</h3><p>Pick where to go. Traveling takes 3 hours. Your fire stays where you left it.</p><div class="mapwrap">${W.map}</div>
-    <div id="map-list"></div><div class="row"><button class="btn" data-close>Stay here</button></div>`, box => {
-    const g = box.querySelector('#pins'), list = box.querySelector('#map-list');
-    let pinsHtml = '', listHtml = '';
-    for (const [id, r] of Object.entries(W.regions)){
-      const here = id === S.region, [x, y] = r.pin;
-      pinsHtml += `<g data-r="${id}" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="${here ? 11 : 9}" fill="${here ? '#d9a441' : '#ece7da'}" stroke="#1a231c" stroke-width="3"/>${here ? `<circle cx="${x}" cy="${y}" r="17" fill="none" stroke="#d9a441" stroke-width="2"/>` : ''}<text x="${x}" y="${y - 18}" fill="#fff" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter" style="paint-order:stroke" stroke="#1a231c" stroke-width="3">${r.name}</text></g>`;
-      const c = S.camps[id];
-      listHtml += `<div class="item"><div class="grow"><b>${r.name}${here ? ' (you are here)' : ''}</b><small>${r.blurb}${c && c.shelter ? ` · Your ${W.shelters[c.shelter]} is here.` : ''}</small></div>${here ? '' : `<button class="btn" data-r="${id}">Go</button>`}</div>`;
-    }
-    g.innerHTML = pinsHtml; list.innerHTML = listHtml;
-    box.querySelectorAll('[data-r]').forEach(el => el.addEventListener('click', () => travel(el.dataset.r)));
-  });
-}
-function travel(id){
-  if (id === S.region) return;
-  closeModal(); S.energy = clamp(S.energy - 15);
-  say(`You set off toward ${W.regions[id].name}…`); pass(3);
-  if (S.over){ save(); render(); return; }
-  S.region = id; say(`You arrive at ${W.regions[id].name}. ${W.regions[id].blurb}`);
-  save(); render(); setScene();
-  if (Math.random() < .3) setTimeout(openVillage, 350);
+  const found = (S.found || []).length;
+  modal(`<h3>Map</h3><p>Dark areas are places you haven’t explored yet. Find ${W.style === 'stilt' ? 'river villages' : 'campgrounds'} to trade, and find the road out to get rescued.</p>
+    <canvas id="bigmap" width="600" height="600" style="width:100%;height:auto;border-radius:10px;display:block"></canvas>
+    <p style="margin-top:10px;font-size:13px;color:var(--muted)">🟠 Your camp · 🔵 ${W.style === 'stilt' ? 'Villages' : 'Campgrounds'} found: ${found} of 3 · 🟢 ${S.seenExit ? World3D.exitInfo().town : 'The way out (not found yet)'}</p>
+    <div class="row"><button class="btn" data-close>Close</button></div>`, box => World3D.drawBigMap(box.querySelector('#bigmap')));
 }
 
-/* ---------- village trading ---------- */
-function openVillage(){
+/* ---------- campground / village trading ---------- */
+function openVillage(cg){
+  const place = cg ? cg.name : 'A small village';
   const hideRows = Object.entries(S.hides).filter(([, n]) => n > 0).map(([k, n]) =>
     `<div class="item"><div class="grow"><b>${HIDES[k].name} ×${n}</b><small>They pay ${fmtMoney(HIDES[k].price)} each</small></div><button class="btn" data-sell="${k}">Sell 1</button></div>`).join('');
-  modal(`<h3>A small village!</h3>
-    <p>${W.style === 'stilt' ? 'Wooden houses on stilts line the riverbank and canoes are pulled up on the mud.' : 'Smoke rises from a few cabins in a clearing.'} The villagers are friendly and want to trade.</p>
+  modal(`<h3>${place}</h3>
+    <p>${W.style === 'stilt' ? 'Wooden houses on stilts and canoes pulled up on the mud. The villagers are friendly and want to trade.' : 'Tents, a ranger hut, and a crackling fire. The campers and the ranger are happy to trade.'}</p>
     ${hideRows || '<p style="color:var(--muted)">You have no furs or hides to trade yet. Go hunting!</p>'}
     ${S.raw ? `<div class="item"><div class="grow"><b>Raw meat ×${S.raw}</b><small>They pay ${fmtMoney(80)} each</small></div><button class="btn" data-sell="raw">Sell 1</button></div>` : ''}
     <div class="item"><div class="grow"><b>Hot stew</b><small>Eat now · +40 food</small></div><span class="price">2 tokens</span><button class="btn" data-buy="stew">Buy</button></div>
@@ -687,38 +721,46 @@ function openVillage(){
       const k = b.dataset.sell;
       if (k === 'raw'){ if (S.raw < 1) return; S.raw--; addPins(80); S.earnedPins += 80; say(`You trade raw meat for ${fmtMoney(80)}.`, 'gold'); }
       else { if (!S.hides[k]) return; S.hides[k]--; addPins(HIDES[k].price); S.earnedPins += HIDES[k].price; say(`You trade a ${HIDES[k].name.toLowerCase()} for ${fmtMoney(HIDES[k].price)}.`, 'gold'); }
-      toast('Traded!'); save(); render(); openVillage();
+      toast('Traded!'); save(); render(); openVillage(cg);
     });
     box.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
       const cost = T(b.dataset.buy === 'stew' ? 2 : 3);
       if (wallet < cost){ toast('Not enough money'); return; }
       addPins(-cost);
-      if (b.dataset.buy === 'stew'){ S.food = clamp(S.food + 40); say(`You eat a bowl of ${W.stew} with the villagers.`, 'good'); }
+      if (b.dataset.buy === 'stew'){ S.food = clamp(S.food + 40); say(`You eat a bowl of ${W.stew} at ${place}.`, 'good'); }
       else { S.matches += 10; say('You buy a box of matches.'); }
-      save(); render(); openVillage();
+      save(); render(); openVillage(cg);
     });
   });
 }
 
-/* ---------- supply store ---------- */
+/* ---------- supply store (campsite upgrades + gear) ---------- */
 function openStore(q=''){
   modal(`<h3>Supply store</h3>
-    <p>Search for gear. A supply plane drops what you buy right at your camp. 1 token ≈ $1.</p>
-    <input id="s-q" placeholder="Search: axe, bow, blanket, food, cabin…" value="${q.replace(/"/g, '&quot;')}">
+    <p>Upgrade your campsite or buy gear. A supply plane drops it at your camp. 1 token ≈ $1.</p>
+    <input id="s-q" placeholder="Search: tent, cabin, lodge, axe, bow, food…" value="${q.replace(/"/g, '&quot;')}">
     <div id="s-list"></div><div class="row"><button class="btn" data-close>Done</button></div>`, box => {
     const input = box.querySelector('#s-q'), list = box.querySelector('#s-list');
     const draw = () => {
       const t = input.value.trim().toLowerCase();
       const items = CATALOG.filter(i => (!i.only || i.only.includes(worldId)) && (!t || (itemName(i) + ' ' + i.kw).toLowerCase().includes(t)));
       list.innerHTML = items.map(i => {
-        const owned = TOOLS.includes(i.id) && S.tools[i.id];
+        const why = storeBlock(i);
         return `<div class="item"><div class="grow"><b>${itemName(i)}</b><small>${i.desc}</small></div><span class="price">${i.price} tokens</span>
-          <button class="btn" data-buy="${i.id}" ${owned ? 'disabled' : ''}>${owned ? 'Owned' : 'Buy'}</button></div>`; }).join('')
-        || `<p style="margin-top:12px;color:var(--muted)">Nothing called “${input.value}” here. The full Game Store is coming soon.</p>`;
+          <button class="btn" data-buy="${i.id}" ${why ? 'disabled' : ''}>${why || 'Buy'}</button></div>`; }).join('')
+        || `<p style="margin-top:12px;color:var(--muted)">Nothing called “${input.value}” here. Try the Game Store on the front page — it can price anything.</p>`;
       list.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => buy(b.dataset.buy, input.value));
     };
-    input.oninput = draw; draw(); setTimeout(() => input.focus(), 50);
+    input.oninput = draw; draw();
   });
+}
+function storeBlock(i){
+  if (TOOLS.includes(i.id) && S.tools[i.id]) return 'Owned';
+  if (i.id === 'walltent' && (camp().shelter >= 2 || S.walltent)) return 'Owned';
+  if (i.id === 'kit' && (camp().shelter >= 3 || S.kit)) return 'Owned';
+  if (i.id === 'lodge' && (camp().shelter >= 4 || S.lodge)) return 'Owned';
+  if (i.id === 'lodge' && camp().shelter < 3 && !S.kit) return 'Cabin first';
+  return null;
 }
 function buy(id, q){
   const i = CATALOG.find(x => x.id === id), cost = T(i.price);
@@ -728,186 +770,98 @@ function buy(id, q){
   else if (id === 'matches') S.matches += 10;
   else if (id === 'firstaid') S.firstaid++;
   else if (id === 'beans') S.beans++;
-  else if (id === 'kit') S.kit++;
-  say(`📦 Supply drop: ${itemName(i)} (${i.price} tokens).`, 'gold'); toast(`Bought ${itemName(i)}`);
+  else if (['kit','walltent','lodge'].includes(id)) S[id]++;
+  say(`📦 Supply drop: ${itemName(i)} (${i.price} tokens).${['kit','walltent','lodge'].includes(id) ? ' Walk to camp and press Build.' : ''}`, 'gold'); toast(`Bought ${itemName(i)}`);
   save(); render(); openStore(q);
 }
 
 /* ============================================================
-   Rendering
+   Rendering (side panel)
    ============================================================ */
+let lastSig = '';
+function renderLog(){ $('#log').innerHTML = S.log.slice(0, 40).map(l => `<div class="${l.cls}"><span class="t">${l.t}</span>${l.msg}</div>`).join(''); }
+function renderStats(){
+  const c = camp();
+  $('#g-clock').textContent = `Day ${S.day} · ${timeStr(S.hour)}`;
+  $('#g-where').textContent = Q.where || W.title;
+  $('#g-sky').textContent = `${partOfDay(S.hour)} · camp fire ${c.lit ? Math.round(c.fuel) + '%' : 'out'}${S.rain > 0 ? ' · raining' : ''}`;
+  const bars = [['Health', S.health, 'var(--red)'], ['Food', S.food, 'var(--orange)'], ['Warmth', S.warmth, 'var(--gold)'], ['Energy', S.energy, 'var(--green)'], ['Fire', c.lit ? c.fuel : 0, '#ff7a1a']];
+  $('#bars').innerHTML = bars.map(([n, v, col]) => `<div class="bar"><span>${n}</span><div class="track"><div class="fill" style="width:${v}%;background:${col}"></div></div><span class="n">${Math.round(v)}</span></div>`).join('');
+}
 function render(){
   if (!S) return;
-  const c = camp(), r = W.regions[S.region];
-  $('#g-clock').textContent = `Day ${S.day} · ${timeStr(S.hour)}`;
-  $('#g-where').textContent = r.name;
-  $('#g-sky').textContent = `${partOfDay(S.hour)} · ${c.lit ? 'fire burning' : 'no fire'}${c.shelter ? ' · ' + W.shelters[c.shelter] : ''}${S.rain > 0 ? ' · raining' : ''}`;
-  const bars = [
-    ['Health', S.health, 'var(--red)'], ['Food', S.food, 'var(--orange)'], ['Warmth', S.warmth, 'var(--gold)'],
-    ['Energy', S.energy, 'var(--green)'], ['Fire', c.lit ? c.fuel : 0, '#ff7a1a']
-  ];
-  $('#bars').innerHTML = bars.map(([n, v, col]) => `<div class="bar"><span>${n}</span><div class="track"><div class="fill" style="width:${v}%;background:${col}"></div></div><span class="n">${Math.round(v)}</span></div>`).join('');
-  const inv = [['Wood', S.wood], ['Logs', S.logs], ['Raw meat', S.raw], ['Roasted', S.cooked], [W.forage.item, S.berries], ['Camp food', S.beans], ['Matches', S.matches], ['First aid', S.firstaid], ['Cabin kit', S.kit]]
+  renderStats();
+  const inv = [['Wood', S.wood], ['Logs', S.logs], ['Raw meat', S.raw], ['Roasted', S.cooked], [W.forage.item, S.berries], ['Camp food', S.beans], ['Matches', S.matches], ['First aid', S.firstaid], ['Cabin kit', S.kit], ['Wall tent kit', S.walltent], ['Lodge kit', S.lodge]]
     .filter(([, n]) => n > 0).map(([k, n]) => `<span class="chip">${k} <b>${n}</b></span>`);
   for (const [k, n] of Object.entries(S.hides)) if (n > 0) inv.push(`<span class="chip">${HIDES[k].name} <b>${n}</b></span>`);
   const toolNames = { hatchet: W.style === 'stilt' ? 'Knife' : 'Hatchet', spear:'Spear', flint:'Flint', axe: W.style === 'stilt' ? 'Machete' : 'Felling axe', bow:'Bow', line:'Fishing line', blanket:'Blanket', spray:'Bear spray', net:'Mosquito net', tarp:'Rain tarp' };
   for (const k of Object.keys(S.tools)) if (S.tools[k]) inv.push(`<span class="chip">${toolNames[k]}</span>`);
-  $('#inv').innerHTML = inv.join('') || '<span class="chip">Empty</span>';
-  for (const [grp, list] of Object.entries(ACTIONS)){
-    const el = $('#a-' + grp);
-    el.innerHTML = list.map(a => {
-      const why = S.over ? 'Game over' : a.ok();
-      const lab = typeof a.label === 'function' ? a.label() : a.label, sub = typeof a.sub === 'function' ? a.sub() : a.sub;
-      return `<button class="btn" data-a="${grp}:${a.id}" ${why ? 'disabled' : ''} title="${why || ''}">${lab}<small>${why || sub}</small></button>`;
-    }).join('');
-  }
-  $$('[data-a]').forEach(b => { const [g, id] = b.dataset.a.split(':'); b.onclick = act(ACTIONS[g].find(a => a.id === id).run); });
-  $('#log').innerHTML = S.log.map(l => `<div class="${l.cls}"><span class="t">${l.t}</span>${l.msg}</div>`).join('');
+  inv.unshift(`<span class="chip">Camp: <b>${shelterName(camp().shelter)}</b></span>`);
+  $('#inv').innerHTML = inv.join('');
+  renderActions(true);
+  renderLog();
 }
-function setScene(){
-  const r = W.regions[S.region];
-  $('#scene').style.backgroundImage = `url(${r.img})`;
-  $('#g-credit').textContent = r.credit;
+function actionState(){
+  const out = {};
+  for (const [grp, list] of Object.entries(ACTIONS)) out[grp] = list.map(a => {
+    const why = S.over ? 'Game over' : a.ok();
+    return { id: a.id, why, lab: typeof a.label === 'function' ? a.label() : a.label, sub: typeof a.sub === 'function' ? a.sub() : a.sub };
+  });
+  return out;
 }
-
-/* ---------- animated scene overlay: fire, shelter, night ---------- */
-const fx = $('#fx'), ctx = fx.getContext('2d');
-const dark = document.createElement('canvas'), dctx = dark.getContext('2d');
-let parts = [], animOn = false;
-function sizeFx(){ const r = fx.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1); fx.width = dark.width = r.width * d; fx.height = dark.height = r.height * d; }
-function darkness(h){ if (h >= 7.5 && h <= 18) return 0; if (h > 18 && h < 21) return (h - 18) / 3 * .78; if (h >= 5 && h < 7.5) return (7.5 - h) / 2.5 * .78; return .78; }
-function drawShelter(kind, w, h, pos, k){
-  const gy = h * pos[1], x = w * pos[0], s = h / 420 * k;
-  ctx.save(); ctx.translate(x, gy); ctx.scale(s, s);
-  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(70, 4, 120, 12, 0, 0, 7); ctx.fill();
-  if (W.style === 'stilt'){ drawTropical(kind); ctx.restore(); return; }
-  if (kind === 1){
-    // lean-to
-    ctx.strokeStyle = '#4a3220'; ctx.lineWidth = 7; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(10, -95); ctx.moveTo(150, 0); ctx.lineTo(160, -95); ctx.moveTo(0, -95); ctx.lineTo(175, -95); ctx.stroke();
-    const g = ctx.createLinearGradient(0, -95, 0, 0); g.addColorStop(0, '#2f4a2c'); g.addColorStop(1, '#1d311d');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, -98); ctx.lineTo(175, -98); ctx.lineTo(205, 2); ctx.lineTo(-40, 2); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = 'rgba(80,120,70,.6)'; ctx.lineWidth = 2;
-    for (let i = 0; i < 26; i++){ const px = -30 + i * 9, py = -90 + (i % 5) * 18; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 14, py + 8); ctx.stroke(); }
-  } else if (kind === 2){
-    // log cabin
-    for (let i = 0; i < 9; i++){
-      const y = -14 - i * 14, g = ctx.createLinearGradient(0, y - 7, 0, y + 7);
-      g.addColorStop(0, '#6e5038'); g.addColorStop(.5, '#523a25'); g.addColorStop(1, '#2a1b10');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(-8, y - 7, 196, 14, 7); ctx.fill();
-      ctx.fillStyle = '#7d634a'; ctx.beginPath(); ctx.arc(-8, y, 6, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(188, y, 6, 0, 7); ctx.fill();
-    }
-    ctx.fillStyle = '#2b2420'; ctx.beginPath(); ctx.moveTo(-26, -128); ctx.lineTo(90, -200); ctx.lineTo(206, -128); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#3d332c'; ctx.beginPath(); ctx.moveTo(-26, -128); ctx.lineTo(90, -200); ctx.lineTo(96, -196); ctx.lineTo(-14, -126); ctx.fill();
-    ctx.fillStyle = '#58554f'; ctx.fillRect(150, -205, 22, 60);
-    ctx.fillStyle = '#2a1a0e'; ctx.fillRect(74, -84, 34, 84);
-    const glow = darkness(S.hour) > .2;
-    ctx.fillStyle = glow ? '#ffc56a' : '#22292d'; ctx.fillRect(16, -82, 36, 30); ctx.fillRect(128, -82, 36, 30);
-    ctx.strokeStyle = '#2a1a0e'; ctx.lineWidth = 3; ctx.strokeRect(16, -82, 36, 30); ctx.strokeRect(128, -82, 36, 30);
+function renderActions(force){
+  const st = actionState(), sig = JSON.stringify(st);
+  if (!force && sig === lastSig) return; lastSig = sig;
+  for (const [grp, list] of Object.entries(st)){
+    $('#a-' + grp).innerHTML = list.map(a => `<button class="btn" data-a="${grp}:${a.id}" ${a.why ? 'disabled' : ''} title="${a.why || ''}">${a.lab}<small>${a.why || a.sub}</small></button>`).join('');
   }
-  ctx.restore();
+  $$('[data-a]').forEach(b => { const [g, id] = b.dataset.a.split(':'); b.onclick = () => runAction(g, id); });
 }
-
-function drawTropical(kind){
-  const thatch = (x1, y1, x2, y2, x3) => {
-    const g = ctx.createLinearGradient(0, y1, 0, y2); g.addColorStop(0, '#9a8a55'); g.addColorStop(1, '#5e5230');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x1, y2); ctx.lineTo(x3, y1); ctx.lineTo(x2, y2); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = 'rgba(60,50,25,.7)'; ctx.lineWidth = 1.5;
-    for (let i = 0; i < 30; i++){ const t = i / 29, bx = x1 + (x2 - x1) * t; ctx.beginPath(); ctx.moveTo(x3 + (bx - x3) * .2, y1 + (y2 - y1) * .2); ctx.lineTo(bx, y2 + 4); ctx.stroke(); }
-  };
-  ctx.lineCap = 'round';
-  if (kind === 1){
-    ctx.strokeStyle = '#4a3220'; ctx.lineWidth = 7;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -90); ctx.moveTo(170, 0); ctx.lineTo(170, -90); ctx.stroke();
-    thatch(-30, -150, 200, -84, 85);
-  } else {
-    // stilt hut: posts, platform, plank walls, thatched roof, ladder
-    ctx.strokeStyle = '#3d2a1a'; ctx.lineWidth = 9;
-    for (const x of [0, 60, 120, 180]){ ctx.beginPath(); ctx.moveTo(x, 4); ctx.lineTo(x, -70); ctx.stroke(); }
-    ctx.fillStyle = '#5a4128'; ctx.fillRect(-12, -78, 204, 10);
-    for (let i = 0; i < 12; i++){ const g = ctx.createLinearGradient(0, -150, 0, -78); g.addColorStop(0, '#6d5236'); g.addColorStop(1, '#4b3520');
-      ctx.fillStyle = g; ctx.fillRect(-4 + i * 16, -150, 15, 72); }
-    ctx.fillStyle = '#1e140b'; ctx.fillRect(74, -140, 34, 62);
-    const glow = darkness(S.hour) > .2; ctx.fillStyle = glow ? '#ffc56a' : '#1d1a14'; ctx.fillRect(18, -130, 34, 22); ctx.fillRect(132, -130, 34, 22);
-    thatch(-40, -230, 222, -142, 91);
-    ctx.strokeStyle = '#4a3220'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(84, 4); ctx.lineTo(96, -70); ctx.moveTo(104, 4); ctx.lineTo(116, -70);
-    for (let i = 1; i < 6; i++){ const y = 4 - i * 12.4; ctx.moveTo(84 + i * 2, y); ctx.lineTo(104 + i * 2, y); } ctx.stroke();
-  }
+function runAction(g, id){
+  const a = ACTIONS[g].find(x => x.id === id); if (!a || S.over || a.ok()) return;
+  a.run(); save(); render();
 }
-function frame(){
-  if (!animOn) return;
-  requestAnimationFrame(frame);
-  if (!S) return;
-  const w = fx.width, h = fx.height, c = camp(), cp = W.regions[S.region].camp, s = h / 420 * cp.k * 1.15;
-  ctx.clearRect(0, 0, w, h);
-  // foreground shade so the camp sits in the scene
-  const fg = ctx.createLinearGradient(0, h * .7, 0, h); fg.addColorStop(0, 'rgba(0,0,0,0)'); fg.addColorStop(1, 'rgba(0,0,0,.35)');
-  ctx.fillStyle = fg; ctx.fillRect(0, h * .7, w, h * .3);
-  if (W.regions[S.region].bank){
-    // muddy bank in the foreground where the camp sits
-    const bx = Math.min(cp.fire[0], cp.shelter[0]) * w - w * .06, bw = w * .42;
-    ctx.save(); ctx.filter = `blur(${Math.round(h * .006)}px)`;
-    const mg = ctx.createLinearGradient(0, h * .86, 0, h); mg.addColorStop(0, '#4a3a24'); mg.addColorStop(1, '#2c2114');
-    ctx.fillStyle = mg; ctx.beginPath(); ctx.moveTo(bx, h); ctx.quadraticCurveTo(bx + bw * .05, h * .885, bx + bw * .35, h * .875);
-    ctx.quadraticCurveTo(bx + bw * .8, h * .87, bx + bw, h * .92); ctx.lineTo(bx + bw + w * .02, h); ctx.closePath(); ctx.fill(); ctx.restore();
-    ctx.strokeStyle = 'rgba(70,95,40,.9)'; ctx.lineWidth = Math.max(1, h * .003);
-    for (let i = 0; i < 40; i++){ const gx = bx + (i * 37 % 100) / 100 * bw, gy = h * (.885 + (i * 13 % 10) / 100); ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + (i % 3 - 1) * h * .006, gy - h * .02); ctx.stroke(); }
+// the one big "Use" button / E key picks the most useful thing nearby
+function bestUse(){
+  const c = camp();
+  if (Q.animal) return ['gather', 'hunt'];
+  if (Q.campground) return ['explore', 'trade'];
+  if (Q.camp){
+    if (!c.lit && S.wood >= 2) return ['camp', 'light'];
+    if (S.raw > 0 && c.lit) return ['food', 'cook'];
+    if (c.lit && c.fuel < 80 && S.wood > 0) return ['camp', 'feed'];
+    if (isNight(S.hour)) return ['camp', 'sleep'];
   }
-  if (c.shelter) drawShelter(c.shelter, w, h, cp.shelter, cp.k);
-  const fxX = w * cp.fire[0], fxY = h * cp.fire[1], inten = c.lit ? .45 + .55 * (c.fuel / 100) : 0;
-  // fire pit (stones + logs)
-  ctx.save(); ctx.translate(fxX, fxY); ctx.scale(s, s);
-  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(0, 4, 62, 12, 0, 0, 7); ctx.fill();
-  for (let i = 0; i < 11; i++){ const a = i / 11 * Math.PI * 2, rx = Math.cos(a) * 46, ry = Math.sin(a) * 10;
-    const g = ctx.createRadialGradient(rx - 3, ry - 4, 1, rx, ry, 12); g.addColorStop(0, '#77726a'); g.addColorStop(1, '#34312c');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(rx, ry, 11, 8, 0, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#3a2416'; ctx.save(); ctx.rotate(-.3); ctx.fillRect(-36, -6, 72, 10); ctx.restore(); ctx.save(); ctx.rotate(.3); ctx.fillRect(-36, -6, 72, 10); ctx.restore();
-  if (c.lit){ ctx.fillStyle = `rgba(255,${120 + Math.random() * 60},40,.8)`; ctx.beginPath(); ctx.ellipse(0, -2, 26, 6, 0, 0, 7); ctx.fill(); }
-  ctx.restore();
-  // night layer with a hole of firelight
-  const dk = darkness(S.hour);
-  if (dk > 0){
-    dctx.globalCompositeOperation = 'source-over'; dctx.clearRect(0, 0, w, h);
-    dctx.fillStyle = `rgba(6,10,26,${dk})`; dctx.fillRect(0, 0, w, h);
-    if (inten > 0){
-      dctx.globalCompositeOperation = 'destination-out';
-      const R = h * (.35 + .25 * inten) * (0.96 + Math.random() * .08);
-      const g = dctx.createRadialGradient(fxX, fxY - 20 * s, 0, fxX, fxY - 20 * s, R);
-      g.addColorStop(0, `rgba(0,0,0,${.95 * inten})`); g.addColorStop(1, 'rgba(0,0,0,0)');
-      dctx.fillStyle = g; dctx.fillRect(0, 0, w, h);
-    }
-    ctx.drawImage(dark, 0, 0);
-  }
-  // flames
-  if (inten > 0){
-    ctx.save(); ctx.globalCompositeOperation = dk > .15 ? 'lighter' : 'source-over';
-    const gR = h * .28 * inten, gg = ctx.createRadialGradient(fxX, fxY - 30 * s, 0, fxX, fxY - 30 * s, gR);
-    gg.addColorStop(0, 'rgba(255,150,50,.35)'); gg.addColorStop(1, 'rgba(255,120,30,0)'); ctx.fillStyle = gg; ctx.fillRect(fxX - gR, fxY - 30 * s - gR, gR * 2, gR * 2);
-    const n = Math.round(4 + 6 * inten);
-    for (let i = 0; i < n; i++) parts.push({ x: fxX + (Math.random() - .5) * 46 * s, y: fxY - 6 * s, vx: (Math.random() - .5) * .6 * s, vy: -(1.4 + Math.random() * 2.2) * s * (0.6 + inten * .6), life: 1, r: (10 + Math.random() * 12) * s * (0.6 + inten * .5), ember: Math.random() < .04 });
-    parts = parts.filter(p => p.life > 0);
-    for (const p of parts){
-      p.x += p.vx + Math.sin(p.y * .05) * .3 * s; p.y += p.vy; p.life -= p.ember ? .008 : .028 + (1 - inten) * .02;
-      if (p.life <= 0) continue;
-      if (p.ember){ ctx.fillStyle = `rgba(255,190,90,${p.life})`; ctx.fillRect(p.x, p.y, 2 * s, 2 * s); continue; }
-      const rr = p.r * p.life, gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rr);
-      const l = p.life; gr.addColorStop(0, `rgba(255,${Math.round(110 + 120 * l)},${Math.round(40 * l)},${(dk > .15 ? .55 : .8) * l})`); gr.addColorStop(1, 'rgba(255,60,0,0)');
-      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, 7); ctx.fill();
-    }
-    ctx.restore();
-  } else parts = [];
-  // rain
-  if (S.rain > 0){
-    ctx.save(); ctx.fillStyle = 'rgba(40,50,60,.18)'; ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = 'rgba(200,215,230,.35)'; ctx.lineWidth = Math.max(1, h * .002); ctx.beginPath();
-    const t = performance.now() / 6;
-    for (let i = 0; i < 220; i++){ const x = (i * 97.3 + t * .6) % w, y = (i * 53.7 + t * 4) % h; ctx.moveTo(x, y); ctx.lineTo(x - h * .008, y + h * .04); }
-    ctx.stroke(); ctx.restore();
-  }
-  // smoke when fire is out but recently burned - skip; light snow-free
+  if (Q.tree) return ['gather', 'chop'];
+  if (Q.water) return ['gather', 'fish'];
+  return null;
 }
-window.addEventListener('resize', () => { if (!$('#v-game').hidden) sizeFx(); });
-
+const HOOKS = {
+  time(h){ pass(h); },
+  walked(m, run){ S.walked = (S.walked || 0) + m; S.energy = clamp(S.energy - m * (run ? .03 : .012)); },
+  hint(q){
+    Q = q; const b = bestUse(), btn = $('#useBtn'), hint = $('#hint');
+    if (b){ const a = ACTIONS[b[0]].find(x => x.id === b[1]), lab = typeof a.label === 'function' ? a.label() : a.label, why = a.ok();
+      btn.hidden = !!why; btn.textContent = lab; hint.textContent = why ? '' : (matchMedia('(pointer:fine)').matches ? `Press E: ${lab}` : ''); btn.dataset.use = b.join(':'); }
+    else { btn.hidden = true; hint.textContent = ''; }
+    renderStats(); renderActions(false);
+  },
+  use(){ const b = $('#useBtn').dataset.use; if (b && !$('#useBtn').hidden){ const [g, id] = b.split(':'); runAction(g, id); } },
+  say, save,
+  foundCamp(c){
+    say(`🏕 You found ${c.name}! ${W.style === 'stilt' ? 'Villagers wave from their stilt houses.' : 'There are campers and a ranger here.'} It’s marked on your map.`, 'good');
+    award(20, 'found ' + c.name); render();
+  },
+  escaped(ex){
+    const bonus = 250 + S.day * 15;
+    say(`🚗 You made it out to the ${ex.label}! A car pulls over and drives you to ${ex.town}.`, 'good'); award(bonus, 'found your way back to civilization');
+    save(); render();
+    modal(`<h3>You made it out!</h3><p>After ${S.day} day${S.day > 1 ? 's' : ''} in the wild, you stumble onto the ${ex.label}. A car pulls over and takes you to <b>${ex.town}</b>.</p>
+      <p>You earned a <b>${bonus}-token rescue bonus</b>, brought down ${S.kills} animals, and earned ${fmtMoney(S.earnedPins)} in total.</p>
+      <div class="row"><button class="btn gold" data-close>Keep exploring</button><button class="btn" id="m-new">New adventure</button></div>`,
+      box => box.querySelector('#m-new').onclick = () => { closeModal(); startWorld(worldId, true); });
+  }
+};
 
 /* ============================================================
    Game Store
@@ -928,8 +882,9 @@ const SHOP = [
   { id:'mre',   ic:'🎒', cat:'Food',   name:'Survival food bucket (10 meals)', price:28, kind:'crate', give:{ beans:10 }, desc:'Ten ready meals, +25 food each.' },
   { id:'firewood', ic:'🪵', cat:'Building', name:'Bundle of firewood (10)', price:8, kind:'crate', give:{ wood:10 }, desc:'Ten pieces of dry split wood.' },
   { id:'lumber', ic:'🪚', cat:'Building', name:'Lumber pack (10 logs)', price:40, kind:'crate', give:{ logs:10 }, desc:'Ten building logs for your cabin.' },
-  { id:'kit',   ic:'🏠', cat:'Building', name:'Cabin kit (logs, nails, roof)', price:150, kind:'crate', give:{ kit:1 }, desc:'Build a cabin or stilt hut in 6 hours.' },
-  { id:'tent',  ic:'⛺', cat:'Camping',  name:'Two-person tent', price:90, kind:'crate', give:{ tent:1 }, desc:'Your first camp starts with a shelter already up.' },
+  { id:'kit',   ic:'🏠', cat:'Campsite', name:'Campsite upgrade: cabin kit', price:150, kind:'crate', give:{ kit:1 }, desc:'Build a log cabin or stilt hut in 5 hours.' },
+  { id:'walltent', ic:'⛺', cat:'Campsite', name:'Campsite upgrade: wall tent', price:80, kind:'crate', give:{ walltent:1 }, desc:'Upgrade your tent to a big canvas wall tent (palm shelter in the Amazon).' },
+  { id:'lodge', ic:'🏡', cat:'Campsite', name:'Campsite upgrade: lodge kit', price:400, kind:'crate', give:{ lodge:1 }, desc:'Turn your cabin into a big lodge with a front porch.' },
   { id:'nails', ic:'🔩', cat:'Building', name:'Box of nails (1 lb)', price:5, kind:'keep', desc:'For your workshop.' },
   { id:'window',ic:'🪟', cat:'Building', name:'Glass cabin window', price:60, kind:'keep', desc:'A real window for a real cabin.' },
   { id:'stove', ic:'♨️', cat:'Building', name:'Cast-iron wood stove', price:320, kind:'keep', desc:'The heart of a winter cabin.' },
@@ -1016,7 +971,7 @@ function renderGames(){
 }
 function renderMine(){
   const own = owned(), c = crate(), k = keeps(), pre = preorders();
-  const names = { matches:'Matches', firstaid:'First-aid kits', beans:'Camp food', wood:'Firewood', logs:'Logs', kit:'Cabin kits', tent:'Tents' };
+  const names = { matches:'Matches', firstaid:'First-aid kits', beans:'Camp food', wood:'Firewood', logs:'Logs', kit:'Cabin kits', tent:'Tents', walltent:'Wall tent kits', lodge:'Lodge kits' };
   $('#gs-mine').innerHTML = `
     <div class="stuff"><h3>Tools (every game)</h3><div class="inv">${own.map(id => `<span class="chip">${SHOP.find(i => i.id === id).name}</span>`).join('') || '<span class="chip">None yet</span>'}</div></div>
     <div class="stuff"><h3>Supply crate (drops into your next game)</h3><div class="inv">${Object.entries(c).filter(([, n]) => n > 0).map(([k2, n]) => `<span class="chip">${names[k2] || k2} <b>${n}</b></span>`).join('') || '<span class="chip">Empty</span>'}</div></div>
@@ -1038,8 +993,8 @@ function applyStore(){
   const c = crate(), got = [];
   for (const [k, n] of Object.entries(c)){
     if (!n) continue;
-    if (k === 'tent'){ const cp = camp(); if (cp.shelter < 1){ cp.shelter = 1; got.push('a tent (already set up)'); } else got.push('a tent'); continue; }
-    S[k] = (S[k] || 0) + n; got.push(`${n} ${({ matches:'matches', firstaid:'first-aid kit' + (n > 1 ? 's' : ''), beans:'camp food', wood:'firewood', logs:'logs', kit:'cabin kit' + (n > 1 ? 's' : '') })[k] || k}`);
+    if (k === 'tent') continue;
+    S[k] = (S[k] || 0) + n; got.push(`${n} ${({ matches:'matches', firstaid:'first-aid kit' + (n > 1 ? 's' : ''), beans:'camp food', wood:'firewood', logs:'logs', kit:'cabin kit' + (n > 1 ? 's' : ''), walltent:'wall tent kit', lodge:'lodge kit' })[k] || k}`);
   }
   if (got.length){ store.set('ws_crate', {}); say('📦 Your Game Store supply crate parachutes in: ' + got.join(', ') + '.', 'gold'); }
 }
@@ -1048,16 +1003,19 @@ function applyStore(){
    ============================================================ */
 function startWorld(id, fresh=false){
   worldId = id; W = WORLDS[id];
-  S = fresh ? null : store.get('ws_save_' + id, null);
-  const first = !S || S.over && fresh;
-  if (!S || fresh){ S = newGame(id); say(W.wake + W.regions[S.region].blurb); save(); }
+  S = fresh ? null : store.get('ws3_save_' + id, null);
+  if (!S || fresh){ S = newGame(id); say(W.wake + `Your tent and a small campfire are set up near the ${({ yellowstone:'Firehole River', amazon:'Tambopata River', yosemite:'Merced River' })[id]}.`); }
   applyStore(); save();
-  $('#g-title').textContent = W.title;
-  setScene(); render(); sizeFx();
-  if (!animOn){ animOn = true; requestAnimationFrame(frame); }
-  if (S.log.length <= 1) modal(`<h3>${W.title}</h3><p>${W.intro}</p>
-    <p style="color:var(--muted);font-size:14px">Tip: gather wood and light a fire before dark. Nights are cold. Your progress saves automatically on this device.</p>
-    <div class="row"><button class="btn gold" data-close>Start surviving</button></div>`);
+  $('#g-title').textContent = W.title; Q = {};
+  render();
+  if (!window.THREE){ $('#loading').textContent = 'Could not load the 3D engine. Check your connection and reload.'; return; }
+  $('#loading').hidden = false;
+  setTimeout(() => {
+    World3D.start(id, S, HOOKS); $('#loading').hidden = true; render();
+    if (S.log.length <= 1) modal(`<h3>${W.title}</h3><p>${W.intro}</p>
+      <p style="color:var(--muted);font-size:14px">You start at your campsite with a tent and a fire. Walk around with ${matchMedia('(pointer:coarse)').matches ? 'the joystick (drag the screen to look)' : 'W A S D (drag the screen to look)'}. Chop trees, hunt, find ${W.style === 'stilt' ? 'river villages' : 'campgrounds'} to trade, and look for the road back to civilization. Keep the fire burning at night!</p>
+      <div class="row"><button class="btn gold" data-close>Start surviving</button></div>`);
+  }, 30);
 }
 function route(){
   const h = location.hash.replace('#', '');
@@ -1066,16 +1024,20 @@ function route(){
     $('#v-home').hidden = true; $('#v-game').hidden = false; window.scrollTo(0, 0);
     startWorld(h);
   } else if (h === 'store'){
-    $('#v-home').hidden = true; $('#v-game').hidden = true; $('#v-store').hidden = false; animOn = false; S = null; window.scrollTo(0, 0);
+    if (window.World3D) World3D.stop();
+    $('#v-home').hidden = true; $('#v-game').hidden = true; $('#v-store').hidden = false; S = null; window.scrollTo(0, 0);
     openShop();
   } else {
-    $('#v-game').hidden = true; $('#v-home').hidden = false; animOn = false; S = null;
+    if (window.World3D) World3D.stop();
+    $('#v-game').hidden = true; $('#v-home').hidden = false; S = null;
     renderHomeGames();
   }
 }
 $$('[data-go]').forEach(c => c.onclick = () => location.hash = c.dataset.go);
 $$('[data-soon]').forEach(c => c.onclick = () => modal(`<h3>${c.dataset.soon}</h3><p>The Game Store is being built next. All three survival games are ready to play now!</p><div class="row"><button class="btn gold" data-close>OK</button></div>`));
-$('#g-back').onclick = () => { location.hash = 'home'; };
+$('#g-back').onclick = () => { save(); location.hash = 'home'; };
+$('#minimap').onclick = () => { if (S) openMap(); };
+$('#useBtn').onclick = () => HOOKS.use();
 $('#s-back').onclick = () => { location.hash = 'home'; };
 function renderHomeGames(){
   const pre = preorders(), grid = $('#v-home .grid');
