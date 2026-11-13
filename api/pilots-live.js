@@ -1,8 +1,7 @@
 'use strict';
-// Fixed public game feed. No API key, visitor data, or arbitrary upstream URLs.
-const EVENT = '401917527';
-const UPSTREAM = 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event=' + EVENT;
-const GAMECAST = 'https://www.espn.com/mens-college-basketball/game/_/gameId/' + EVENT + '/east-texas-am-portland';
+// Select Portland’s current/next game using the same Pacific-day rule as Matchup.
+const {getGame}=require('./pilots-matchup');
+const BASE='https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event=';
 
 function normalize(raw) {
   const game = raw.header?.competitions?.[0];
@@ -40,7 +39,7 @@ function normalize(raw) {
       id: p.id, text: p.text || '', period: p.period?.displayValue || '', clock: p.clock?.displayValue || '',
       homeScore: p.homeScore, awayScore: p.awayScore, scoring: p.scoringPlay === true
     })),
-    links: {gamecast: GAMECAST, official: 'https://stats.statbroadcast.com/broadcast/?id=682844'}
+    links: {gamecast: 'https://www.espn.com/mens-college-basketball/game/_/gameId/'+String(raw.header.id), official: String(raw.header.id)==='401917527'?'https://stats.statbroadcast.com/broadcast/?id=682844':'https://portlandpilots.com/sports/mens-basketball/schedule'}
   };
 }
 
@@ -50,11 +49,13 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({error: 'GET only'});
   }
   try {
-    const response = await fetch(UPSTREAM, {signal: AbortSignal.timeout(9000), headers: {'Accept': 'application/json'}});
+    const selected=await getGame();
+    if(!selected?.id)throw Error('No game feed available');
+    const response = await fetch(BASE+encodeURIComponent(selected.id), {signal: AbortSignal.timeout(2500), headers: {'Accept': 'application/json'}});
     if (!response.ok) throw new Error('Upstream unavailable');
     const raw = await response.json();
     const ids = raw.header?.competitions?.[0]?.competitors?.map(t => String(t.id)) || [];
-    if (String(raw.header?.id) !== EVENT || !ids.includes('2501') || !ids.includes('2837')) throw new Error('Wrong game');
+    if (String(raw.header?.id) !== String(selected.id) || !ids.includes('2501')) throw new Error('Wrong game');
     const data = normalize(raw);
     // No stale-while-revalidate: the UI explicitly detects an old cached payload.
     res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=15');
