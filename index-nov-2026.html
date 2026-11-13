@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caps Unlocked · Archived homepage (Nov 2026)</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d0c0a;
+    --ink-soft:#17140f;
+    --paper:#ece4d3;
+    --paper-dim:#c9c0ab;
+    --brass:#a08a5f;
+    --rust:#a8402c;
+    --rust-bright:#c24f36;
+    --faded:#8d8471;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Source Serif 4', Georgia, serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    overflow:hidden;
+  }
+
+  .hero-copy{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:1.6rem;
+    padding:8vw 6vw 8vw 7vw;
+  }
+
+  .hero-headline{
+    font-family:'Special Elite', 'Courier New', monospace;
+    font-weight:400;
+    font-size:clamp(2.1rem, 4.6vw, 3.6rem);
+    line-height:1.18;
+    color:var(--paper);
+    margin:0;
+    max-width:11ch;
+  }
+
+  .hero-headline .cursor{
+    display:inline-block;
+    width:0.55ch;
+    background:var(--rust-bright);
+    margin-left:2px;
+    animation:blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink{
+    0%,49%{opacity:1;}
+    50%,100%{opacity:0;}
+  }
+
+  .hero-sub{
+    font-size:clamp(1rem, 1.25vw, 1.15rem);
+    line-height:1.7;
+    color:var(--paper-dim);
+    max-width:34ch;
+    margin:0;
+  }
+
+  .hero-form{
+    display:flex;
+    gap:0;
+    max-width:420px;
+    margin-top:0.4rem;
+    border-bottom:1px solid var(--brass);
+    padding-bottom:2px;
+  }
+
+  .hero-form input[type="email"]{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    color:var(--paper);
+    padding:0.6rem 0.2rem;
+  }
+
+  .hero-form input::placeholder{
+    color:var(--faded);
+  }
+
+  .hero-form button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    background:none;
+    border:none;
+    color:var(--rust-bright);
+    cursor:pointer;
+    padding:0.6rem 0.4rem;
+    white-space:nowrap;
+    transition:color 0.2s ease, transform 0.2s ease;
+  }
+
+  .hero-form button:hover{
+    color:var(--paper);
+  }
+
+  .hero-form button:focus-visible,
+  .hero-form input:focus-visible{
+    outline:2px solid var(--rust-bright);
+    outline-offset:3px;
+  }
+
+  .form-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--faded);
+    letter-spacing:0.02em;
+  }
+
+  .hero-photo{
+    position:relative;
+    background-image:url('ChatGPT%20Image%20Aug%2014%2C%202026%20at%2008_57_00%20PM.png');
+    background-size:cover;
+    background-position:60% center;
+  }
+
+  .hero-photo::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg, var(--ink) 0%, rgba(13,12,10,0.15) 22%, rgba(13,12,10,0) 45%);
+  }
+
+  .hero-photo::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(0deg, rgba(13,12,10,0.55) 0%, rgba(13,12,10,0) 30%);
+  }
+
+  /* ---------- MANIFESTO ---------- */
+  .manifesto{
+    padding:9vw 7vw;
+    background:var(--ink-soft);
+    border-top:1px solid #262019;
+  }
+
+  .manifesto-inner{
+    max-width:760px;
+    margin:0 auto;
+  }
+
+  .manifesto p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:clamp(0.95rem, 1.6vw, 1.15rem);
+    line-height:2.1;
+    color:var(--paper-dim);
+    margin:0 0 0.3rem 0;
+  }
+
+  .manifesto strong{
+    color:var(--paper);
+    font-weight:500;
+  }
+
+  .manifesto .rule{
+    width:34px;
+    height:2px;
+    background:var(--rust);
+    border:none;
+    margin:0 0 2rem 0;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:5vw 7vw;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    border-top:1px solid #262019;
+  }
+
+  .brand{
+    font-family:'Special Elite', monospace;
+    font-size:1rem;
+    color:var(--paper-dim);
+  }
+
+  .brand span{color:var(--rust-bright);}
+
+  footer .fine{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--faded);
+    letter-spacing:0.04em;
+  }
+
+  /* ---------- SITE MENU ---------- */
+  .site-menu{
+    position:absolute;
+    top:2rem;
+    right:2rem;
+    z-index:10;
+  }
+
+  .site-menu summary{
+    list-style:none;
+    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    background:rgba(13,12,10,0.55);
+    border:1px solid rgba(160,138,95,0.5);
+    border-radius:3px;
+    padding:0.55rem 1rem;
+    -webkit-backdrop-filter:blur(4px);
+    backdrop-filter:blur(4px);
+    transition:color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .site-menu summary::-webkit-details-marker{display:none;}
+
+  .site-menu summary:hover,
+  .site-menu[open] summary{
+    color:var(--paper);
+    border-color:var(--rust-bright);
+  }
+
+  .site-menu summary:focus-visible{
+    outline:2px solid var(--rust-bright);
+    outline-offset:3px;
+  }
+
+  .site-menu summary .arrow{
+    display:inline-block;
+    margin-left:0.5rem;
+    transition:transform 0.2s ease;
+  }
+
+  .site-menu[open] summary .arrow{
+    transform:rotate(180deg);
+  }
+
+  .menu-list{
+    margin-top:0.4rem;
+    background:var(--ink-soft);
+    border:1px solid rgba(160,138,95,0.35);
+    border-radius:4px;
+    overflow:hidden;
+    min-width:180px;
+  }
+
+  .menu-list a{
+    display:block;
+    padding:0.75rem 1rem;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    letter-spacing:0.04em;
+    color:var(--paper-dim);
+    text-decoration:none;
+    border-bottom:1px solid rgba(160,138,95,0.18);
+    transition:color 0.15s ease, background 0.15s ease;
+  }
+
+  .menu-list a:last-child{border-bottom:none;}
+
+  .menu-list a:hover,
+  .menu-list a:focus-visible{
+    color:var(--paper);
+    background:rgba(168,64,44,0.15);
+  }
+
+  @media (max-width: 860px){
+    .site-menu{top:1.2rem; right:1.2rem;}
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 860px){
+    .hero{grid-template-columns:1fr;}
+    .hero-photo{
+      min-height:46vh;
+      order:-1;
+    }
+    .hero-photo::before{
+      background:linear-gradient(0deg, var(--ink) 0%, rgba(13,12,10,0.05) 30%, rgba(13,12,10,0) 55%);
+    }
+    .hero-copy{padding:9vw 7vw;}
+    .hero-headline{max-width:14ch;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hero-headline .cursor{animation:none; opacity:1;}
+    *{scroll-behavior:auto !important;}
+  }
+
+/* ---------- FEATURED PROJECT ---------- */
+.featured{
+padding:9vw 7vw;
+background:var(--ink);
+border-top:1px solid #262019;
+}
+
+.featured-inner{
+max-width:960px;
+margin:0 auto;
+}
+
+.featured .rule{
+width:34px;
+height:2px;
+background:var(--rust);
+border:none;
+margin:0 0 2rem 0;
+}
+
+.featured-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:4vw;
+align-items:center;
+}
+
+.featured-headline{
+font-family:'Special Elite', 'Courier New', monospace;
+font-weight:400;
+font-size:clamp(1.5rem, 2.8vw, 2.1rem);
+line-height:1.3;
+color:var(--paper);
+margin:0 0 1rem 0;
+}
+
+.featured-copy p{
+font-size:clamp(0.95rem, 1.3vw, 1.05rem);
+line-height:1.8;
+color:var(--paper-dim);
+margin:0 0 1.6rem 0;
+max-width:44ch;
+}
+
+.featured-link{
+display:inline-flex;
+align-items:center;
+gap:0.5rem;
+font-family:'IBM Plex Mono', monospace;
+font-size:0.82rem;
+letter-spacing:0.1em;
+text-transform:uppercase;
+color:var(--rust-bright);
+text-decoration:none;
+border-bottom:1px solid var(--rust);
+padding-bottom:2px;
+transition:color 0.2s ease;
+}
+
+.featured-link:hover{color:var(--paper);}
+
+.featured-image{
+display:block;
+width:100%;
+height:auto;
+border-radius:6px;
+border:1px solid rgba(160,138,95,0.35);
+box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+
+.featured-image-wrap{
+position:relative;
+}
+
+@media (max-width: 860px){
+.featured-grid{grid-template-columns:1fr; gap:6vw;}
+.featured-image-wrap{order:-1;}
+}
+
+/* ---------- WHERE'S WALDO BANNER ---------- */
+.waldo-feature{
+padding:7vw 7vw 8vw;
+background:var(--ink-soft);
+border-top:1px solid #262019;
+}
+.waldo-banner{
+max-width:1080px;
+margin:0 auto;
+background:#fcf7ed;
+color:#193b51;
+border-radius:14px;
+padding:clamp(1.4rem,3.5vw,2.6rem);
+box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+.waldo-head{
+display:flex;
+align-items:flex-end;
+justify-content:space-between;
+gap:1.5rem;
+flex-wrap:wrap;
+margin-bottom:1.6rem;
+}
+.waldo-banner .eyebrow{color:#cf3436;}
+.waldo-title{
+font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+font-weight:900;
+font-size:clamp(2.2rem,5.4vw,3.8rem);
+letter-spacing:-0.04em;
+line-height:1;
+margin:0.5rem 0 0.7rem;
+}
+.waldo-title span{color:#cf3436;}
+.waldo-head p{
+font-size:clamp(0.95rem,1.3vw,1.08rem);
+line-height:1.6;
+margin:0;
+max-width:46ch;
+}
+.waldo-cta{
+display:inline-block;
+font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+font-weight:800;
+font-size:1rem;
+background:#cf3436;
+color:#fff;
+text-decoration:none;
+padding:0.85rem 1.4rem;
+border:3px solid #193b51;
+border-radius:40px;
+box-shadow:4px 4px 0 #193b51;
+white-space:nowrap;
+}
+.waldo-cta:hover{transform:translate(1px,1px);box-shadow:3px 3px 0 #193b51;}
+.waldo-tiles{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:14px;
+}
+.waldo-tiles a{
+display:block;
+border:3px solid #193b51;
+border-radius:12px;
+overflow:hidden;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+.waldo-tiles a:hover{transform:translateY(-4px);box-shadow:4px 5px 0 #193b51;}
+.waldo-tiles img{display:block;width:100%;height:auto;}
+.waldo-note{
+font-family:'IBM Plex Mono',monospace;
+font-size:0.72rem;
+color:#526a75;
+margin:1.2rem 0 0;
+}
+.waldo-cta:focus-visible,.waldo-tiles a:focus-visible,.app-card a:focus-visible{
+outline:3px solid #1867c0;
+outline-offset:4px;
+}
+
+/* ---------- MORE TO PLAY ---------- */
+.more-apps{
+padding:8vw 7vw;
+background:var(--ink);
+border-top:1px solid #262019;
+}
+.more-apps-inner{max-width:1080px;margin:0 auto;}
+.more-apps .rule{width:34px;height:2px;background:var(--rust);border:none;margin:0 0 2rem 0;}
+.more-apps h2{
+font-family:'Special Elite','Courier New',monospace;
+font-weight:400;
+font-size:clamp(1.5rem,2.8vw,2.1rem);
+color:var(--paper);
+margin:0 0 2rem;
+}
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2vw;}
+.app-grid-2{grid-template-columns:repeat(2,1fr);gap:3vw;}
+.app-grid-4{grid-template-columns:repeat(4,1fr);gap:1.8vw;}
+@media (max-width: 1100px) and (min-width: 861px){.app-grid-4{grid-template-columns:repeat(2,1fr);gap:3vw;}}
+.app-card{display:flex;flex-direction:column;gap:1rem;}
+.app-card img{
+display:block;width:100%;height:auto;
+border-radius:6px;
+border:1px solid rgba(160,138,95,0.35);
+box-shadow:0 14px 36px rgba(0,0,0,0.4);
+transition:transform 0.15s ease;
+}
+.app-card a:hover img{transform:translateY(-3px);}
+.app-card p{
+font-size:clamp(0.92rem,1.2vw,1rem);
+line-height:1.7;
+color:var(--paper-dim);
+margin:0;
+flex:1;
+}
+.app-card p strong{color:var(--paper);font-weight:500;}
+.app-card .featured-link{align-self:flex-start;}
+
+/* ---------- BIRDHOUSE WIDGET ---------- */
+.bird-widget{display:grid;grid-template-columns:1.05fr 1fr;gap:3.2vw;align-items:start;}
+.bird-widget > a img{display:block;width:100%;height:auto;border-radius:6px;border:1px solid rgba(160,138,95,0.35);box-shadow:0 14px 36px rgba(0,0,0,0.4);transition:transform 0.15s ease;}
+.bird-widget > a:hover img{transform:translateY(-3px);}
+.bird-widget .bw-lead{font-size:clamp(0.95rem,1.25vw,1.05rem);line-height:1.7;color:var(--paper-dim);margin:0 0 1.4rem;}
+.bird-widget .bw-lead strong{color:var(--paper);font-weight:500;}
+.bw-label{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--brass);margin:0 0 0.6rem;}
+.bw-birds{display:flex;flex-wrap:wrap;gap:0.45rem;margin:0 0 1.4rem;padding:0;list-style:none;}
+.bw-birds li{font-size:0.82rem;color:var(--paper);border:1px solid rgba(160,138,95,0.45);border-radius:999px;padding:0.28rem 0.75rem;}
+.bw-steps{list-style:none;margin:0 0 1.4rem;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem 1rem;}
+.bw-steps a{display:flex;gap:0.5rem;align-items:baseline;color:var(--paper-dim);text-decoration:none;font-size:0.88rem;padding:0.2rem 0;border-bottom:1px dotted rgba(160,138,95,0.35);}
+.bw-steps a:hover{color:var(--paper);border-bottom-color:var(--rust-bright);}
+.bw-steps span{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--rust-bright);}
+.bw-note{font-size:0.82rem;color:var(--faded);margin:0 0 1.2rem;line-height:1.6;}
+@media (max-width: 860px){.bird-widget{grid-template-columns:1fr;gap:7vw;}.bw-steps{grid-template-columns:repeat(2,1fr);}}
+
+.menu-label{
+display:block;
+padding:0.55rem 1rem 0.35rem;
+font-family:'IBM Plex Mono',monospace;
+font-size:0.62rem;
+letter-spacing:0.22em;
+text-transform:uppercase;
+color:var(--brass);
+border-top:1px solid rgba(160,138,95,0.35);
+}
+
+@media (max-width: 860px){
+.waldo-tiles{grid-template-columns:repeat(2,1fr);}
+.app-grid{grid-template-columns:1fr;gap:9vw;}
+}
+</style>
+</head>
+<body>
+<div style="position:relative;z-index:20;background:#a08a5f;color:#0d0c0a;font-family:'IBM Plex Mono',monospace;font-size:0.74rem;letter-spacing:0.14em;text-transform:uppercase;text-align:center;padding:0.55rem 1rem;">Archived homepage &middot; Nov 2026 &middot; kept for reference &middot; <a href="/" style="color:#0d0c0a;">Go to the current site &rarr;</a></div>
+
+<section class="hero">
+  <details class="site-menu">
+    <summary>Menu<span class="arrow" aria-hidden="true">▾</span></summary>
+    <nav class="menu-list" aria-label="Site sections">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="about.html">Bio</a>
+      <span class="menu-label">Play</span>
+      <a href="/waldo">Where's Waldo?</a>
+      <a href="/kanoodle">Kanoodle Genius</a>
+      <a href="/primeclimb">Prime Climb</a>
+      <a href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener">Boardzzz ↗</a>
+      <a href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener">Guess ↗</a>
+      <a href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener">Meals ↗</a>
+      <a href="/mindworks">Mindworks</a>
+      <a href="/appsnapp">Appsnapp 1.0</a>
+      <a href="/wildsurvival">Wild Survival</a>
+      <a href="/birdhouse">Birdhouse Explorer</a>
+    </nav>
+  </details>
+
+  <div class="hero-copy">
+    <p class="eyebrow">a workspace for projects...with potential</p>
+
+    <h1 class="hero-headline" id="typedHeadline" aria-label="Caps unlocked. And so much more.">
+      <span id="typedText"></span><span class="cursor" aria-hidden="true"></span>
+    </h1>
+  </div>
+
+  <div class="hero-photo" role="img" aria-label="Close-up of a vintage black typewriter keyboard, its Caps Lock key relabeled Caps Unlocked"></div>
+</section>
+
+
+
+<section class="featured">
+<div class="featured-inner">
+<hr class="rule">
+<div class="featured-grid">
+<div class="featured-copy">
+<h2 class="featured-headline">A family project, finished.</h2>
+<p>Click through to play <strong style="color:var(--paper);">The Tlaxcala Trail</strong> — a bilingual choose-your-own-adventure built for a kid who loves history, inspired by an old favorite: Oregon Trail.</p>
+<a class="featured-link" href="/tlaxcalatrail">Play the trail &rarr;</a>
+</div>
+<div class="featured-image-wrap">
+<a href="/tlaxcalatrail" aria-label="Play The Tlaxcala Trail">
+<img class="featured-image" src="tlaxcala-preview.svg" alt="Title screen of The Tlaxcala Trail, a bilingual kids' adventure game" loading="lazy">
+</a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="waldo-feature" aria-labelledby="waldoTitle">
+<div class="waldo-banner">
+<div class="waldo-head">
+<div>
+<p class="eyebrow">Trunk-or-Treat booth</p>
+<h2 class="waldo-title" id="waldoTitle">Where's <span>Waldo?</span></h2>
+<p>Four quick games for kids K–5, designed with my son for our Trunk-or-Treat booth. Pick one and play — no names, no sign-ins.</p>
+</div>
+<a class="waldo-cta" href="/waldo">Open the booth &rarr;</a>
+</div>
+<div class="waldo-tiles">
+<a href="/waldo?play=search" aria-label="Play Big Picture Search"><img src="teasers/waldo-search.svg" alt="Big Picture Search: a busy festival crowd with a magnifying glass" loading="lazy"></a>
+<a href="/waldo?play=hats" aria-label="Play Hat Trick"><img src="teasers/waldo-hats.svg" alt="Hat Trick: three top hats, one lifted to show a gold star" loading="lazy"></a>
+<a href="/waldo?play=pairs" aria-label="Play Perfect Pairs"><img src="teasers/waldo-pairs.svg" alt="Perfect Pairs: memory cards with a countdown timer" loading="lazy"></a>
+<a href="/waldo?play=hand" aria-label="Play Waldo's Hand"><img src="teasers/waldo-hand.svg" alt="Waldo's Hand: a hand popping out of one of six trunks" loading="lazy"></a>
+</div>
+<p class="waldo-note">Unofficial fan-made games.</p>
+</div>
+</section>
+
+<section class="more-apps" aria-labelledby="puzzleTitle">
+<div class="more-apps-inner">
+<hr class="rule">
+<h2 id="puzzleTitle">Puzzles &amp; numbers.</h2>
+<div class="app-grid app-grid-2">
+<div class="app-card">
+<a href="/kanoodle" aria-label="Open Kanoodle Genius"><img src="teasers/kanoodle.svg" alt="Kanoodle Genius: a puzzle board half-filled with colored balls and one piece about to slot in" loading="lazy"></a>
+<p><strong>Kanoodle Genius</strong> — 40 new challenges for the puzzle set, flat boards and pyramids, each with exactly one answer.</p>
+<a class="featured-link" href="/kanoodle">Open Kanoodle Genius &rarr;</a>
+</div>
+<div class="app-card">
+<a href="/primeclimb" aria-label="Open Prime Climb"><img src="teasers/primeclimb.svg" alt="Prime Climb: a numbered path with primes highlighted, two pawns and a pair of dice" loading="lazy"></a>
+<p><strong>Prime Climb</strong> — a co-pilot for the board game. Learn the moves, take on the computer, and climb all the way to 101.</p>
+<a class="featured-link" href="/primeclimb">Open Prime Climb &rarr;</a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="more-apps" aria-labelledby="birdTitle">
+<div class="more-apps-inner">
+<hr class="rule">
+<h2 id="birdTitle">Out in the yard.</h2>
+<div class="bird-widget">
+<a href="/birdhouse" aria-label="Open Birdhouse Explorer"><img src="teasers/birdhouse.svg" alt="Birdhouse Explorer: a red-roofed birdhouse on a tree trunk with a chickadee on the branch" loading="lazy"></a>
+<div>
+<p class="bw-lead"><strong>Birdhouse Explorer</strong> — an interactive field journal for young builders. Meet five birds that live near Bethany, survey your own yard, score the options, then plan, build and install a nest box with an adult and keep track of who moves in.</p>
+<p class="bw-label">Your wild neighbors</p>
+<ul class="bw-birds">
+<li>Chestnut-backed chickadee</li>
+<li>Red-breasted nuthatch</li>
+<li>Violet-green swallow</li>
+<li>House wren</li>
+<li>Northern flicker</li>
+</ul>
+<p class="bw-label">Nine chapters</p>
+<ol class="bw-steps">
+<li><a href="/birdhouse#chapter-1"><span>01</span>Explore</a></li>
+<li><a href="/birdhouse#chapter-2"><span>02</span>Meet the birds</a></li>
+<li><a href="/birdhouse#chapter-3"><span>03</span>Investigate</a></li>
+<li><a href="/birdhouse#chapter-4"><span>04</span>Compare</a></li>
+<li><a href="/birdhouse#chapter-5"><span>05</span>Choose</a></li>
+<li><a href="/birdhouse#chapter-6"><span>06</span>Plan</a></li>
+<li><a href="/birdhouse#chapter-7"><span>07</span>Build</a></li>
+<li><a href="/birdhouse#chapter-8"><span>08</span>Observe</a></li>
+<li><a href="/birdhouse#chapter-9"><span>09</span>Winter box</a></li>
+</ol>
+<p class="bw-note">Each bird links to an official Audubon build plan. Notes and checklists save in your browser, and you can download a backup or print the journal as a PDF.</p>
+<a class="featured-link" href="/birdhouse">Open Birdhouse Explorer &rarr;</a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="more-apps" aria-labelledby="moreTitle">
+<div class="more-apps-inner">
+<hr class="rule">
+<h2 id="moreTitle">More to play.</h2>
+<div class="app-grid app-grid-4">
+<div class="app-card">
+<a href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener" aria-label="Open Boardzzz"><img src="teasers/boardzzz.svg" alt="Boardzzz: a colorful game board and two dice" loading="lazy"></a>
+<p><strong>Boardzzz</strong> — our family game hub. Pull up a chair, pick a game, and play.</p>
+<a class="featured-link" href="https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec" target="_blank" rel="noopener">Open Boardzzz &#8599;</a>
+</div>
+<div class="app-card">
+<a href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener" aria-label="Open Guess"><img src="teasers/guess.svg" alt="Guess: a trivia question with four answer choices" loading="lazy"></a>
+<p><strong>Guess</strong> — a trivia game. Read the question, take your best shot, and see how many you get right.</p>
+<a class="featured-link" href="https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec" target="_blank" rel="noopener">Open Guess &#8599;</a>
+</div>
+<div class="app-card">
+<a href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener" aria-label="Open Meals"><img src="teasers/meals.svg" alt="Meals: a week of dinners with tonight's pick highlighted" loading="lazy"></a>
+<p><strong>Meals</strong> — what's for dinner? A meal picker built from our favorite saved recipes.</p>
+<a class="featured-link" href="https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec" target="_blank" rel="noopener">Open Meals &#8599;</a>
+</div>
+<div class="app-card">
+<a href="/mindworks" aria-label="Open Mindworks"><img src="teasers/mindworks.svg" alt="Mindworks: three interlocking gears turning together" loading="lazy"></a>
+<p><strong>Mindworks</strong> — walk around a little town and play the brain games inside each building. Earn coins and grow your house from a cottage to a Super Mansion.</p>
+<a class="featured-link" href="/mindworks">Open Mindworks</a>
+</div>
+<div class="app-card">
+<a href="/appsnapp" aria-label="Open Appsnapp 1.0"><img src="teasers/appsnapp.svg" alt="Appsnapp 1.0: a blocky house being built on a grassy lot at night" loading="lazy"></a>
+<p><strong>Appsnapp 1.0</strong> — build apps to earn tokens, buy land, and build your own house block by block. Watch out for the forest at night.</p>
+<a class="featured-link" href="/appsnapp">Open Appsnapp 1.0 &rarr;</a>
+</div>
+<div class="app-card">
+<a href="/wildsurvival" aria-label="Open Wild Survival"><img src="teasers/wildsurvival.svg" alt="Wild Survival: a campfire burning beside Old Faithful and a grazing bison in Yellowstone" loading="lazy"></a>
+<p><strong>Wild Survival</strong> — stranded in Yellowstone, the Amazon, or Yosemite. Keep your fire burning, hunt and fish, build a cabin, trade furs with villagers, and earn tokens for every day you survive.</p>
+<a class="featured-link" href="/wildsurvival">Open Wild Survival &rarr;</a>
+</div>
+</div>
+</div>
+</section>
+
+<footer>
+  <div class="brand">caps<span>unlocked</span></div>
+  <p class="fine">© 2026 Caps Unlocked — write it messy</p>
+</footer>
+
+<script>
+  (function(){
+    var target = "Caps unlocked.\nAnd so much more.";
+    var el = document.getElementById('typedText');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function renderPlain(){
+      el.innerHTML = target.replace(/\n/g, '<br>');
+    }
+
+    if (reduce) {
+      renderPlain();
+    } else {
+      var i = 0;
+      function type(){
+        if (i <= target.length){
+          el.innerHTML = target.slice(0, i).replace(/\n/g, '<br>');
+          i++;
+          var delay = 34 + Math.random() * 40;
+          setTimeout(type, delay);
+        }
+      }
+      setTimeout(type, 250);
+    }
+
+  })();
+</script>
+
+</body>
+</html>
