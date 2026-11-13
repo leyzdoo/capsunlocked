@@ -37,240 +37,130 @@
     color:var(--brass);
   }
 
-  /* ---------- HERO: THE TYPEWRITER ---------- */
+  /* ---------- HERO ---------- */
   .hero{
     position:relative;
     min-height:100svh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:1.4rem;
-    padding:5.5rem 4vw 3rem;
-    background:
-      radial-gradient(ellipse 70% 55% at 50% 62%, rgba(160,138,95,0.13), rgba(13,12,10,0) 70%),
-      var(--ink);
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
     overflow:hidden;
   }
-  .hero .eyebrow{margin:0;text-align:center;}
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 
-  .typewriter{
-    --k:clamp(42px, min(5.1vw, 6.4vh), 72px);
-    --gap:calc(var(--k) * 0.26);
+  .hero-copy{
     position:relative;
-    width:max-content;
-    max-width:100%;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-  }
-
-  /* carriage, paper and platen */
-  .carriage{position:relative;width:calc(var(--k) * 10.6);display:flex;flex-direction:column;align-items:center;z-index:1;}
-  .paper{
-    position:relative;
-    width:72%;
-    height:calc(var(--k) * 2.2);
-    background:linear-gradient(180deg,#f6f0e2 0%,#efe7d4 100%);
-    box-shadow:0 -6px 24px rgba(0,0,0,0.35), inset 0 0 40px rgba(160,138,95,0.18);
-    padding:calc(var(--k)*0.28) calc(var(--k)*0.4) calc(var(--k)*0.12);
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-end;
-    overflow:hidden;
-    margin-bottom:calc(var(--k) * -0.18);
-  }
-  .paper::before{ /* faint ruled margin */
-    content:"";position:absolute;top:0;bottom:0;left:calc(var(--k)*0.26);width:1px;background:rgba(168,64,44,0.28);
-  }
-  .paper-text{
-    margin:0;
-    font-family:'Special Elite','Courier New',monospace;
-    font-size:calc(var(--k) * 0.36);
-    line-height:1.3;
-    color:#1d1a16;
-    white-space:pre-wrap;
-    word-break:break-word;
-  }
-  .paper-text.caps{text-transform:uppercase;}
-  .paper-text .cursor{
-    display:inline-block;width:0.55ch;height:1em;vertical-align:-0.12em;
-    background:var(--rust-bright);margin-left:1px;animation:blink 1s steps(1) infinite;
-  }
-  .paper-text .cmd{color:var(--rust);}
-  @keyframes blink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
-
-  .platen{
-    position:relative;
-    width:100%;
-    height:calc(var(--k) * 0.62);
-    border-radius:calc(var(--k) * 0.31);
-    background:linear-gradient(180deg,#3a3631 0%,#0e0d0c 38%,#000 55%,#26231f 100%);
-    box-shadow:0 8px 18px rgba(0,0,0,0.55);
-  }
-  .platen::before,.platen::after{ /* knobs */
-    content:"";position:absolute;top:50%;width:calc(var(--k)*0.55);height:calc(var(--k)*0.82);
-    transform:translateY(-50%);border-radius:calc(var(--k)*0.16);
-    background:repeating-linear-gradient(90deg,#1a1815 0 3px,#3b3731 3px 5px);
-    box-shadow:inset 0 0 6px rgba(0,0,0,0.8);
-  }
-  .platen::before{left:calc(var(--k) * -0.45);}
-  .platen::after{right:calc(var(--k) * -0.45);}
-  .bail{position:absolute;left:12%;right:12%;top:calc(var(--k)*0.08);height:3px;border-radius:2px;background:linear-gradient(90deg,#8d877b,#e8e3d9,#8d877b);opacity:0.75;}
-
-  /* the body */
-  .machine{
-    position:relative;
-    margin-top:calc(var(--k) * -0.1);
-    padding:calc(var(--k)*0.55) calc(var(--k)*0.6) calc(var(--k)*0.45);
-    border-radius:calc(var(--k)*0.5) calc(var(--k)*0.5) calc(var(--k)*0.75) calc(var(--k)*0.75);
-    background:
-      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255,255,255,0.10), rgba(255,255,255,0) 60%),
-      linear-gradient(180deg,#1f1c18 0%,#11100e 55%,#080807 100%);
-    box-shadow:
-      inset 0 2px 0 rgba(255,255,255,0.08),
-      inset 0 -10px 30px rgba(0,0,0,0.6),
-      0 30px 60px rgba(0,0,0,0.6);
-  }
-  .nameplate{
-    display:block;
-    width:max-content;
-    margin:0 auto calc(var(--k)*0.38);
-    padding:calc(var(--k)*0.08) calc(var(--k)*0.36);
-    font-family:'Special Elite',monospace;
-    font-size:calc(var(--k)*0.27);
-    letter-spacing:0.28em;
-    color:#1a1308;
-    background:linear-gradient(180deg,#d9c38f 0%,#a08a5f 45%,#c9b07a 100%);
-    border-radius:3px;
-    box-shadow:0 1px 0 rgba(255,255,255,0.25) inset, 0 2px 4px rgba(0,0,0,0.6);
-  }
-
-  .keyboard{display:flex;flex-direction:column;align-items:center;gap:calc(var(--gap) * 0.55);}
-  .key-row{display:flex;gap:var(--gap);}
-
-  /* a single typewriter key */
-  .key{
-    position:relative;
-    display:block;
-    width:var(--k);
-    height:calc(var(--k) * 1.22);
-    padding:0;margin:0;border:0;background:none;
-    cursor:pointer;
-    text-decoration:none;
-    color:inherit;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .key-wide{width:calc(var(--k) * 1.55);}
-  .key-space{width:calc(var(--k) * 6.2);}
-  .key-stem{
-    position:absolute;left:50%;top:calc(var(--k)*0.45);
-    width:calc(var(--k)*0.13);height:calc(var(--k)*0.77);
-    transform:translateX(-50%);
-    background:linear-gradient(90deg,#3d3a35,#a7a196 45%,#3d3a35);
-    border-radius:2px;
-  }
-  .key-shadow{
-    position:absolute;left:12%;right:12%;bottom:0;height:calc(var(--k)*0.16);
-    border-radius:50%;background:rgba(0,0,0,0.65);filter:blur(3px);
-    transition:transform 70ms ease, opacity 70ms ease;
-  }
-  .key-top{
-    position:absolute;left:0;top:0;width:100%;height:var(--k);
-    border-radius:calc(var(--k) / 2);
-    background:linear-gradient(160deg,#fbf8f1 0%,#b5afa3 30%,#6f6a60 55%,#e4dfd4 80%,#8f897d 100%);
-    box-shadow:0 calc(var(--k)*0.1) 0 #2a2723, 0 calc(var(--k)*0.13) 8px rgba(0,0,0,0.6);
-    transition:transform 70ms cubic-bezier(.3,.7,.4,1), box-shadow 70ms ease;
-  }
-  .key-top::before{ /* black glass face inside the chrome ring */
-    content:"";position:absolute;inset:calc(var(--k)*0.085);
-    border-radius:inherit;
-    background:radial-gradient(circle at 42% 32%,#3a3632 0%,#151311 45%,#050504 100%);
-    box-shadow:inset 0 2px 3px rgba(255,255,255,0.12), inset 0 -3px 6px rgba(0,0,0,0.8);
-  }
-  .key-glyph{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-family:'IBM Plex Mono',monospace;font-weight:500;
-    font-size:calc(var(--k)*0.34);color:#efe8d8;
-    text-transform:uppercase;letter-spacing:0.02em;
-  }
-  .key-wide .key-glyph,.key-space .key-glyph{font-size:calc(var(--k)*0.17);letter-spacing:0.16em;}
-  .key-caps .key-glyph{color:var(--rust-bright);line-height:1.1;text-align:center;}
-
-  .key:hover .key-top{box-shadow:0 calc(var(--k)*0.1) 0 #2a2723, 0 calc(var(--k)*0.13) 8px rgba(0,0,0,0.6), 0 0 0 2px rgba(194,79,54,0.55);}
-  .key:focus{outline:none;}
-  .key:focus-visible .key-top{box-shadow:0 calc(var(--k)*0.1) 0 #2a2723, 0 0 0 3px var(--rust-bright);}
-
-  /* pressed: the key sinks onto its stem */
-  .key.is-down .key-top,
-  .key:active .key-top{
-    transform:translateY(calc(var(--k) * 0.15));
-    box-shadow:0 calc(var(--k)*0.02) 0 #2a2723, 0 2px 3px rgba(0,0,0,0.7);
-  }
-  .key.is-down .key-shadow,
-  .key:active .key-shadow{transform:scaleX(0.82);opacity:0.4;}
-  .key-caps.locked .key-top{transform:translateY(calc(var(--k) * 0.15));box-shadow:0 calc(var(--k)*0.02) 0 #2a2723, 0 2px 3px rgba(0,0,0,0.7);}
-
-  /* DIY hack: paper label + masking tape stuck on the key */
-  .label{
-    position:absolute;left:50%;top:50%;
-    width:calc(var(--k) * 1.12);
-    transform:translate(-50%,-50%) rotate(var(--r, -3deg));
-    pointer-events:none;
     z-index:2;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:1.6rem;
+    padding:8vw 6vw 8vw 7vw;
   }
-  .label-paper{
-    display:flex;align-items:center;justify-content:center;
-    min-height:calc(var(--k) * 0.62);
-    padding:calc(var(--k)*0.08) calc(var(--k)*0.06);
-    background:linear-gradient(175deg,#fbf6ea 0%,#f1e8d3 100%);
-    box-shadow:0 2px 3px rgba(0,0,0,0.55);
-    font-family:'Caveat',cursive;font-weight:700;
-    font-size:calc(var(--k) * 0.255);
-    line-height:0.95;
-    text-align:center;
-    color:#1f2a52;
-    /* slightly torn edges */
-    clip-path:polygon(0 4%,8% 0,22% 3%,37% 0,55% 2%,72% 0,88% 3%,100% 1%,99% 30%,100% 62%,98% 96%,84% 100%,63% 97%,44% 100%,26% 97%,9% 100%,1% 96%,0 60%,2% 30%);
-  }
-  .label-tape{
-    position:absolute;left:50%;top:calc(var(--k) * -0.1);
-    width:calc(var(--k) * 0.72);height:calc(var(--k) * 0.22);
-    transform:translateX(-50%) rotate(var(--tr, 4deg));
-    background:rgba(222,205,160,0.78);
-    box-shadow:0 1px 1px rgba(0,0,0,0.25);
-    clip-path:polygon(0 8%,4% 0,8% 10%,12% 0,100% 0,96% 12%,100% 25%,96% 40%,100% 55%,96% 70%,100% 85%,97% 100%,0 100%,4% 85%,0 70%,4% 55%,0 40%,4% 25%);
-  }
-  .label-tape.bottom{top:auto;bottom:calc(var(--k) * -0.08);transform:translateX(-50%) rotate(calc(var(--tr, 4deg) * -1.4));width:calc(var(--k) * 0.5);}
-  .key.taped:hover .label-paper{color:var(--rust);}
 
-  .typewriter-foot{
-    display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
-    width:100%;margin-top:1rem;
+  .hero-headline{
+    font-family:'Special Elite', 'Courier New', monospace;
+    font-weight:400;
+    font-size:clamp(2.1rem, 4.6vw, 3.6rem);
+    line-height:1.18;
+    color:var(--paper);
+    margin:0;
+    max-width:11ch;
   }
-  .hint{
-    margin:0;font-family:'IBM Plex Mono',monospace;font-size:0.74rem;letter-spacing:0.06em;color:var(--faded);
-  }
-  .hint strong{color:var(--paper-dim);font-weight:500;}
-  .sound-toggle{
-    font-family:'IBM Plex Mono',monospace;font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
-    background:none;border:1px solid rgba(160,138,95,0.4);border-radius:3px;color:var(--paper-dim);
-    padding:0.35rem 0.7rem;cursor:pointer;
-  }
-  .sound-toggle:hover{color:var(--paper);border-color:var(--rust-bright);}
-  .sound-toggle:focus-visible{outline:2px solid var(--rust-bright);outline-offset:3px;}
 
-  /* compact machine for narrow screens: only the taped keys */
-  @media (max-width: 900px){
-    .hero{padding:5.5rem 4vw 3rem;}
-    .typewriter{--k:clamp(54px, 15.5vw, 84px);--gap:calc(var(--k) * 0.22);}
-    .carriage{width:calc(var(--k) * 4.9);}
-    .paper{width:86%;height:calc(var(--k) * 1.9);}
-    .paper-text{font-size:calc(var(--k) * 0.25);}
-    .machine{padding:calc(var(--k)*0.45) calc(var(--k)*0.35) calc(var(--k)*0.4);}
-    .key-space{width:calc(var(--k) * 3.4);}
-    .label-paper{font-size:calc(var(--k) * 0.23);}
+  .hero-headline .cursor{
+    display:inline-block;
+    width:0.55ch;
+    background:var(--rust-bright);
+    margin-left:2px;
+    animation:blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink{
+    0%,49%{opacity:1;}
+    50%,100%{opacity:0;}
+  }
+
+  .hero-sub{
+    font-size:clamp(1rem, 1.25vw, 1.15rem);
+    line-height:1.7;
+    color:var(--paper-dim);
+    max-width:34ch;
+    margin:0;
+  }
+
+  .hero-form{
+    display:flex;
+    gap:0;
+    max-width:420px;
+    margin-top:0.4rem;
+    border-bottom:1px solid var(--brass);
+    padding-bottom:2px;
+  }
+
+  .hero-form input[type="email"]{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    color:var(--paper);
+    padding:0.6rem 0.2rem;
+  }
+
+  .hero-form input::placeholder{
+    color:var(--faded);
+  }
+
+  .hero-form button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    background:none;
+    border:none;
+    color:var(--rust-bright);
+    cursor:pointer;
+    padding:0.6rem 0.4rem;
+    white-space:nowrap;
+    transition:color 0.2s ease, transform 0.2s ease;
+  }
+
+  .hero-form button:hover{
+    color:var(--paper);
+  }
+
+  .hero-form button:focus-visible,
+  .hero-form input:focus-visible{
+    outline:2px solid var(--rust-bright);
+    outline-offset:3px;
+  }
+
+  .form-note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--faded);
+    letter-spacing:0.02em;
+  }
+
+  .hero-photo{
+    position:relative;
+    background-image:url('ChatGPT%20Image%20Aug%2014%2C%202026%20at%2008_57_00%20PM.png');
+    background-size:cover;
+    background-position:60% center;
+  }
+
+  .hero-photo::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg, var(--ink) 0%, rgba(13,12,10,0.15) 22%, rgba(13,12,10,0) 45%);
+  }
+
+  .hero-photo::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(0deg, rgba(13,12,10,0.55) 0%, rgba(13,12,10,0) 30%);
   }
 
   /* ---------- MANIFESTO ---------- */
@@ -413,9 +303,22 @@
     .site-menu{top:1.2rem; right:1.2rem;}
   }
 
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 860px){
+    .hero{grid-template-columns:1fr;}
+    .hero-photo{
+      min-height:46vh;
+      order:-1;
+    }
+    .hero-photo::before{
+      background:linear-gradient(0deg, var(--ink) 0%, rgba(13,12,10,0.05) 30%, rgba(13,12,10,0) 55%);
+    }
+    .hero-copy{padding:9vw 7vw;}
+    .hero-headline{max-width:14ch;}
+  }
+
   @media (prefers-reduced-motion: reduce){
-    .paper-text .cursor{animation:none; opacity:1;}
-    .key-top,.key-shadow{transition:none;}
+    .hero-headline .cursor{animation:none; opacity:1;}
     *{scroll-behavior:auto !important;}
   }
 
@@ -646,6 +549,99 @@ border-top:1px solid rgba(160,138,95,0.35);
 .waldo-tiles{grid-template-columns:repeat(2,1fr);}
 .app-grid{grid-template-columns:1fr;gap:9vw;}
 }
+  /* ---------- PHOTO KEYS: taped labels stuck onto the typewriter photo ---------- */
+  .hero-photo{position:relative;overflow:hidden;container-type:size;min-height:100svh;background:#0b0a09;}
+  .hero-photo::before,.hero-photo::after{display:none;}
+  .photo-stage{
+    position:absolute;top:50%;left:50%;
+    width:max(100cqw, calc(100cqh * 0.66558));
+    aspect-ratio:1023 / 1537;
+    transform:translate(-50%,-50%);
+    container-type:inline-size;
+  }
+  .photo-stage > img{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .stage-fade{
+    position:absolute;inset:0;pointer-events:none;
+    background:
+      linear-gradient(90deg, var(--ink) 0%, rgba(13,12,10,0.25) 12%, rgba(13,12,10,0) 26%),
+      linear-gradient(0deg, rgba(13,12,10,0.55) 0%, rgba(13,12,10,0) 22%);
+  }
+  .pkey{
+    position:absolute;
+    left:calc((var(--x) - var(--d) / 2) * 1cqw);
+    top:calc((var(--y) - var(--d) / 2) * 1cqw);
+    width:calc(var(--d) * 1cqw);height:calc(var(--d) * 1cqw);
+    padding:0;margin:0;border:0;background:none;border-radius:50%;
+    cursor:pointer;color:inherit;text-decoration:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .pkey-well{ /* the dark hole the key sinks into */
+    position:absolute;inset:-2%;border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, #000 55%, #1b1815 100%);
+    box-shadow:inset 0 4px 8px rgba(0,0,0,0.9);
+  }
+  .pkey-cap{ /* a cut-out of the photo's own keycap */
+    position:absolute;inset:0;border-radius:50%;
+    background-image:url('ChatGPT%20Image%20Aug%2014%2C%202026%20at%2008_57_00%20PM.png');
+    background-repeat:no-repeat;
+    background-size:100cqw auto;
+    background-position:calc((var(--d) / 2 - var(--x)) * 1cqw) calc((var(--d) / 2 - var(--y)) * 1cqw);
+    transition:transform 70ms cubic-bezier(.3,.7,.4,1), filter 70ms ease, box-shadow 70ms ease;
+  }
+  .pkey.is-down .pkey-cap,.pkey:active .pkey-cap{
+    transform:translateY(calc(var(--d) * 0.075cqw)) scale(0.94);
+    filter:brightness(0.78);
+  }
+  .pkey:hover .pkey-cap{box-shadow:0 0 0 2px rgba(194,79,54,0.7), 0 0 18px rgba(194,79,54,0.35);}
+  .pkey:focus{outline:none;}
+  .pkey:focus-visible .pkey-cap{box-shadow:0 0 0 3px var(--rust-bright);}
+
+  /* the DIY hack: torn paper + masking tape */
+  .tape-label{
+    position:absolute;left:50%;top:50%;
+    width:calc(var(--d) * 1.24cqw);
+    transform:translate(-50%,-50%) rotate(var(--r,-14deg));
+    pointer-events:none;
+    transition:transform 70ms cubic-bezier(.3,.7,.4,1);
+  }
+  .pkey.is-down .tape-label,.pkey:active .tape-label{
+    transform:translate(-50%,-50%) translateY(calc(var(--d) * 0.075cqw)) rotate(var(--r,-14deg)) scale(0.94);
+  }
+  .tape-paper{
+    display:flex;align-items:center;justify-content:center;
+    min-height:calc(var(--d) * 0.56cqw);
+    padding:calc(var(--d) * 0.06cqw) calc(var(--d) * 0.05cqw);
+    background:linear-gradient(170deg,#fbf6ea 0%,#efe5cd 100%);
+    box-shadow:0 2px 4px rgba(0,0,0,0.6);
+    font-family:'Caveat',cursive;font-weight:700;
+    font-size:calc(var(--d) * 0.275cqw);
+    line-height:0.92;text-align:center;color:#1f2a52;
+    clip-path:polygon(0 4%,8% 0,22% 3%,37% 0,55% 2%,72% 0,88% 3%,100% 1%,99% 30%,100% 62%,98% 96%,84% 100%,63% 97%,44% 100%,26% 97%,9% 100%,1% 96%,0 60%,2% 30%);
+  }
+  .tape-strip{
+    position:absolute;left:50%;top:calc(var(--d) * -0.07cqw);
+    width:calc(var(--d) * 0.62cqw);height:calc(var(--d) * 0.19cqw);
+    transform:translateX(-50%) rotate(var(--tr,5deg));
+    background:rgba(222,205,160,0.8);
+    box-shadow:0 1px 1px rgba(0,0,0,0.3);
+    clip-path:polygon(0 8%,4% 0,8% 10%,12% 0,100% 0,96% 12%,100% 25%,96% 40%,100% 55%,96% 70%,100% 85%,97% 100%,0 100%,4% 85%,0 70%,4% 55%,0 40%,4% 25%);
+  }
+  .tape-strip.second{left:auto;right:calc(var(--d) * -0.12cqw);top:calc(var(--d) * 0.12cqw);width:calc(var(--d) * 0.36cqw);transform:rotate(68deg);}
+  .pkey:hover .tape-paper{color:var(--rust);}
+
+  .hero-hint{margin:0;font-family:'IBM Plex Mono',monospace;font-size:0.74rem;letter-spacing:0.06em;color:var(--faded);display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
+  .hero-hint strong{color:var(--paper-dim);font-weight:500;}
+  .sound-toggle{font-family:'IBM Plex Mono',monospace;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;background:none;border:1px solid rgba(160,138,95,0.4);border-radius:3px;color:var(--paper-dim);padding:0.3rem 0.6rem;cursor:pointer;}
+  .sound-toggle:hover{color:var(--paper);border-color:var(--rust-bright);}
+  .sound-toggle:focus-visible{outline:2px solid var(--rust-bright);outline-offset:3px;}
+  .hero-headline .cmd{color:var(--rust-bright);}
+
+  @media (max-width: 860px){
+    /* phones: zoom in on the keys so the labels stay readable */
+    .hero-photo{min-height:0;aspect-ratio:5 / 6;}
+    .photo-stage{top:0;left:0;width:140cqw;transform:translate(-11%,-17%);}
+    .stage-fade{background:linear-gradient(0deg, rgba(13,12,10,0.8) 0%, rgba(13,12,10,0) 14%);}
+  }
 </style>
 </head>
 <body>
@@ -671,22 +667,21 @@ border-top:1px solid rgba(160,138,95,0.35);
     </nav>
   </details>
 
-  <h1 class="sr-only">Caps unlocked. And so much more.</h1>
-  <p class="eyebrow">a workspace for projects...with potential</p>
+  <div class="hero-copy">
+    <p class="eyebrow">a workspace for projects...with potential</p>
 
-  <div class="typewriter" id="typewriter">
-    <div class="carriage" aria-hidden="true">
-      <div class="paper"><p class="paper-text" id="paperText"></p></div>
-      <div class="platen"><span class="bail"></span></div>
-    </div>
-    <div class="machine">
-      <span class="nameplate" aria-hidden="true">CAPS UNLOCKED</span>
-      <nav class="keyboard" id="keyboard" aria-label="Apps on the typewriter"></nav>
-    </div>
-    <div class="typewriter-foot">
-      <p class="hint"><strong>Press a taped key</strong> to open that app. The rest just type.</p>
-      <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true">Sound: on</button>
-    </div>
+    <h1 class="hero-headline" id="typedHeadline" aria-label="Caps unlocked. And so much more.">
+      <span id="typedText"></span><span class="cursor" aria-hidden="true"></span>
+    </h1>
+
+    <p class="hero-hint"><span><strong>Press a taped key</strong> to open that app.</span><button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true">Sound: on</button></p>
+  </div>
+
+  <div class="hero-photo">
+    <nav class="photo-stage" id="photoStage" aria-label="Apps taped to the typewriter keys">
+      <img src="ChatGPT%20Image%20Aug%2014%2C%202026%20at%2008_57_00%20PM.png" alt="Close-up of a vintage black typewriter keyboard, its Caps Lock key relabeled Caps Unlocked, with hand-written paper labels taped onto some keys">
+      <span class="stage-fade" aria-hidden="true"></span>
+    </nav>
   </div>
 </section>
 
@@ -831,52 +826,19 @@ border-top:1px solid rgba(160,138,95,0.35);
 <script>
 (function(){
   var GAS = {
-    boardzzz:'https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec',
-    guess:'https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec',
-    meals:'https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec'
+    GAS_BOARDZZZ:'https://script.google.com/macros/s/AKfycby8izoPb0cHoYbEJEZHaxQqa9KonK2Ezxs5h5nVadLC-nZwieWZ35QoK2sULLe2Oohxwg/exec',
+    GAS_GUESS:'https://script.google.com/macros/s/AKfycbxkAO0btL4GIef1hGOcDycBvChBEp_dkOiV4VTLPraF_LdA8KKj1gnUErojiHolPymq6w/exec',
+    GAS_MEALS:'https://script.google.com/macros/s/AKfycbxkvt587dTu3DVIU4Sjp6hihjq2SDCDn0FXrMfzdVLS2miQYW1XcHjTAf6FW18HIvAT/exec'
   };
+  // Key centers and sizes measured on the photo, as % of its width.
+  var KEYS = [{"id": "TAB", "x": 19.35, "y": 43.5, "d": 11.73, "label": "Portfolio", "href": "portfolio.html", "r": -16}, {"id": "1", "x": 33.43, "y": 38.12, "d": 10.75, "label": "Bio", "href": "about.html", "r": -8}, {"id": "3", "x": 44.67, "y": 33.92, "d": 9.78, "label": "Prime Climb", "href": "/primeclimb", "r": -20}, {"id": "4", "x": 54.74, "y": 30.79, "d": 8.8}, {"id": "Q", "x": 32.26, "y": 57.48, "d": 10.26, "label": "Guess", "href": "GAS_GUESS", "r": -10}, {"id": "W", "x": 43.5, "y": 53.08, "d": 9.78, "label": "Where's Waldo?", "href": "/waldo", "r": -19}, {"id": "E", "x": 53.76, "y": 48.88, "d": 8.8, "label": "Meals", "href": "GAS_MEALS", "r": -13}, {"id": "R", "x": 63.05, "y": 45.16, "d": 8.31}, {"id": "T", "x": 71.85, "y": 42.03, "d": 7.82, "label": "Tlaxcala Trail", "href": "/tlaxcalatrail", "r": -22}, {"id": "CAPS", "x": 19.75, "y": 66.18, "d": 14.86}, {"id": "A", "x": 42.23, "y": 74.29, "d": 10.26, "label": "Appsnapp 1.0", "href": "/appsnapp", "r": -12}, {"id": "S", "x": 53.47, "y": 67.74, "d": 9.29, "label": "Wild Survival", "href": "/wildsurvival", "r": -21}, {"id": "D", "x": 63.25, "y": 62.56, "d": 8.8, "label": "Dash-board", "href": "dashboard.html", "r": -15}, {"id": "F", "x": 72.04, "y": 58.16, "d": 8.02, "label": "Bird-house", "href": "/birdhouse", "r": -24}, {"id": "G", "x": 79.96, "y": 53.96, "d": 7.33}, {"id": "SHIFT", "x": 27.86, "y": 83.58, "d": 13.2}, {"id": "Z", "x": 52.79, "y": 87.49, "d": 9.78, "label": "Boardzzz", "href": "GAS_BOARDZZZ", "r": -11}, {"id": "X", "x": 63.34, "y": 80.84, "d": 8.8, "label": "Kanoodle Genius", "href": "/kanoodle", "r": -18}, {"id": "C", "x": 72.83, "y": 74.78, "d": 8.31, "label": "Mind-works", "href": "/mindworks", "r": -23}, {"id": "V", "x": 80.94, "y": 69.89, "d": 7.82}, {"id": "B", "x": 87.98, "y": 65.0, "d": 7.33}, {"id": "CONTROL", "x": 34.7, "y": 101.17, "d": 14.47}];
 
-  // Taped keys: which key the hand-written label is stuck on, and where it goes.
-  var TAPED = {
-    T:{label:'Tlaxcala Trail', href:'/tlaxcalatrail', r:-4},
-    W:{label:"Where's Waldo?", href:'/waldo', r:3},
-    K:{label:'Kanoodle Genius', href:'/kanoodle', r:-2},
-    '7':{label:'Prime Climb', href:'/primeclimb', r:5},
-    B:{label:'Boardzzz', href:GAS.boardzzz, r:-5},
-    G:{label:'Guess', href:GAS.guess, r:2},
-    M:{label:'Meals', href:GAS.meals, r:-3},
-    N:{label:'Mind-works', href:'/mindworks', r:4, aria:'Mindworks'},
-    A:{label:'Appsnapp 1.0', href:'/appsnapp', r:-6},
-    S:{label:'Wild Survival', href:'/wildsurvival', r:3},
-    H:{label:'Bird-house', href:'/birdhouse', r:-2, aria:'Birdhouse Explorer'},
-    D:{label:'Dash-board', href:'dashboard.html', r:5, aria:'Dashboard'},
-    P:{label:'Portfolio', href:'portfolio.html', r:-4},
-    I:{label:'Bio', href:'about.html', r:6}
-  };
-
-  var LAYOUT_FULL = [
-    ['1','2','3','4','5','6','7','8','9','0'],
-    ['Q','W','E','R','T','Y','U','I','O','P'],
-    ['CAPS','A','S','D','F','G','H','J','K','L'],
-    ['SHIFT','Z','X','C','V','B','N','M',',','.'],
-    ['SPACE']
-  ];
-  var LAYOUT_COMPACT = [
-    ['T','W','K','7'],
-    ['B','G','M','N'],
-    ['A','S','H','CAPS'],
-    ['D','P','I'],
-    ['SPACE']
-  ];
-
-  var board = document.getElementById('keyboard');
-  var paper = document.getElementById('paperText');
+  var stage = document.getElementById('photoStage');
+  var el = document.getElementById('typedText');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var compactMQ = window.matchMedia('(max-width: 900px)');
-  var capsLocked = false;
   var navigating = false;
 
-  /* ---------- sound (tiny, synthesized, user-initiated only) ---------- */
+  /* ---------- sound: tiny, synthesized, only after a click ---------- */
   var soundOn = true;
   try { soundOn = localStorage.getItem('cu-typewriter-sound') !== 'off'; } catch(e){}
   var soundBtn = document.getElementById('soundToggle');
@@ -886,14 +848,11 @@ border-top:1px solid rgba(160,138,95,0.35);
     soundOn = !soundOn; paintSound();
     try { localStorage.setItem('cu-typewriter-sound', soundOn ? 'on' : 'off'); } catch(e){}
   });
-
   var ctx = null;
   function audio(){
     if (!soundOn) return null;
-    try {
-      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === 'suspended') ctx.resume();
-    } catch(e){ return null; }
+    try { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === 'suspended') ctx.resume(); }
+    catch(e){ return null; }
     return ctx;
   }
   function clack(){
@@ -922,119 +881,76 @@ border-top:1px solid rgba(160,138,95,0.35);
     });
   }
 
-  /* ---------- the paper ---------- */
+  /* ---------- the typed headline ---------- */
+  var base = "Caps unlocked.\nAnd so much more.";
   var text = '';
-  var MAX = 220;
   function esc(s){ return s.replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
-  function render(){
-    if (text.length > MAX) text = text.slice(text.length - MAX);
-    paper.innerHTML = esc(text).replace(/(&gt; [^\n]*)/g, '<span class="cmd">$1</span>') + '<span class="cursor"></span>';
-  }
+  function render(){ el.innerHTML = esc(text).replace(/(→ [^\n]*)/g, '<span class="cmd">$1</span>').replace(/\n/g, '<br>'); }
   function typeOut(str, speed, done){
-    if (reduce || !speed){ text += str; render(); done && done(); return; }
+    if (reduce){ text += str; render(); done && done(); return; }
     var i = 0;
     (function step(){
-      if (i < str.length){ text += str[i++]; render(); setTimeout(step, speed + Math.random()*speed*0.6); }
+      if (i < str.length){ text += str[i++]; render(); setTimeout(step, speed + Math.random()*speed); }
       else if (done) done();
     })();
   }
 
-  /* ---------- building the keys ---------- */
-  function keyHTML(id){
-    var tape = TAPED[id];
-    var cls = 'key', glyph = id, attrs = '';
-    if (id === 'CAPS'){ cls += ' key-wide key-caps' + (capsLocked ? ' locked' : ''); glyph = 'Caps<br>unlocked'; }
-    else if (id === 'SHIFT'){ cls += ' key-wide'; glyph = 'Shift'; }
-    else if (id === 'SPACE'){ cls += ' key-space'; glyph = ''; }
-    var inner = '<span class="key-shadow"></span><span class="key-stem"></span>' +
-                '<span class="key-top"><span class="key-glyph">' + glyph + '</span></span>';
-    if (tape){
-      var tr = (tape.r > 0 ? -1 : 1) * (3 + (Math.abs(tape.r) % 3));
-      inner += '<span class="label" style="--r:' + tape.r + 'deg;--tr:' + tr + 'deg">' +
-               '<span class="label-paper">' + tape.label.replace('-', '-<br>') + '</span>' +
-               '<span class="label-tape"></span>' +
-               (Math.abs(tape.r) >= 5 ? '<span class="label-tape bottom"></span>' : '') +
-               '</span>';
-      return '<a class="' + cls + ' taped" href="' + tape.href + '" data-key="' + id + '" aria-label="' +
-             (tape.aria || tape.label) + '">' + inner + '</a>';
+  /* ---------- put the keys on the photo ---------- */
+  stage.insertAdjacentHTML('beforeend', KEYS.map(function(k){
+    var style = 'style="--x:' + k.x + ';--y:' + k.y + ';--d:' + k.d + (k.r ? ';--r:' + k.r + 'deg;--tr:' + (k.r % 2 ? 6 : -4) + 'deg' : '') + '"';
+    var inner = '<span class="pkey-well"></span><span class="pkey-cap"></span>';
+    if (k.label){
+      var href = GAS[k.href] || k.href;
+      inner += '<span class="tape-label"><span class="tape-paper">' + (k.label.indexOf('-') > -1 ? k.label.replace('-', '-<br>') : k.label.replace(' ', '<br>')) + '</span>' +
+               '<span class="tape-strip"></span>' + (Math.abs(k.r) > 18 ? '<span class="tape-strip second"></span>' : '') + '</span>';
+      return '<a class="pkey taped" href="' + href + '" data-key="' + k.id + '" aria-label="' + k.label.replace('-', '') + '" ' + style + '>' + inner + '</a>';
     }
-    // plain keys are for fun only: hidden from screen readers and tab order
-    return '<button class="' + cls + '" type="button" tabindex="-1" aria-hidden="true" data-key="' + id + '">' + inner + '</button>';
-  }
-  function build(){
-    var layout = compactMQ.matches ? LAYOUT_COMPACT : LAYOUT_FULL;
-    board.innerHTML = layout.map(function(row, r){
-      var shift = compactMQ.matches ? 0 : [0, 0.35, 0.15, 0.55, 0][r];
-      return '<div class="key-row" style="margin-left:calc(var(--k) * ' + shift + ')">' + row.map(keyHTML).join('') + '</div>';
-    }).join('');
-  }
-  build();
-  if (compactMQ.addEventListener) compactMQ.addEventListener('change', build);
-  else if (compactMQ.addListener) compactMQ.addListener(build);
+    return '<button class="pkey" type="button" tabindex="-1" aria-hidden="true" data-key="' + k.id + '" ' + style + '>' + inner + '</button>';
+  }).join(''));
 
-  /* ---------- pressing keys ---------- */
-  function press(el, hold){
-    el.classList.add('is-down');
-    clack();
-    if (!hold) setTimeout(function(){ el.classList.remove('is-down'); }, 120);
-  }
-  function strike(id){
-    if (id === 'SPACE') typeOut(' ', 0);
-    else if (id === 'SHIFT') return;
-    else if (id === 'CAPS'){
-      capsLocked = !capsLocked;
-      paper.classList.toggle('caps', capsLocked);
-      var caps = board.querySelector('.key-caps'); if (caps) caps.classList.toggle('locked', capsLocked);
-    }
-    else typeOut(capsLocked ? id : id.toLowerCase(), 0);
+  function press(k, hold){
+    k.classList.add('is-down'); clack();
+    if (!hold) setTimeout(function(){ k.classList.remove('is-down'); }, 130);
   }
 
-  board.addEventListener('click', function(e){
-    var el = e.target.closest('.key'); if (!el) return;
-    var id = el.getAttribute('data-key');
-    if (el.tagName === 'A'){
-      // let cmd/ctrl/shift/middle-click open a new tab as usual
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
-      e.preventDefault();
-      if (navigating) return;
-      navigating = true;
-      var tape = TAPED[id];
-      press(el, true);
-      var line = '\n> ' + tape.label.replace('-', '').toLowerCase();
-      typeOut(line, 22, function(){
-        ding();
-        setTimeout(function(){ window.location.href = tape.href; }, reduce ? 0 : 260);
-      });
-    } else {
-      press(el, false);
-      strike(id);
-    }
+  stage.addEventListener('click', function(e){
+    var k = e.target.closest('.pkey'); if (!k) return;
+    if (k.tagName !== 'A'){ press(k, false); return; }
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return; // new-tab clicks behave normally
+    e.preventDefault();
+    if (navigating) return;
+    navigating = true;
+    press(k, true);
+    var href = k.getAttribute('href');
+    text = base;
+    typeOut('\n→ ' + k.getAttribute('aria-label'), 24, function(){
+      ding();
+      setTimeout(function(){ window.location.href = href; }, reduce ? 0 : 260);
+    });
   });
 
-  // real keyboard: the matching key sinks and types (never navigates on its own)
-  var KEYMAP = {' ':'SPACE', 'CapsLock':'CAPS', 'Shift':'SHIFT'};
+  // a real keyboard presses the matching photo key (it never opens an app by itself)
+  var MAP = {CapsLock:'CAPS', Shift:'SHIFT', Tab:'TAB', Control:'CONTROL'};
   document.addEventListener('keydown', function(e){
-    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+    if (e.metaKey || e.altKey || e.repeat) return;
+    if (e.key === 'Tab') return; // keep Tab for moving between links
     var t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-    var id = KEYMAP[e.key] || (e.key.length === 1 ? e.key.toUpperCase() : null);
-    if (!id || id === 'SPACE') return; // keep space for page scrolling
-    var el = board.querySelector('.key[data-key="' + CSS.escape(id) + '"]');
-    if (!el) return;
-    press(el, false);
-    strike(id);
+    var id = MAP[e.key] || (e.key.length === 1 && !e.ctrlKey ? e.key.toUpperCase() : null);
+    if (id === '!') id = '1'; if (id === '#') id = '3'; if (id === '$') id = '4';
+    var k = id && stage.querySelector('.pkey[data-key="' + id + '"]');
+    if (k) press(k, false);
   });
 
-  // coming back with the browser's Back button: reset the machine
   window.addEventListener('pageshow', function(e){
     if (!e.persisted) return;
     navigating = false;
-    [].forEach.call(board.querySelectorAll('.is-down'), function(k){ k.classList.remove('is-down'); });
+    [].forEach.call(stage.querySelectorAll('.is-down'), function(k){ k.classList.remove('is-down'); });
+    text = base; render();
   });
 
-  // first sheet of the day
-  render();
-  setTimeout(function(){ typeOut('Caps unlocked.\nAnd so much more.', 40); }, 300);
+  if (reduce){ text = base; render(); }
+  else setTimeout(function(){ typeOut(base, 34); }, 250);
 })();
 </script>
 
