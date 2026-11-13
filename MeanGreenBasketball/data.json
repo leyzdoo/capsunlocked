@@ -1,0 +1,1109 @@
+{
+  "sources": {
+    "roster": "https://meangreensports.com/sports/mens-basketball/roster",
+    "stats": "https://meangreensports.com/sports/mens-basketball/stats/2026-27",
+    "schedule": "https://meangreensports.com/sports/mens-basketball/schedule",
+    "preview": "https://meangreensports.com/news/2026/11/10/mens-basketball-unt-looks-to-build-on-strong-opening-week-with-matchups-against-santa-clara-south-alabama",
+    "santa": "https://meangreensports.com/news/2026/11/11/mens-basketball-mean-green-falter-in-second-half-versus-santa-clara",
+    "mcneese": "https://meangreensports.com/news/2026/11/5/mens-basketball-je-shawn-stevensons-career-game-leads-mean-green-past-mcneese",
+    "opener": "https://meangreensports.com/news/2026/11/3/mens-basketball-mean-green-shut-down-southwestern-christian-in-season-opener",
+    "award": "https://meangreensports.com/news/2026/10/9/mens-basketball-je-shawn-stevenson-tabbed-american-conferences-preseason-player-of-the-year-in-conference-awards",
+    "christian": "https://meangreensports.com/news/2026/6/5/mens-basketball-hires-assistant-coach-cole-christian",
+    "robquick": "https://meangreensports.com/news/2025/9/23/mens-basketball-d-rob-quick-facts",
+    "oppRoster": "https://usajaguars.com/sports/mens-basketball/roster",
+    "oppStats": "https://usajaguars.com/sports/mens-basketball/stats",
+    "videos": "https://www.youtube.com/@MeanGreenSports/videos"
+  },
+  "players": [
+    {
+      "n": 0,
+      "name": "Marcus Zelee",
+      "pos": "G",
+      "ht": "6′3″",
+      "wt": 190,
+      "year": "Freshman",
+      "home": "Austin, Texas",
+      "route": "Austin Achieve → Brentwood Christian → Austin Prep Academy → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/marcus-zelee/7902",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Marcus_Zelee.jpg",
+      "s": [
+        1,
+        11,
+        2,
+        3,
+        18,
+        57.1,
+        50
+      ],
+      "bio": "A Texas freshman who earned first-team all-state recognition at Austin Prep and helped it reach the TCAL championship game. Earlier stops included Brentwood Christian and Austin Achieve. His official bio lists ASAK Elite as his club program.",
+      "cue": "Track the first pass after he crosses half court. Does it create movement or leave everyone standing?",
+      "clips": []
+    },
+    {
+      "n": 1,
+      "name": "Cash Chavis",
+      "pos": "G",
+      "ht": "6′2″",
+      "wt": 180,
+      "year": "Junior",
+      "home": "Minneapolis, Minnesota",
+      "route": "Park Center HS → Arkansas → UT Arlington → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/cash-chavis/7839",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Cash_Chavis.jpg",
+      "s": [
+        3,
+        14.3,
+        2,
+        3,
+        28.3,
+        46.4,
+        30.8
+      ],
+      "bio": "A transfer point guard who started all 34 games for UT Arlington in 2025–26, averaging 10.5 points and 3.5 assists. He helped Park Center win a Minnesota state title and also played wide receiver. UNT’s cumulative table credits him with six steals against Santa Clara; the recap’s prose and scoring table disagree on his points, so the statistical table is used here.",
+      "cue": "Watch how he attacks a passing lane without losing his assignment. Does the steal lead to a controlled possession?",
+      "clips": [
+        {
+          "yt": "biSWXXrd2lk",
+          "title": "Cash Chavis · senior high-school highlights",
+          "publisher": "And-One Films · March 2024",
+          "context": "Park Center footage, before his college career. Historical highlights, not current UNT game film."
+        }
+      ],
+      "nick": "Cash",
+      "nickSource": "https://www.youtube.com/watch?v=biSWXXrd2lk"
+    },
+    {
+      "n": 2,
+      "name": "EJ Horton",
+      "pos": "G",
+      "ht": "6′3″",
+      "wt": 187,
+      "year": "Sophomore",
+      "home": "Chicago, Illinois",
+      "route": "Orangeville Academy (Canada) → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/ej-horton/7833",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/2_EJ_Horton_261015_MBB_Media_Day_MRM_0625.jpg",
+      "s": null,
+      "bio": "A returning guard who appeared in 30 games last season and earned an American Conference Freshman of the Week award. His official bio highlights a road win at Temple with 12 points, five steals and four rebounds. The current three-game cumulative table does not include him; that alone is not an injury diagnosis.",
+      "cue": "Follow his defense for three possessions: where does he stand before the ball reaches his man?",
+      "clips": []
+    },
+    {
+      "n": 3,
+      "name": "Amar Amkou",
+      "pos": "G",
+      "ht": "6′8″",
+      "wt": 220,
+      "year": "Junior",
+      "home": "Thies, Senegal",
+      "route": "CSI Keur Madior → Florida Atlantic → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/amar-amkou/7838",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Amar_Amkou.jpg",
+      "s": [
+        3,
+        7.7,
+        5.3,
+        1.3,
+        21,
+        38.1,
+        30
+      ],
+      "bio": "A Senegalese guard with unusual size for the position. At Florida Atlantic he appeared in 26 games in 2025–26, shot 36.4 percent from three and recorded a 10-point, 10-rebound double-double against Saint Leo. He made four threes against UNT before transferring to Denton.",
+      "cue": "Look for the matchup he creates: is a smaller defender guarding him, or is a forward chasing him outside?",
+      "clips": []
+    },
+    {
+      "n": 4,
+      "name": "Je’Shawn Stevenson",
+      "pos": "G",
+      "ht": "6′3″",
+      "wt": 200,
+      "year": "Junior",
+      "home": "Chicago, Illinois",
+      "route": "Lindblom HS → Cleveland State → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/jeshawn-stevenson/7836",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Je_Shawn_Stevenson.jpg",
+      "s": [
+        3,
+        19.7,
+        4,
+        4.7,
+        30.3,
+        51.2,
+        30
+      ],
+      "bio": "The American Conference’s preseason player of the year. He followed Robinson from Cleveland State, where he was Horizon League Freshman of the Year, and averaged 17.3 points in his first UNT season. A Lindblom graduate and the school’s career scoring leader, he opened this year with a career-best 30 against McNeese.",
+      "cue": "Watch the defender who leaves a teammate to help on his drive. Who becomes available for the next pass?",
+      "clips": [],
+      "reading": [
+        [
+          "Preseason player of the year",
+          "https://meangreensports.com/news/2026/10/9/mens-basketball-je-shawn-stevenson-tabbed-american-conferences-preseason-player-of-the-year-in-conference-awards"
+        ],
+        [
+          "Career-best 30 against McNeese",
+          "https://meangreensports.com/news/2026/11/5/mens-basketball-je-shawn-stevensons-career-game-leads-mean-green-past-mcneese"
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "name": "Braylon Barnes",
+      "pos": "G",
+      "ht": "6′4″",
+      "wt": 185,
+      "year": "Sophomore",
+      "home": "Brandon, Mississippi",
+      "route": "Brandon HS → Jones College → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/braylon-barnes/7903",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Braylon_Barnes.jpg",
+      "s": [
+        2,
+        4,
+        1.5,
+        0,
+        11.5,
+        33.3,
+        20
+      ],
+      "bio": "A junior-college transfer who started all 34 games for Jones College and averaged 16.8 points. He made 62 threes, earned all-conference recognition and helped the Bobcats reach the NJCAA national tournament. His official bio describes 28 double-figure scoring games in that season.",
+      "cue": "After he passes, does he relocate into a clean shooting window? Watch his feet before the catch.",
+      "clips": []
+    },
+    {
+      "n": 7,
+      "name": "Filip Kalajzic",
+      "pos": "F",
+      "ht": "6′10″",
+      "wt": null,
+      "year": "Freshman",
+      "home": "Omis, Croatia",
+      "route": "Croatian clubs → Šencur Gorenjska (Slovenia) → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/filip-kalajzic/7905",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/21/7_Filip_Kalajzic_261015_MBB_Media_Day_MRM_0987.jpg",
+      "s": [
+        3,
+        2.3,
+        3.3,
+        0.3,
+        11.3,
+        75,
+        null
+      ],
+      "bio": "A Croatian newcomer with club experience in Croatia and Slovenia. His official bio records 13.7 points, 7.9 rebounds and 1.9 blocks for Gorica, plus appearances for Croatia at the 2023 FIBA U20 European Championship. The roster labels him a freshman; that does not mean he is new to high-level basketball.",
+      "cue": "Watch his positioning before a rebound. Can he seal an opponent away from the ball rather than simply jump higher?",
+      "clips": []
+    },
+    {
+      "n": 10,
+      "name": "Cole Franklin",
+      "pos": "G",
+      "ht": "6′4″",
+      "wt": 203,
+      "year": "Senior",
+      "home": "DeSoto, Texas",
+      "route": "DeSoto HS → Cleveland State → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/cole-franklin/7832",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Cole_Franklin.jpg",
+      "s": [
+        3,
+        7,
+        5,
+        1.3,
+        25.7,
+        47.1,
+        0
+      ],
+      "bio": "A returning senior with a Texas homecoming story and prior experience under Robinson at Cleveland State. He played every game last season and started 23. His official bio lists career highs of 21 points, ten rebounds and six steals. The opening-week preview singled out his rebounding and steals against Santa Clara a year earlier.",
+      "cue": "Watch the possessions where he does not shoot. Which screen, rotation or rebound makes him useful?",
+      "clips": []
+    },
+    {
+      "n": 11,
+      "name": "Aeneas Alexander",
+      "pos": "G",
+      "ht": "6′7″",
+      "wt": 220,
+      "year": "Freshman",
+      "home": "McKinney, Texas",
+      "route": "Pace Academy (Frisco) → Nike ProSkills → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/aeneas-alexander/7837",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Aeneas_Alexander.jpg",
+      "s": [
+        3,
+        12.3,
+        6.3,
+        0.7,
+        18.3,
+        44,
+        36.4
+      ],
+      "bio": "A local freshman who played for former NBA guard Raymond Felton at Pace Academy. His Nike ProSkills U17 team finished fourth at Peach Jam in 2025. He chose UNT from a group of Division I offers and immediately became an early contributor off the bench.",
+      "cue": "Does his length help on the offensive glass, and can he stay spaced when the ball goes inside?",
+      "clips": []
+    },
+    {
+      "n": 13,
+      "name": "Mitchell Holmes",
+      "pos": "F",
+      "ht": "6′10″",
+      "wt": 250,
+      "year": "Junior",
+      "home": "Fort Worth, Texas",
+      "route": "Link Year Prep (Missouri) → SMU → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/mitchell-holmes/7841",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Mitchell_Holmes.jpg",
+      "s": null,
+      "bio": "A Fort Worth big man arriving from SMU. His official biography records 26 appearances in 2025–26, a 70.4 percent field-goal mark in limited minutes and ten points in an 11-minute outing against Butler. He is on UNT’s current roster but not in the reviewed three-game cumulative table; no current absence is independently confirmed.",
+      "cue": "Watch how he creates a target for the entry pass and whether he can turn a screen into a useful roll.",
+      "clips": []
+    },
+    {
+      "n": 15,
+      "name": "Reece Robinson",
+      "pos": "F",
+      "ht": "6′8″",
+      "wt": 232,
+      "year": "Junior",
+      "home": "Cleveland, Ohio",
+      "route": "St. Ignatius → Cleveland State → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/reece-robinson/7835",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Reece_Robinson.jpg",
+      "s": [
+        3,
+        7.7,
+        4,
+        1,
+        22,
+        55.6,
+        33.3
+      ],
+      "bio": "A returning forward and Daniyal Robinson’s son. He earned Horizon League All-Freshman honors at Cleveland State and academic all-district recognition at UNT. His official biography lists a 23-point game at Charlotte last season. Against Santa Clara this November he scored 15, with eleven before halftime.",
+      "cue": "Follow the cut that happens before he gets the ball. Is he exploiting a defender who has turned to help?",
+      "clips": [],
+      "reading": [
+        [
+          "15 points against Santa Clara",
+          "https://meangreensports.com/news/2026/11/11/mens-basketball-mean-green-falter-in-second-half-versus-santa-clara"
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "name": "TJ Crumble",
+      "pos": "F",
+      "ht": "6′8″",
+      "wt": 214,
+      "year": "Freshman",
+      "home": "Cleveland, Ohio",
+      "route": "Long Island Lutheran (New York) → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/tj-crumble/7840",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/TJ_Crumble.jpg",
+      "s": [
+        3,
+        1.7,
+        1.3,
+        0,
+        5.7,
+        100,
+        null
+      ],
+      "bio": "A first-year forward from Cleveland by way of Long Island Lutheran. The current official player page supplies little extended biography, so his background is limited here to verified roster information. His first three appearances are a very small sample, not a settled description of his role.",
+      "cue": "Watch his first defensive assignment after checking in and how quickly he finds the team’s spacing.",
+      "clips": []
+    },
+    {
+      "n": 35,
+      "name": "Ousmane Ndour",
+      "pos": "F",
+      "ht": "6′10″",
+      "wt": 229,
+      "year": "Sophomore",
+      "home": "Mbacké, Senegal",
+      "route": "Benicarló (Spain) → UNT",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/ousmane-ndour/7834",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/19/Ousmane_Ndour.jpg",
+      "s": [
+        3,
+        11,
+        6,
+        0.3,
+        22.3,
+        80,
+        null
+      ],
+      "bio": "A Senegalese forward whose route to Denton includes Spain. His official bio lists a redshirt season in 2025–26. This November he has become an interior contributor, with eleven offensive rebounds in three games and an 18-point outing against Santa Clara.",
+      "cue": "Watch the second effort after a missed shot: does he create a new possession before anyone thinks about scoring?",
+      "clips": [],
+      "reading": [
+        [
+          "18 points against Santa Clara",
+          "https://meangreensports.com/news/2026/11/11/mens-basketball-mean-green-falter-in-second-half-versus-santa-clara"
+        ]
+      ]
+    }
+  ],
+  "coaches": [
+    {
+      "name": "Daniyal Robinson",
+      "role": "Head coach",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/coaches/daniyal-robinson/1036",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2025/4/7/Robinson_Daniyal.jpg",
+      "bio": "A Rock Island, Illinois native in his second season at UNT. He inherited a complete roster turnover, then went 19–14 in 2025–26. At Cleveland State he produced three consecutive 20-win seasons. His staff history links Little Rock, Illinois State, Iowa State, Houston and Loyola Chicago.",
+      "playing": [
+        "1995–96 · Indian Hills CC (season verified in Houston bio)",
+        "1996–98 · Little Rock · two-year letterwinner"
+      ],
+      "career": [
+        "2000–03 · Little Rock · administrative assistant",
+        "2003–07 · Illinois State · assistant",
+        "2007–08 · Little Rock · assistant",
+        "2008–10 · Iowa State · assistant",
+        "2010–13 · Houston · assistant",
+        "2013–15 · Loyola Chicago · assistant / associate head coach",
+        "2015–22 · Iowa State · assistant",
+        "2022–25 · Cleveland State · head coach",
+        "2025–present · North Texas · head coach"
+      ],
+      "extra": [
+        [
+          "Houston career archive",
+          "https://uhcougars.com/news/2010/4/10/Daniyal_Robinson_to_Join_Men_s_Basketball_Staff"
+        ],
+        [
+          "Loyola career archive",
+          "https://loyolaramblers.com/sports/mens-basketball/roster/coaches/daniyal-robinson/60"
+        ]
+      ]
+    },
+    {
+      "name": "Kwanza Johnson",
+      "role": "Assistant coach",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/coaches/kwanza-johnson/1037",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/21/Kwanza_Johnson.jpg",
+      "bio": "A former Tulsa captain whose teams reached consecutive Sweet 16s. He earned economics and law degrees at Tulsa before building a coaching career across major conferences and mid-major programs. He worked with Robinson at Cleveland State before joining UNT in April 2025.",
+      "playing": [
+        "Before 1993 · Rose State College · exact seasons not listed",
+        "1993–95 · Tulsa · captain / all-league player"
+      ],
+      "career": [
+        "1997–99 · Tulsa",
+        "1999–2000 · Cal Poly",
+        "2000–01 · Little Rock",
+        "2001–05 · Tulsa",
+        "2005–06 · Eastern Illinois",
+        "2006–09 · Nevada",
+        "2009–13 · Georgia",
+        "2013–16 · TCU",
+        "2016–18 · Little Rock",
+        "2019–22 · Tulsa",
+        "2022–23 · California",
+        "2023–25 · Cleveland State",
+        "2025–present · North Texas"
+      ]
+    },
+    {
+      "name": "Steve Payne",
+      "role": "Assistant coach",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/coaches/steve-payne/1040",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/21/Steve_Payne.jpg",
+      "bio": "A veteran of more than thirty years in college coaching, including eight as Tennessee Tech’s head coach. His career includes a Texas junior-college head job and work with Robinson at Cleveland State. He joined UNT in May 2025.",
+      "playing": [
+        "Playing years are not specified in the current UNT biography.",
+        "1990 · Union College bachelor’s degree (education, not a verified playing tenure)"
+      ],
+      "career": [
+        "1990–91 · Knox Central HS · head coach",
+        "1991–94 · Union University",
+        "1994–96 · Northwestern State",
+        "1996–2000 · Georgetown College (KY)",
+        "2000–02 · Frank Phillips College · head coach",
+        "2002–11 · Tennessee Tech · associate head coach",
+        "2011–19 · Tennessee Tech · head coach",
+        "2019–22 · UMKC",
+        "2022–25 · Cleveland State",
+        "2025–present · North Texas"
+      ]
+    },
+    {
+      "name": "Deshon Parker",
+      "role": "Assistant coach",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/coaches/deshon-parker/1038",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/21/Deshon_Parker.jpg",
+      "bio": "A former Robinson player who moved from professional basketball into coaching. Across his college career he played 150 games and passed 1,000 points. His final Cleveland State season earned Horizon All-Defensive honors; a season in Georgia followed before he joined Robinson’s staff.",
+      "playing": [
+        "Through 2022–23 · College career · 150 games, 126 starts; earlier years not detailed here",
+        "2022–23 · Cleveland State · senior / all-defensive team",
+        "2023–24 · BC Sokhumi, Georgia · professional season"
+      ],
+      "career": [
+        "2024–25 · Cleveland State",
+        "2025–present · North Texas"
+      ]
+    },
+    {
+      "name": "Mo Ba",
+      "role": "Assistant coach",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/coaches/mo-ba/1039",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/21/Mo_Ba.jpg",
+      "bio": "His pathway centers on player development, video and scouting. He worked with Houston’s 2021 Final Four team, spent two years at Iowa State, then worked in the Milwaukee Bucks’ player-development operation. He reunited with Robinson at Cleveland State and joined UNT in April 2025.",
+      "playing": [
+        "A competitive playing career is not specified in the reviewed UNT bio.",
+        "2017 · Eastern Michigan bachelor’s; 2021 · Houston master’s"
+      ],
+      "career": [
+        "2020–21 · Houston · graduate manager",
+        "2021–23 · Iowa State · assistant director of player development",
+        "2023–24 · Milwaukee Bucks · video / player development",
+        "2024–25 · Cleveland State · director of player development",
+        "2025–present · North Texas · assistant coach"
+      ]
+    },
+    {
+      "name": "Cole Christian",
+      "role": "Assistant coach",
+      "url": "https://meangreensports.com/sports/mens-basketball/roster/coaches/cole-christian/1041",
+      "img": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/10/21/Cole_Christian.jpg",
+      "bio": "Hired in June 2026, Christian brings offensive coordination, scouting and analytics experience. He previously worked with Robinson at Iowa State. His appointment report describes responsibility for offensive systems at Murray State and South Dakota State; it supplies the career detail missing from his roster bio.",
+      "playing": [
+        "College playing tenure not specified.",
+        "Through 2017 · Iowa State · student manager / marketing degree"
+      ],
+      "career": [
+        "2017–18 · UT Martin · basketball operations",
+        "2018–21 · Iowa State · graduate assistant",
+        "2021–22 · Akron · operations / analytics",
+        "2022–25 · Murray State · assistant",
+        "2025–26 · South Dakota State · assistant (appointment prose; its summary list shortens the school name)",
+        "2026–present · North Texas · assistant"
+      ],
+      "extra": [
+        [
+          "UNT hiring announcement",
+          "https://meangreensports.com/news/2026/6/5/mens-basketball-hires-assistant-coach-cole-christian"
+        ]
+      ],
+      "quote": {
+        "text": "a relentless worker, a tremendous basketball mind",
+        "by": "Daniyal Robinson on Cole Christian · June 5, 2026",
+        "url": "https://meangreensports.com/news/2026/6/5/mens-basketball-hires-assistant-coach-cole-christian"
+      }
+    }
+  ],
+  "games": [
+    [
+      "Nov 2",
+      "Southwestern Christian",
+      "H",
+      "7:30 pm",
+      "W 122–50",
+      "opener",
+      "2026-11-02T19:30:00-06:00"
+    ],
+    [
+      "Nov 5",
+      "McNeese",
+      "H",
+      "4 pm",
+      "W 77–67",
+      "mcneese",
+      "2026-11-05T16:00:00-06:00"
+    ],
+    [
+      "Nov 11",
+      "Santa Clara",
+      "H",
+      "7 pm",
+      "L 71–76",
+      "santa",
+      "2026-11-11T19:00:00-06:00"
+    ],
+    [
+      "Nov 14",
+      "South Alabama",
+      "H",
+      "5 pm",
+      "",
+      "",
+      "2026-11-14T17:00:00-06:00"
+    ],
+    [
+      "Nov 20",
+      "App State",
+      "A",
+      "5:30 pm",
+      "",
+      "",
+      "2026-11-20T17:30:00-06:00"
+    ],
+    [
+      "Nov 27",
+      "North Dakota State",
+      "N",
+      "7 pm",
+      "",
+      "",
+      "2026-11-27T19:00:00-06:00"
+    ],
+    [
+      "Nov 28",
+      "Boise State",
+      "N",
+      "2:30 pm",
+      "",
+      "",
+      "2026-11-28T14:30:00-06:00"
+    ],
+    [
+      "Nov 29",
+      "Drake",
+      "N",
+      "5:30 pm",
+      "",
+      "",
+      "2026-11-29T17:30:00-06:00"
+    ],
+    [
+      "Dec 4",
+      "Bradley",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2026-12-04T19:00:00-06:00"
+    ],
+    [
+      "Dec 6",
+      "Mississippi Valley State",
+      "H",
+      "3 pm",
+      "",
+      "",
+      "2026-12-06T15:00:00-06:00"
+    ],
+    [
+      "Dec 13",
+      "Texas State",
+      "N",
+      "4:30 pm",
+      "",
+      "",
+      "2026-12-13T16:30:00-06:00"
+    ],
+    [
+      "Dec 16",
+      "Winthrop",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2026-12-16T19:00:00-06:00"
+    ],
+    [
+      "Dec 20",
+      "Bethune-Cookman",
+      "H",
+      "3 pm",
+      "",
+      "",
+      "2026-12-20T15:00:00-06:00"
+    ],
+    [
+      "Dec 22",
+      "Southwest (N.M.)",
+      "H",
+      "1 pm",
+      "",
+      "",
+      "2026-12-22T13:00:00-06:00"
+    ],
+    [
+      "Dec 31",
+      "Wichita State",
+      "A",
+      "8 pm",
+      "",
+      "",
+      "2026-12-31T20:00:00-06:00"
+    ],
+    [
+      "Jan 6",
+      "Florida Atlantic",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2027-01-06T19:00:00-06:00"
+    ],
+    [
+      "Jan 10",
+      "Rice",
+      "A",
+      "5 pm",
+      "",
+      "",
+      "2027-01-10T17:00:00-06:00"
+    ],
+    [
+      "Jan 14",
+      "Tulane",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2027-01-14T19:00:00-06:00"
+    ],
+    [
+      "Jan 17",
+      "Charlotte",
+      "H",
+      "3 pm",
+      "",
+      "",
+      "2027-01-17T15:00:00-06:00"
+    ],
+    [
+      "Jan 20",
+      "Wichita State",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2027-01-20T19:00:00-06:00"
+    ],
+    [
+      "Jan 23",
+      "Memphis",
+      "A",
+      "2 pm",
+      "",
+      "",
+      "2027-01-23T14:00:00-06:00"
+    ],
+    [
+      "Jan 28",
+      "UTSA",
+      "A",
+      "8 pm",
+      "",
+      "",
+      "2027-01-28T20:00:00-06:00"
+    ],
+    [
+      "Jan 31",
+      "Tulsa",
+      "H",
+      "3 pm",
+      "",
+      "",
+      "2027-01-31T15:00:00-06:00"
+    ],
+    [
+      "Feb 3",
+      "Temple",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2027-02-03T19:00:00-06:00"
+    ],
+    [
+      "Feb 11",
+      "UAB",
+      "A",
+      "7:30 pm",
+      "",
+      "",
+      "2027-02-11T19:30:00-06:00"
+    ],
+    [
+      "Feb 14",
+      "Tulsa",
+      "A",
+      "2 pm",
+      "",
+      "",
+      "2027-02-14T14:00:00-06:00"
+    ],
+    [
+      "Feb 17",
+      "Memphis",
+      "H",
+      "7 pm",
+      "",
+      "",
+      "2027-02-17T19:00:00-06:00"
+    ],
+    [
+      "Feb 21",
+      "Florida Atlantic",
+      "A",
+      "2 pm",
+      "",
+      "",
+      "2027-02-21T14:00:00-06:00"
+    ],
+    [
+      "Feb 24",
+      "South Florida",
+      "A",
+      "7 pm",
+      "",
+      "",
+      "2027-02-24T19:00:00-06:00"
+    ],
+    [
+      "Feb 27",
+      "UTSA",
+      "H",
+      "5 pm",
+      "",
+      "",
+      "2027-02-27T17:00:00-06:00"
+    ],
+    [
+      "Mar 2",
+      "East Carolina",
+      "A",
+      "7 pm",
+      "",
+      "",
+      "2027-03-02T19:00:00-06:00"
+    ],
+    [
+      "Mar 7",
+      "Rice",
+      "H",
+      "3 pm",
+      "",
+      "",
+      "2027-03-07T15:00:00-06:00"
+    ]
+  ],
+  "opponents": [
+    {
+      "n": 0,
+      "name": "Samuel Shoptaw",
+      "pos": "G",
+      "ht": "6′2″",
+      "wt": 195,
+      "year": "Sophomore",
+      "home": "London, Kentucky",
+      "route": "Windermere Prep (Florida)",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/samuel-shoptaw/13163",
+      "img": "https://usajaguars.com/images/2026/6/10/Samuel_Shoptaw_0004__1__4XfdQ.jpg",
+      "s": [
+        4,
+        0.8,
+        0.8,
+        0,
+        5.3,
+        12.5,
+        16.7
+      ],
+      "bio": "Sophomore guard from London, Kentucky, with a route through Windermere Prep (Florida). Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 1,
+      "name": "Jalen Langsy",
+      "pos": "G",
+      "ht": "6′1″",
+      "wt": 185,
+      "year": "Junior",
+      "home": "Shakopee, Minnesota",
+      "route": "Northwestern College",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/jalen-langsy/13204",
+      "img": "https://usajaguars.com/images/2026/6/10/Jalen_Langsy_0004_YRQBT.jpg",
+      "s": [
+        4,
+        21,
+        1.8,
+        3.8,
+        38.3,
+        47.5,
+        33.3
+      ],
+      "bio": "Junior guard from Shakopee, Minnesota, with a route through Northwestern College. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 3,
+      "name": "Desmond Williams",
+      "pos": "G",
+      "ht": "6′3″",
+      "wt": 185,
+      "year": "Sophomore",
+      "home": "Mobile, Alabama",
+      "route": "Baker HS",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/desmond-williams/13172",
+      "img": "https://usajaguars.com/images/2026/6/10/Desmond_Williams_0004_Ne2JU.jpg",
+      "s": [
+        4,
+        0,
+        0.8,
+        0,
+        6.5,
+        0,
+        0
+      ],
+      "bio": "Sophomore guard from Mobile, Alabama, with a route through Baker HS. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 4,
+      "name": "Stephen Williams",
+      "pos": "F",
+      "ht": "6′9″",
+      "wt": 245,
+      "year": "Junior",
+      "home": "Atmore, Alabama",
+      "route": "Coastal Alabama CC",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/stephen-williams/13165",
+      "img": "https://usajaguars.com/images/2026/6/10/Stephen_Williams_0004__1__nKsrh.jpg",
+      "s": [
+        4,
+        19.3,
+        9.3,
+        1,
+        30.8,
+        70.8,
+        null
+      ],
+      "bio": "Junior forward from Atmore, Alabama, with a route through Coastal Alabama CC. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 6,
+      "name": "Lenni Kunzewitsch",
+      "pos": "F",
+      "ht": "6′10″",
+      "wt": 220,
+      "year": "Junior",
+      "home": "Gotha, Germany",
+      "route": "Ratiopharm Ulm",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/lenni-kunzewitsch/13225",
+      "img": "https://usajaguars.com/images/2026/6/17/Lenni_Kunzewitsch_0002.jpg",
+      "s": [
+        4,
+        2.5,
+        2.3,
+        0.8,
+        21.3,
+        33.3,
+        25
+      ],
+      "bio": "Junior forward from Gotha, Germany, with a route through Ratiopharm Ulm. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 7,
+      "name": "Owen Kenney",
+      "pos": "F",
+      "ht": "6′7″",
+      "wt": 225,
+      "year": "Junior",
+      "home": "Barrie, Ontario, Canada",
+      "route": "University of Ottawa",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/owen-kenney/13205",
+      "img": "https://usajaguars.com/images/2026/6/10/Owen_Kenney_0004_tYRBM.jpg",
+      "s": null,
+      "bio": "Junior forward from Barrie, Ontario, Canada, with a route through University of Ottawa. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 9,
+      "name": "Peyton Law",
+      "pos": "F",
+      "ht": "6′7″",
+      "wt": 220,
+      "year": "Graduate student",
+      "home": "Calhoun, Georgia",
+      "route": "Freed-Hardeman",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/peyton-law/13166",
+      "img": "https://usajaguars.com/images/2026/6/10/Peyton_Law_0006_GJqTY.jpg",
+      "s": [
+        4,
+        2.5,
+        3,
+        1.8,
+        18,
+        28.6,
+        0
+      ],
+      "bio": "Graduate student forward from Calhoun, Georgia, with a route through Freed-Hardeman. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 10,
+      "name": "Roderick Williams Jr.",
+      "pos": "F",
+      "ht": "6′6″",
+      "wt": 230,
+      "year": "Sophomore",
+      "home": "Magnolia, Arkansas",
+      "route": "Southern Arkansas",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/roderick-williams-jr-/13206",
+      "img": "https://usajaguars.com/images/2026/6/10/Roderick_Williams_Jr__0004_boHqF.jpg",
+      "s": [
+        4,
+        5,
+        2.3,
+        0.8,
+        13.8,
+        75,
+        null
+      ],
+      "bio": "Sophomore forward from Magnolia, Arkansas, with a route through Southern Arkansas. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 12,
+      "name": "Aedan Lewis",
+      "pos": "G",
+      "ht": "6′4″",
+      "wt": 205,
+      "year": "Junior",
+      "home": "Pensacola, Florida",
+      "route": "Southwestern",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/aedan-lewis/13207",
+      "img": "https://usajaguars.com/images/2026/6/10/Aedan_Lewis_0004_ltZzA.jpg",
+      "s": null,
+      "bio": "Junior guard from Pensacola, Florida, with a route through Southwestern. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 13,
+      "name": "Diego Roman",
+      "pos": "G",
+      "ht": "6′8″",
+      "wt": 215,
+      "year": "Freshman",
+      "home": "Barcelona, Spain",
+      "route": "Starwings Basket Regio Basel",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/diego-roman/13208",
+      "img": "https://usajaguars.com/images/2026/6/10/Diego_Roman_0004_aV4un.jpg",
+      "s": [
+        4,
+        6.8,
+        2.8,
+        3.5,
+        26.3,
+        47.8,
+        50
+      ],
+      "bio": "Freshman guard from Barcelona, Spain, with a route through Starwings Basket Regio Basel. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 20,
+      "name": "Keyne Costa",
+      "pos": "F",
+      "ht": "6′8″",
+      "wt": 215,
+      "year": "Sophomore",
+      "home": "Brussels, Belgium",
+      "route": "Northeastern Oklahoma A&M",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/keyne-costa/13209",
+      "img": "https://usajaguars.com/images/2026/6/10/Keyne_Costa_0004__1__JEiGj.jpg",
+      "s": null,
+      "bio": "Sophomore forward from Brussels, Belgium, with a route through Northeastern Oklahoma A&M. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 21,
+      "name": "Aaron Goldstein",
+      "pos": "G",
+      "ht": "6′0″",
+      "wt": 180,
+      "year": "Senior",
+      "home": "Staten Island, New York",
+      "route": "College of Staten Island",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/aaron-goldstein/13210",
+      "img": "https://usajaguars.com/images/2026/6/10/Aaron_Goldstein_0004_bZOyT.jpg",
+      "s": [
+        4,
+        16.8,
+        1.8,
+        1.8,
+        35.3,
+        43.1,
+        39.5
+      ],
+      "bio": "Senior guard from Staten Island, New York, with a route through College of Staten Island. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 24,
+      "name": "Davaughn Hueitt",
+      "pos": "F",
+      "ht": "6′9″",
+      "wt": 220,
+      "year": "Sophomore",
+      "home": "Chula Vista, California",
+      "route": "Hannibal-LaGrange",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/davaughn-hueitt/13211",
+      "img": "https://usajaguars.com/images/2026/6/10/Davaughn_Hueitt_0004_tJSoC.jpg",
+      "s": [
+        3,
+        3.3,
+        3,
+        0.3,
+        23,
+        33.3,
+        0
+      ],
+      "bio": "Sophomore forward from Chula Vista, California, with a route through Hannibal-LaGrange. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    },
+    {
+      "n": 35,
+      "name": "Alexey Sereda",
+      "pos": "F",
+      "ht": "7′0″",
+      "wt": 215,
+      "year": "Freshman",
+      "home": "Krasnoyarsk, Russia",
+      "route": "Enisey Krasnoyarsk",
+      "url": "https://usajaguars.com/sports/mens-basketball/roster/alexey-sereda/13316",
+      "img": "https://usajaguars.com/images/2026/8/14/Alexey_Sereda_0004__1_.jpg",
+      "s": null,
+      "bio": "Freshman forward from Krasnoyarsk, Russia, with a route through Enisey Krasnoyarsk. Background and season statistics follow the official South Alabama roster and cumulative table.",
+      "cue": "Watch his first two touches and the defensive matchup he creates.",
+      "clips": []
+    }
+  ],
+  "homeTeamId": "249",
+  "opponentTeamId": "6",
+  "preview": "https://meangreensports.com/news/2026/11/10/mens-basketball-unt-looks-to-build-on-strong-opening-week-with-matchups-against-santa-clara-south-alabama",
+  "action": "https://dxbhsrqyrr690.cloudfront.net/sidearm.nextgen.sites/meangreensports.com/images/2026/11/11/261111_CJPingame-33.jpg",
+  "recent": [
+    1,
+    3,
+    4,
+    15,
+    35
+  ],
+  "opponentRecent": [
+    1,
+    4,
+    13,
+    21,
+    24
+  ],
+  "snapshot": "Nov. 11, 2026",
+  "opponentSnapshot": "Nov. 12, 2026 / four games"
+}
