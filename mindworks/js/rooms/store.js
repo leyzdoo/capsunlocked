@@ -1,43 +1,88 @@
 // The Game Store — walk up to the counter to shop. House upgrades live here.
 import * as THREE from 'three';
 import { G, el, save, toast, refreshCoins, openPanel, closePanel } from '../game.js';
-import { HOUSE_TIERS, buildHouse } from '../town.js';
+import { buildHouse } from '../town.js';
+import { currentHome, designHomes, describeKind, renderHome, sketch } from '../homes.js';
 import { makeRoom, shelf, plant, box, std, env, at } from './common.js';
 import { CHESS_SETS } from './chess.js';
 import { mat, signTexture } from '../tex.js';
 
 export const PADDLE_PRICES = [15, 30, 50, 80, 120];
 
-/* little 3D pictures of every house level, rendered once */
-let thumbs = null;
-function houseThumbs() {
-  if (thumbs) return thumbs;
-  const W = 320, H = 200, R = G.renderer, rt = new THREE.WebGLRenderTarget(W, H, { samples: 4 });
-  const pix = new Uint8Array(W * H * 4);
-  thumbs = HOUSE_TIERS.map((T, i) => {
-    const sc = new THREE.Scene(); sc.background = new THREE.Color(0xcfe3f4); sc.environment = env();
-    sc.add(new THREE.HemisphereLight(0xffffff, 0x6a6050, 1.1));
-    const dl = new THREE.DirectionalLight(0xfff1dc, 2.2); dl.position.set(-14, 22, 18); sc.add(dl);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), std(0x5f8f3e, 1)); ground.rotation.x = -Math.PI / 2; sc.add(ground);
-    const hse = buildHouse(i); sc.add(hse);
-    const span = T.w + (T.wings ? (T.bigWings ? 14 : 11) * (T.wings === 2 ? 1 : .55) : 0) + (T.garage ? 5 : 0);
-    const cam = new THREE.PerspectiveCamera(32, W / H, .5, 400);
-    const dist = Math.max(span * 1.7, 22); cam.position.set(dist * .45, dist * .42, dist * .95); cam.lookAt(T.garage ? 2.5 : 0, T.stories * 1.6 + 1, 0);
-    R.setRenderTarget(rt); R.render(sc, cam); R.readRenderTargetPixels(rt, 0, 0, W, H, pix); R.setRenderTarget(null);
-    const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'), img = x.createImageData(W, H);
-    for (let y = 0; y < H; y++) img.data.set(pix.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4);
-    x.putImageData(img, 0, 0);
-    return c.toDataURL('image/png');
-  });
-  rt.dispose();
-  return thumbs;
+
+/* ---- your house: describe it, watch it think, pick one of 20 (free) ---- */
+let lastResults = null, lastQ = '', stopAll = [];
+function houseSection(body, section) {
+  const hs = section('Your house', '🏠'), cur = currentHome();
+  hs.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 10px' }, 'You live in: <b style="color:#fff">' + cur.name + '</b>. Describe any house you want — a skyscraper, a castle, a blue cabin — and pick one. Houses are free!'));
+  const row = el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap;align-items:center' });
+  const inp = el('input', { id: 'houseQ', placeholder: 'e.g. skyscraper, castle with a pool…', maxlength: '60', autocomplete: 'off', style: 'flex:1;min-width:220px;height:56px;border-radius:15px;border:2px solid var(--line);background:var(--bg2);color:var(--ink);padding:0 16px;font-size:20px;outline:none;-webkit-user-select:text;user-select:text' });
+  inp.value = lastQ;
+  const go = el('button', { class: 'btn go' }, '✨ Find houses');
+  row.appendChild(inp); row.appendChild(go); hs.appendChild(row);
+  const chips = el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px' });
+  ['Skyscraper', 'Castle', 'Mansion', 'Modern house', 'Log cabin', 'Beach villa', 'Gold tower'].forEach(w => { const c = el('button', { class: 'btn ghost small' }, w); c.onclick = () => { inp.value = w; search(); }; chips.appendChild(c); });
+  hs.appendChild(chips);
+  const results = el('div', { id: 'houseResults' }); hs.appendChild(results);
+  const search = () => { const q = inp.value.trim(); if (!q) { inp.focus(); return; } inp.blur(); lastQ = q; showResults(results, q, true); };
+  go.onclick = search; inp.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+  if (lastResults) showResults(results, lastQ, false);
 }
+function stopAnims() { stopAll.forEach(f => f()); stopAll = []; }
+function showResults(box, q, fresh) {
+  stopAnims(); box.innerHTML = '';
+  const specs = fresh || !lastResults ? designHomes(q) : lastResults; lastResults = specs;
+  const grid = el('div', { class: 'houses', style: 'margin-top:12px' });
+  if (fresh) {
+    // "thinking": a big blueprint sketch draws itself first
+    const think = el('div', { style: 'background:var(--bg2);border-radius:18px;padding:14px;margin-top:12px;text-align:center' });
+    const cv = el('canvas', { width: '560', height: '300', style: 'width:100%;max-width:560px;border-radius:12px;display:block;margin:0 auto' });
+    const lbl = el('div', { style: 'font-family:Fredoka;font-size:20px;margin-top:10px' }, '🤔 Thinking of your ' + describeKind(q) + '<span class="dots"></span>');
+    think.appendChild(cv); think.appendChild(lbl); box.appendChild(think);
+    let dots = 0; const di = setInterval(() => { const d = lbl.querySelector('.dots'); if (d) d.textContent = '.'.repeat(1 + dots++ % 3); }, 350); stopAll.push(() => clearInterval(di));
+    stopAll.push(sketch(cv, specs[0], 2600, () => setTimeout(() => {
+      clearInterval(di); lbl.innerHTML = '✨ Here are 20 ideas for "' + escapeHtml(q) + '" — tap one to see it';
+      think.style.transition = 'opacity .4s'; cv.style.display = 'none'; box.appendChild(grid); popCards(grid, specs);
+    }, 250)));
+  } else { box.appendChild(grid); popCards(grid, specs, true); }
+}
+function popCards(grid, specs, instant) {
+  let i = 0, alive = true; stopAll.push(() => { alive = false; });
+  const next = () => {
+    if (!alive || i >= specs.length) return;
+    const T = specs[i++], card = el('div', { class: 'hz', style: 'cursor:pointer;animation:pop .3s ease-out' });
+    const PH = T.kind === 'tower' ? 360 : 220, cv = el('canvas', { width: '320', height: String(PH) }); card.appendChild(cv);
+    card.appendChild(el('b', null, escapeHtml(T.name))); card.appendChild(el('small', null, T.kind === 'tower' ? T.floors + ' floors' : T.stories + (T.stories > 1 ? ' floors' : ' floor')));
+    card.onclick = () => preview(T);
+    grid.appendChild(card);
+    const reveal = () => { if (!alive) return; const pic = renderHome(T, 320, PH); const x = cv.getContext('2d'); let a = 0; (function fade() { if (!alive) return; a = Math.min(1, a + .08); x.globalAlpha = a; x.drawImage(pic, 0, 0); x.globalAlpha = 1; if (a < 1) requestAnimationFrame(fade); })(); };
+    if (instant) { reveal(); setTimeout(next, 30); }
+    else { stopAll.push(sketch(cv, T, 650, () => setTimeout(reveal, 80))); setTimeout(next, 520); }
+  };
+  next();
+}
+function preview(T) {
+  const ov = el('div', { style: 'position:fixed;inset:0;z-index:40;background:rgba(8,6,30,.7);display:flex;align-items:center;justify-content:center;padding:16px' });
+  const card = el('div', { class: 'modal', style: 'max-width:640px' });
+  const pic = renderHome(T, 640, T.kind === 'tower' ? 640 : 420); pic.style.cssText = 'width:100%;max-height:55vh;object-fit:contain;border-radius:14px;display:block';
+  card.appendChild(pic);
+  card.appendChild(el('h2', { style: 'margin:12px 0 4px' }, escapeHtml(T.name)));
+  card.appendChild(el('p', { style: 'margin:0 0 6px' }, escapeHtml(T.blurb || '')));
+  const acts = el('div', { class: 'acts' });
+  const yes = el('button', { class: 'btn go' }, '🏠 Make this my house (free)');
+  yes.onclick = () => { G.S.data.up.home = T; save(true); G.refresh(); ov.remove(); renderShop(); toast('🎉 Your new ' + T.name + ' is ready! Go see it.'); };
+  const no = el('button', { class: 'btn ghost' }, 'Keep looking'); no.onclick = () => ov.remove();
+  acts.appendChild(yes); acts.appendChild(no); card.appendChild(acts); ov.appendChild(card);
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
+}
+const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 function buy(cost, fn) {
   if (G.S.data.coins < cost) { toast('You need ' + (cost - G.S.data.coins) + ' more coins — play some levels!'); return false; }
   G.S.data.coins -= cost; fn(); save(true); refreshCoins(); G.refresh(); renderShop(); return true;
 }
-export function openShop() { openPanel('Game Store', renderShopInto); }
+export function openShop(focusHouse) { openPanel('Game Store', renderShopInto); if (focusHouse) setTimeout(() => { const i = document.getElementById('houseQ'); if (i) i.scrollIntoView({ block: 'center' }); }, 50); }
 function renderShop() { const b = document.getElementById('panelBody'); b.innerHTML = ''; renderShopInto(b); refreshCoins(); }
 function renderShopInto(body) {
   const u = G.S.data.up;
@@ -50,24 +95,7 @@ function renderShopInto(body) {
     if (price == null) { b.disabled = !label; b.className = 'btn' + (label ? ' go' : ''); }
     b.onclick = fn; it.appendChild(b); g.appendChild(it);
   }
-  // ---- house upgrades ----
-  const hs = section('Your house', '🏠');
-  const cur = u.house || 0, next = HOUSE_TIERS[cur + 1];
-  hs.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 10px' }, next ? 'You live in a <b style="color:#fff">' + HOUSE_TIERS[cur].name + '</b>. Upgrade one step at a time — all the way to the Super Mansion!' : 'You own the <b style="color:#ffd34d">Super Mansion</b> — the biggest house in town!'));
-  const row = el('div', { class: 'houses' }), pics = houseThumbs();
-  HOUSE_TIERS.forEach((T, i) => {
-    const card = el('div', { class: 'hz' + (i === cur ? ' cur' : i === cur + 1 ? ' next' : '') });
-    card.innerHTML = '<img src="' + pics[i] + '" alt="' + T.name + '" style="width:100%;border-radius:10px;display:block;' + (i > cur + 1 ? 'filter:grayscale(.6) brightness(.8)' : '') + '"><b>' + T.name + '</b><small>' + (i <= cur ? (i === cur ? '✓ Your house' : 'Done') : '<i class="coin" style="width:14px;height:14px;vertical-align:-2px"></i> ' + T.price) + '</small>';
-    row.appendChild(card);
-  });
-  hs.appendChild(row);
-  if (next) {
-    const nb = el('div', { style: 'display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap' });
-    nb.innerHTML = '<div style="flex:1;min-width:200px"><b style="font-family:Fredoka;font-size:20px">Next: ' + next.name + '</b><div style="color:var(--muted)">' + next.blurb + '</div></div>';
-    const b = el('button', { class: 'btn go' }, '<i class="coin"></i> Upgrade for ' + next.price);
-    b.onclick = () => { if (buy(next.price, () => { u.house = cur + 1; })) toast('🎉 Your house is now a ' + next.name + '! Go see it.'); };
-    nb.appendChild(b); hs.appendChild(nb);
-  }
+  houseSection(body, section);
   // ---- ping pong ----
   const pg = grid(section('Ping Pong', '🏓'));
   const np = u.paddle < PADDLE_PRICES.length ? PADDLE_PRICES[u.paddle] : null;
@@ -109,11 +137,11 @@ export async function enter({ makeCharacter }) {
     cols.push({ x1: s > 0 ? w / 2 - .6 : -w / 2, x2: s > 0 ? w / 2 : -w / 2 + .6, z1: -2.5 + i * 3 - 1.3, z2: -2.5 + i * 3 + 1.3 });
   } });
   // a house model on a stand, showing your next upgrade
-  const tier = G.S.data.up.house || 0, showTier = Math.min(HOUSE_TIERS.length - 1, tier + 1);
+  const T = currentHome();
   const stand = box(2.2, .9, 2.2, std(0x2b2b2b, .3, .5), -4.5, .45, 1.5); S.add(stand); cols.push({ x1: -5.7, x2: -3.3, z1: .3, z2: 2.7 });
-  const model = buildHouse(showTier); const T = HOUSE_TIERS[showTier]; const span = T.w + (T.wings ? 13 : 0) + (T.garage ? 5 : 0);
-  model.scale.setScalar(1.9 / Math.max(span, T.d)); model.position.set(-4.5, .9, 1.5); S.add(model);
-  const lbl = new THREE.Mesh(new THREE.PlaneGeometry(2.2, .5), new THREE.MeshBasicMaterial({ map: signTexture(tier >= HOUSE_TIERS.length - 1 ? 'You have it all!' : 'Next: ' + T.name, { bg: '#1c1c22', fg: '#ffd34d', font: '600 90px Fredoka, Arial' }) }));
+  const model = buildHouse(T); const bb = new THREE.Box3().setFromObject(model), sz = bb.getSize(new THREE.Vector3());
+  model.scale.setScalar(Math.min(1.9 / Math.max(sz.x, sz.z), 2.6 / sz.y)); model.position.set(-4.5, .9, 1.5); S.add(model);
+  const lbl = new THREE.Mesh(new THREE.PlaneGeometry(2.2, .5), new THREE.MeshBasicMaterial({ map: signTexture('Your ' + T.name, { bg: '#1c1c22', fg: '#ffd34d', font: '600 90px Fredoka, Arial' }) }));
   lbl.position.set(-4.5, .45, 2.62); S.add(lbl);
   S.add(at(plant(1.2), 4.8, 0, 3.5)); cols.push({ x1: 4.5, x2: 5.1, z1: 3.2, z2: 3.8 });
   let t = 0;
@@ -123,10 +151,11 @@ export async function enter({ makeCharacter }) {
     start: new THREE.Vector3(0, 0, d / 2 - 3.6), startYaw: Math.PI, camYaw: 0, camBlockers: R.colliders,
     camClamp(p) { p.y = Math.min(p.y, 3.7); },
     interact: () => [
-      { pos: new THREE.Vector3(0, 0, -d / 2 + 3.9), r: 2.2, label: '🛒 Open the shop', sub: 'Upgrades and your house', fn: openShop },
+      { pos: new THREE.Vector3(0, 0, -d / 2 + 3.9), r: 2.2, label: '🛒 Open the shop', sub: 'Upgrades and your house', fn: () => openShop() },
+      { pos: new THREE.Vector3(-4.5, 0, 3.2), r: 1.8, label: '🏠 Design a new house', sub: 'Describe it and pick one — free', fn: () => openShop(true) },
       { pos: R.door, r: 1.5, label: 'Go back outside', sub: 'Game Store', fn: () => G.backToTown() }
     ],
-    buttons: [{ label: '🛒 Shop', fn: openShop, cls: 'primary' }],
+    buttons: [{ label: '🛒 Shop', fn: () => openShop(), cls: 'primary' }],
     update(dt) { t += dt; keeper.speedBlend(0); keeper.update(dt); model.rotation.y = t * .4; },
     exit() {}
   };

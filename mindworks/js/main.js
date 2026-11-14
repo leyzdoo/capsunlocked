@@ -1,7 +1,8 @@
 // Mindworks 3D — boot, sign-in, walking around town, entering buildings.
 import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
-import { createTown, paintPlaque, HOUSE_TIERS } from './town.js';
+import { createTown, paintPlaque } from './town.js';
+import { currentHome } from './homes.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
@@ -21,6 +22,7 @@ const touch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in windo
 /* ---------------- input ---------------- */
 const keys = {}, joy = { x: 0, y: 0, id: null }, input = { run: false };
 G.input = input;
+G.camYawTo = y => { cam.yaw = cam.tYaw = y; };
 addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   keys[e.key.toLowerCase()] = true;
@@ -106,7 +108,8 @@ function placeInTown(pos, faceYaw) {
 }
 function doorAction(d) {
   const lv = G.S.data ? G.S.data.levels : {};
-  if (d.id === 'home') return { label: 'Go inside your ' + HOUSE_TIERS[G.S.data.up.house || 0].name, sub: 'Your home', fn: () => G.enterRoom('home', {}) };
+  if (d.id === 'home') return { label: 'Go inside your ' + currentHome().name, sub: 'Your home', fn: () => G.enterRoom('home', {}) };
+  if (d.id === 'homeBack') return { label: '🚪 Go in the back door', sub: 'Your ' + currentHome().name, fn: () => G.enterRoom('home', { door: 'back' }) };
   if (d.id === 'store') return { label: 'Go into the Game Store', sub: 'Upgrades and your house', fn: () => G.enterRoom('store', {}) };
   if (d.id === 'jigsaw') {
     if (!jigsawUnlocked() && !G.preview) return { label: '🔒 Jigsaw is locked', sub: masteredCount() + ' of 5 games at level 25', fn: () => modal({ big: '🔒', title: 'Not yet!', text: 'The Jigsaw opens when all five games reach level 25. You have ' + masteredCount() + ' of 5.', acts: [{ label: 'OK', cls: 'go' }] }) };
@@ -132,10 +135,10 @@ G.enterRoom = async (id, opts = {}) => {
   closeModal(); closePanel();
   fade.style.opacity = 1; await wait(260);
   if (active && active !== townPlace && active.exit) active.exit();
-  if (active === townPlace) lastDoor = town.doors.find(d => d.id === id) || lastDoor;
+  if (active === townPlace) lastDoor = town.doors.find(d => d.id === (opts.door === 'back' ? 'homeBack' : id)) || lastDoor;
   try {
     const level = opts.level != null ? opts.level : (G.S.data.levels[id] || 0) + 1;
-    const room = await ROOMS[id].enter({ level, mode: opts.mode || 'robot', player, camera, makeCharacter });
+    const room = await ROOMS[id].enter({ level, mode: opts.mode || 'robot', player, camera, makeCharacter, door: opts.door });
     room.id = id; active = room;
     camera.up.set(0, 1, 0);
     if (room.walks) {
@@ -150,8 +153,10 @@ G.enterRoom = async (id, opts = {}) => {
   showJoy(); fade.style.opacity = 0; switching = false;
 };
 function leaveBuilding() { G.backToTown(); }
-G.backToTown = async () => {
-  if (switching) return; switching = true;
+G.backToTown = async (doorId) => {
+  if (switching) return;
+  if (typeof doorId === 'string') lastDoor = town.doors.find(d => d.id === doorId) || lastDoor;
+  switching = true;
   closeModal(); closePanel(); fade.style.opacity = 1; await wait(260);
   if (active && active !== townPlace && active.exit) active.exit();
   active = townPlace; setTitle(G.S.name); setHelp(''); setRoomButtons(null);
@@ -160,7 +165,7 @@ G.backToTown = async () => {
   placeInTown(out, d.facing);
   refreshPlaques(); showJoy(); fade.style.opacity = 0; switching = false;
 };
-G.refresh = () => { refreshPlaques(); refreshCoins(); if (town && G.S.data) town.setHouse(G.S.data.up.house || 0); };
+G.refresh = () => { refreshPlaques(); refreshCoins(); if (town && G.S.data) town.setHome(currentHome()); };
 function showJoy() { const walk = active && active.walks && touch; $('joy').classList.toggle('hide', !walk); $('runBtn').classList.toggle('hide', !walk); }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -278,7 +283,7 @@ function startPlaying() {
   town.scene.remove(player.root);
   player = makeCharacter('player', new THREE.Color(G.S.data.color || COLORS[0]).getHex());
   const d = town.doors.find(x => x.id === 'home'); lastDoor = d;
-  town.setHouse(G.S.data.up.house || 0);
+  town.setHome(currentHome());
   placeInTown(town.spawn.pos, town.spawn.yaw);
   setTitle(G.S.name); refreshCoins(); refreshPlaques(); showJoy();
   showProgress(true);
@@ -290,7 +295,7 @@ function showProgress(first) {
     const box = el('div', { class: 'prog' });
     GAMES.forEach(g => { const lv = G.S.data.levels[g.id]; box.appendChild(el('div', { class: 'prow' }, '<b>' + g.name + '</b><div class="bar"><i style="width:' + Math.min(100, lv / MASTER * 100) + '%;background:' + g.color + '"></i></div><span>' + Math.min(lv, MASTER) + ' / 25</span>')); });
     box.appendChild(el('div', { class: 'prow' }, '<b>Jigsaw</b><div class="bar"><i style="width:' + masteredCount() / 5 * 100 + '%;background:#ff6fae"></i></div><span>' + (jigsawUnlocked() ? 'Open' : '🔒') + '</span>'));
-    box.appendChild(el('div', { class: 'prow' }, '<b>Your house</b><div class="bar"><i style="width:' + (G.S.data.up.house / (HOUSE_TIERS.length - 1) * 100) + '%;background:#ffd34d"></i></div><span>' + HOUSE_TIERS[G.S.data.up.house].name + '</span>'));
+    box.appendChild(el('div', { class: 'prow' }, '<b>Your house</b><span style="flex:1;text-align:right;color:#ffd34d">🏠 ' + currentHome().name + '</span>'));
     body.appendChild(box);
     const go = el('div', { style: 'display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap' });
     const b = el('button', { class: 'btn go' }, first ? 'Start walking' : 'Close'); b.onclick = closePanel; go.appendChild(b);

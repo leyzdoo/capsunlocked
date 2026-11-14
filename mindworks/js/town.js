@@ -136,6 +136,7 @@ export const HOUSE_TIERS = [
   { name: 'Mansion', price: 200, w: 16, d: 13, stories: 3, wall: ['stone', '#d9d2c2'], roof: ['hip', '#3d4452'], wings: 2, portico: 4, fence: 'iron', hedges: true, fountain: true, gate: true, blurb: 'Three floors, columns and a fountain.' },
   { name: 'Super Mansion', price: 300, w: 18, d: 15, stories: 3, wall: ['stone', '#efe9dc'], roof: ['hip', '#2f3a4a'], wings: 2, bigWings: true, portico: 6, tower: true, gold: true, fence: 'iron', hedges: true, fountain: true, gate: true, pool: true, statues: true, blurb: 'A tower, a pool, gold trim — the biggest house in town.' }
 ];
+HOUSE_TIERS.forEach((t, i) => { t.kind = 'house'; t.grand = i; });
 const STORY = 3.2;
 function wallMat(kind, color, w, h) {
   if (kind === 'siding') return mat('siding', [color, 31], w / 3, h / 3, { bump: 1.6, roughness: .8 });
@@ -180,7 +181,16 @@ function block(g, T, w, d, stories, cx, cz, roofKind, lit) {
   [-1, 1].forEach(s => [-1, 1].forEach(t => g.add(box(.2, h, .2, T.wall[0] === 'siding' ? S.trimWhite : S.stone, cx + s * w / 2, h / 2 + .5, cz + t * d / 2))));
   g.add(box(w + .3, .3, d + .3, T.gold ? std(0xc9a64a, .35, .9) : (T.wall[0] === 'siding' ? S.trimWhite : S.stone), cx, h + .6, cz));
   const rm = roofMat(roofKind, T.roof[1], w, d);
-  if (roofKind === 'hip') { const r = hipRoof(w + 1, d + 1, Math.min(w, d) * .32, rm); r.position.set(cx, h + .75, cz); g.add(r); }
+  if (roofKind === 'flat' || roofKind === 'castle') {
+    const top = roofKind === 'castle' ? S.stone : S.concreteDark;
+    g.add(box(w + .1, .3, d + .1, top, cx, h + .8, cz));
+    if (roofKind === 'castle') { // battlements
+      const n = Math.floor(w / 1.1), m = Math.floor(d / 1.1);
+      for (let i = 0; i <= n; i += 2) [-1, 1].forEach(s => g.add(box(.6, .7, .5, S.stone, cx - w / 2 + i * w / n, h + 1.3, cz + s * d / 2)));
+      for (let i = 0; i <= m; i += 2) [-1, 1].forEach(s => g.add(box(.5, .7, .6, S.stone, cx + s * w / 2, h + 1.3, cz - d / 2 + i * d / m)));
+    } else { [-1, 1].forEach(s => { g.add(box(w + .3, .5, .2, S.trimWhite, cx, h + 1.1, cz + s * (d / 2 + .05))); g.add(box(.2, .5, d + .3, S.trimWhite, cx + s * (w / 2 + .05), h + 1.1, cz)); }); g.add(box(2, 1, 1.4, std(0x9aa0a6, .5, .5), cx + w / 5, h + 1.4, cz - d / 5)); }
+  }
+  else if (roofKind === 'hip') { const r = hipRoof(w + 1, d + 1, Math.min(w, d) * .32, rm); r.position.set(cx, h + .75, cz); g.add(r); }
   else { const sub = new THREE.Group(); sub.position.set(cx, 0, cz); gableRoof(sub, w, d, Math.max(2, w * .22), rm, wm, h + .62); g.add(sub); }
   // windows on the front face
   const cols = Math.max(2, Math.round(w / 2.8)), span = w / cols;
@@ -196,20 +206,22 @@ function column(g, x, y0, z, hgt, T) {
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.26, .32, hgt, 20), m); shaft.position.set(x, y0 + hgt / 2, z); shaft.castShadow = true; g.add(shaft);
   g.add(box(.8, .25, .8, m, x, y0 + .12, z)); g.add(box(.85, .3, .85, T.gold ? std(0xc9a64a, .35, .9) : m, x, y0 + hgt - .1, z));
 }
-export function buildHouse(tier) {
-  const T = HOUSE_TIERS[Math.max(0, Math.min(HOUSE_TIERS.length - 1, tier))], S = shared(), g = new THREE.Group();
+export function buildHouse(spec) {
+  if (typeof spec === 'number') spec = HOUSE_TIERS[Math.max(0, Math.min(HOUSE_TIERS.length - 1, spec))];
+  if (spec.kind === 'tower') return buildTower(spec);
+  const T = spec, tier = T.grand ?? 0, S = shared(), g = new THREE.Group();
   const { w, d, stories } = T, fz = d / 2, cols = [];
   const h = block(g, T, w, d, stories, 0, 0, T.roof[0], 'door');
   cols.push([-w / 2, w / 2, -d / 2, d / 2]);
   // chimneys
-  g.add(texBox(1.1, 3.6, 1.1, 'brick', ['#8a4b3a', '#c8bdb0', 34], 2.4, 2.4, w / 4, h + 2, -d / 5));
-  if (tier >= 4) g.add(texBox(1.1, 4, 1.1, 'brick', ['#8a4b3a', '#c8bdb0', 34], 2.4, 2.4, -w / 4, h + 2.2, -d / 5));
+  if (T.roof[0] !== 'flat' && T.roof[0] !== 'castle') g.add(texBox(1.1, 3.6, 1.1, 'brick', ['#8a4b3a', '#c8bdb0', 34], 2.4, 2.4, w / 4, h + 2, -d / 5));
+  if (tier >= 4 && T.roof[0] !== 'flat' && T.roof[0] !== 'castle') g.add(texBox(1.1, 4, 1.1, 'brick', ['#8a4b3a', '#c8bdb0', 34], 2.4, 2.4, -w / 4, h + 2.2, -d / 5));
   // wings
   if (T.wings) {
     const ww = T.bigWings ? 7 : 5.5, wd = d - 2, ws = T.bigWings ? stories - 1 : Math.max(1, stories - 1);
     (T.wings === 1 ? [1] : [-1, 1]).forEach(s => {
       const cx = s * (w / 2 + ww / 2), cz = -1;
-      block(g, T, ww, wd, ws, cx, cz, 'hip', 'none');
+      block(g, T, ww, wd, ws, cx, cz, T.roof[0] === 'gable' ? 'hip' : T.roof[0], 'none');
       cols.push([cx - ww / 2, cx + ww / 2, cz - wd / 2, cz + wd / 2]);
     });
   }
@@ -280,6 +292,13 @@ export function buildHouse(tier) {
     [-1, 1].forEach(s => cols.push([s > 0 ? pw / 2 - .22 : -pw / 2, s > 0 ? pw / 2 : -pw / 2 + .22, bz - pd, bz]));
     g.userData.porchSwing = sw;
   }
+  if (T.turrets) [-1, 1].forEach(s => [-1, 1].forEach(t => {
+    const tx = s * (w / 2), tz = t * (d / 2), th = h + 3;
+    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.6, th, 20), wallMat('stone', T.wall[1], 6, th / 3)); cyl.position.set(tx, th / 2 + .4, tz); cyl.castShadow = true; g.add(cyl);
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(1.9, 3.4, 20), roofMat('hip', T.roof[1], 3, 3)); cone.position.set(tx, th + 2.1, tz); cone.castShadow = true; g.add(cone);
+    const flag = box(.7, .45, .03, std(T.flag || 0xd8452f, .7), tx + .38, th + 4.4, tz); g.add(flag); g.add(box(.05, 1.2, .05, S.black, tx, th + 4.1, tz));
+    cols.push([tx - 1.6, tx + 1.6, tz - 1.6, tz + 1.6]);
+  }));
   if (T.tower) {
     const tw = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 4, 24), wallMat('stone', T.wall[1], 6, 2)); tw.position.set(0, h + 2.4, -1); tw.castShadow = true; g.add(tw);
     for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, wn = new THREE.Mesh(new THREE.PlaneGeometry(.6, 1.4), S.glassDark); wn.position.set(Math.sin(a) * 1.81, h + 2.6, -1 + Math.cos(a) * 1.81); wn.rotation.y = a; g.add(wn); }
@@ -288,12 +307,96 @@ export function buildHouse(tier) {
   }
   cols.push([-Math.max(2, front ? w * .32 : 1), Math.max(2, front ? w * .32 : 1), fz, fz + front]);
   g.userData.door = V(0, 0, fz + front + 1.0);
+  g.userData.backDoor = V(0, 0, -fz - 2.8 - .9);
   g.userData.cols = cols;
   g.userData.frontDepth = front;
   return g;
 }
+
+/* ---------------- skyscrapers (houses you design at the Game Store) ---------------- */
+export const TOWER_FH = 3.4;
+const facadeCache = {};
+/** a canvas facade: 4 bays x 2 floors of windows, tiled across the tower */
+function facadeMat(T) {
+  const key = [T.skin, T.glass, T.frame, T.seed % 5].join('|');
+  if (!facadeCache[key]) {
+    const W = 512, H = 512, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'), r = rng(T.seed % 5 + 3);
+    const bays = 4, flo = 2, bw = W / bays, fh = H / flo;
+    if (T.skin === 'glass') {
+      x.fillStyle = T.frame; x.fillRect(0, 0, W, H);
+      for (let f = 0; f < flo; f++) for (let b = 0; b < bays; b++) {
+        const gx = b * bw + 5, gy = f * fh + 18, gw = bw - 10, gh = fh - 30;
+        const gr = x.createLinearGradient(gx, gy, gx + gw, gy + gh); const tint = new THREE.Color(T.glass);
+        const lit = r() < .14, a = tint.clone().offsetHSL(0, 0, .12 + r() * .08), bcol = tint.clone().offsetHSL(0, 0, -.08);
+        gr.addColorStop(0, lit ? '#f2d9a6' : '#' + a.getHexString()); gr.addColorStop(1, lit ? '#c9a46a' : '#' + bcol.getHexString());
+        x.fillStyle = gr; x.fillRect(gx, gy, gw, gh);
+        x.fillStyle = 'rgba(255,255,255,.08)'; x.fillRect(gx, gy, gw * .35, gh);
+      }
+    } else {
+      const wallC = T.skin === 'brick' ? '#8e4a38' : T.skin === 'gold' ? '#c9a64a' : T.frame;
+      x.fillStyle = wallC; x.fillRect(0, 0, W, H);
+      for (let i = 0; i < 1800; i++) { x.fillStyle = `rgba(${r() < .5 ? 0 : 255},${r() < .5 ? 0 : 255},${r() < .5 ? 0 : 255},${r() * .05})`; x.fillRect(r() * W, r() * H, 3, 3); }
+      for (let f = 0; f < flo; f++) for (let b = 0; b < bays; b++) {
+        const gx = b * bw + 22, gy = f * fh + 40, gw = bw - 44, gh = fh - 80, lit = r() < .18;
+        x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(gx - 6, gy - 6, gw + 12, gh + 12);
+        x.fillStyle = lit ? '#f0d29a' : T.glass; x.fillRect(gx, gy, gw, gh);
+        x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(gx + gw / 2 - 2, gy, 4, gh); x.fillRect(gx, gy + gh * .4, gw, 4);
+      }
+    }
+    facadeCache[key] = c;
+  }
+  const tex = new THREE.CanvasTexture(facadeCache[key]); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.anisotropy = 8;
+  return tex;
+}
+export function buildTower(T) {
+  const S = shared(), g = new THREE.Group(), cols = [];
+  const w = T.w, d = T.d, fz = d / 2, FH = TOWER_FH, lobbyH = 6;
+  const glass = T.skin === 'glass';
+  // lobby: tall glass ground floor, set back under the tower
+  const lob = new THREE.Mesh(new THREE.BoxGeometry(w - 1, lobbyH, d - 1), new THREE.MeshStandardMaterial({ color: 0x9fb4c4, roughness: .05, metalness: .7, transparent: true, opacity: .85 }));
+  lob.position.y = lobbyH / 2; g.add(lob);
+  const glow = new THREE.Mesh(new THREE.BoxGeometry(w - 1.4, lobbyH - .4, d - 1.4), new THREE.MeshBasicMaterial({ color: 0xffe2b8 })); glow.position.y = lobbyH / 2; g.add(glow);
+  for (let i = 0; i <= Math.round(w / 2.5); i++) [-1, 1].forEach(s => g.add(box(.18, lobbyH, .18, S.frame, -w / 2 + .5 + i * (w - 1) / Math.round(w / 2.5), lobbyH / 2, s * (d / 2 - .5))));
+  [-1, 1].forEach(s => [-1, 1].forEach(t => g.add(box(.9, lobbyH, .9, glass ? S.metal : S.stone, s * (w / 2 - .45), lobbyH / 2, t * (d / 2 - .45)))));
+  // the tower in 1-3 sections that step back as they rise
+  const secs = T.setbacks ? [[1, .55], [.8, .3], [.6, .15]] : [[1, 1]];
+  let y = lobbyH, left = T.floors, top = { w, d };
+  secs.forEach(([k, share], i) => {
+    const n = i === secs.length - 1 ? left : Math.max(2, Math.round(T.floors * share)); left -= n; if (n <= 0) return;
+    const sw = w * k, sd = d * k, sh = n * FH;
+    const tx = facadeMat(T), side = (len) => { const t2 = tx.clone(); t2.needsUpdate = true; t2.repeat.set(len / 10, n / 2); return new THREE.MeshStandardMaterial({ map: t2, roughness: glass ? .12 : .8, metalness: glass ? .55 : .05 }); };
+    const mx = side(sw), mz = side(sd), roofM = S.concreteDark;
+    const blk = new THREE.Mesh(new THREE.BoxGeometry(sw, sh, sd), [mz, mz, roofM, roofM, mx, mx]); blk.position.y = y + sh / 2; blk.castShadow = true; blk.receiveShadow = true; g.add(blk);
+    g.add(box(sw + .3, .4, sd + .3, glass ? S.metal : S.stone, 0, y + sh + .2, 0));
+    if (glass) [-1, 1].forEach(s => [-1, 1].forEach(t => g.add(box(.3, sh, .3, S.metal, s * sw / 2, y + sh / 2, t * sd / 2))));
+    y += sh + .4; top = { w: sw, d: sd };
+  });
+  // the crown on top
+  const gold = std(0xc9a64a, .25, 1);
+  if (T.crown === 'spire') { const sp = new THREE.Mesh(new THREE.ConeGeometry(Math.min(top.w, top.d) * .35, 14, 4), glass ? std(0xd8dde3, .2, 1) : S.stone); sp.rotation.y = Math.PI / 4; sp.position.y = y + 7; sp.castShadow = true; g.add(sp); const ant = new THREE.Mesh(new THREE.CylinderGeometry(.08, .12, 8, 6), S.metal); ant.position.y = y + 18; g.add(ant); }
+  else if (T.crown === 'dome') { const dm = new THREE.Mesh(new THREE.SphereGeometry(Math.min(top.w, top.d) * .4, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), gold); dm.position.y = y; dm.castShadow = true; g.add(dm); }
+  else if (T.crown === 'helipad') { const hp = new THREE.Mesh(new THREE.CylinderGeometry(Math.min(top.w, top.d) * .42, Math.min(top.w, top.d) * .42, .3, 32), std(0x3a3d42, .7)); hp.position.y = y + .5; g.add(hp); const hc = document.createElement('canvas'); hc.width = hc.height = 128; const hx = hc.getContext('2d'); hx.strokeStyle = '#ffd34d'; hx.lineWidth = 8; hx.beginPath(); hx.arc(64, 64, 54, 0, 7); hx.stroke(); hx.fillStyle = '#fff'; hx.font = 'bold 80px Arial'; hx.textAlign = 'center'; hx.fillText('H', 64, 92); const ht = new THREE.CanvasTexture(hc); const hm = new THREE.Mesh(new THREE.CircleGeometry(Math.min(top.w, top.d) * .4, 32), new THREE.MeshBasicMaterial({ map: ht, transparent: true })); hm.rotation.x = -Math.PI / 2; hm.position.y = y + .66; g.add(hm); }
+  else if (T.crown === 'crown') { for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2, sp = new THREE.Mesh(new THREE.ConeGeometry(.5, 3, 6), gold); sp.position.set(Math.cos(a) * top.w * .38, y + 1.5, Math.sin(a) * top.d * .38); g.add(sp); } }
+  else { g.add(box(top.w * .5, 2.2, top.d * .4, std(0x9aa0a6, .5, .5), 0, y + 1.1, 0)); const ant = new THREE.Mesh(new THREE.CylinderGeometry(.06, .1, 6, 6), S.metal); ant.position.set(top.w * .3, y + 3, 0); g.add(ant); }
+  // canopy + revolving-door entrance at the front, a plain door at the back
+  g.add(box(6, .3, 3, glass ? S.metal : S.stone, 0, 3.4, fz + 1));
+  [-1, 1].forEach(s => g.add(box(.15, 3.4, .15, S.metal, s * 2.8, 1.7, fz + 2.3)));
+  g.add(box(3, 3, .2, S.glassDark, 0, 1.5, fz - .4));
+  const sc = document.createElement('canvas'); sc.width = 1024; sc.height = 160; const sx = sc.getContext('2d'); sx.fillStyle = '#1b1d22'; sx.fillRect(0, 0, 1024, 160); sx.fillStyle = '#ffd34d'; sx.font = '600 88px Fredoka, Arial'; sx.textAlign = 'center'; sx.fillText((T.name || 'TOWER').toUpperCase().slice(0, 22), 512, 112);
+  const st = new THREE.CanvasTexture(sc); st.colorSpace = THREE.SRGBColorSpace; const sign = new THREE.Mesh(new THREE.PlaneGeometry(5.6, .88), new THREE.MeshBasicMaterial({ map: st })); sign.position.set(0, 3.7, fz + 2.52); g.add(sign);
+  g.add(box(1.6, 2.5, .15, S.glassDark, 0, 1.25, -fz + .4));
+  g.add(box(4, .12, 2, S.stone, 0, .06, -fz - 1));
+  cols.push([-w / 2, w / 2, -d / 2, d / 2]);
+  cols.push([-3, -2.6, fz + 2.1, fz + 2.5], [2.6, 3, fz + 2.1, fz + 2.5]);
+  g.userData.door = V(0, 0, fz + 1.4);
+  g.userData.backDoor = V(0, 0, -fz - 1.2);
+  g.userData.cols = cols; g.userData.frontDepth = 0;
+  return g;
+}
+
 /** garden, fence, path and extras on the home lot — rebuilt with the house */
-function lotExtras(T, tier, lot, side, frontZ, r) {
+function lotExtras(T, lot, side, frontZ, r) {
+  const tier = T.grand ?? 0;
   const g = new THREE.Group(), cols = [], S = shared();
   const fenceZ = side * (SETBACK + .3), x0 = lot.x;
   // path from gate to door
@@ -490,7 +593,7 @@ export function createTown(renderer) {
   const doors = [], base = [], plaques = {};
   let home = null;
   BUILDINGS.forEach((b, i) => {
-    if (b.house) { home = b; doors.push({ id: 'home', name: 'Home', pos: V(b.x, 0, b.side * (SETBACK + 3)), facing: Math.PI }); return; }
+    if (b.house) { home = b; doors.push({ id: 'home', name: 'Home', pos: V(b.x, 0, b.side * (SETBACK + 3)), facing: Math.PI }); doors.push({ id: 'homeBack', name: 'Home', pos: V(b.x, 0, b.side * 40), facing: 0 }); return; }
     const g = shopBuilding({ ...b, sign: b.name.toUpperCase(), seed: 100 + i });
     // local front is +z; buildings on the north side (z<0) face +z, south side ones are turned around
     const cz = b.side < 0 ? -(SETBACK + b.d / 2) : (SETBACK + b.d / 2);
@@ -524,13 +627,14 @@ export function createTown(renderer) {
   base.push({ x1: -75, x2: 75, z1: -40, z2: -39 }, { x1: -40, x2: 75, z1: 39, z2: 40 }, { x1: -76, x2: -75, z1: -40, z2: 60 }, { x1: 75, x2: 76, z1: -40, z2: 40 });
 
   const town = {
-    scene, doors, colliders: base.slice(), camBlockers: base.slice(), plaques, sun: dir, houseTier: -1,
+    scene, doors, colliders: base.slice(), camBlockers: base.slice(), plaques, sun: dir, homeKey: null,
     spawn: { pos: V(home.x, 0, home.side * (SETBACK - 1.8)), yaw: Math.PI },
-    setHouse(tier) {
-      tier = Math.max(0, Math.min(HOUSE_TIERS.length - 1, tier | 0));
-      if (tier === town.houseTier) return;
+    setHome(spec) {
+      if (typeof spec === 'number') spec = HOUSE_TIERS[Math.max(0, Math.min(HOUSE_TIERS.length - 1, spec | 0))];
+      const key = JSON.stringify(spec);
+      if (key === town.homeKey) return;
       if (town._house) { scene.remove(town._house); scene.remove(town._lot); }
-      const T = HOUSE_TIERS[tier], g = buildHouse(tier), frontZ = SETBACK + 9;
+      const T = spec, g = buildHouse(T), frontZ = SETBACK + 9;
       const cz = home.side * (frontZ + T.d / 2);
       g.position.set(home.x, 0, cz); if (home.side > 0) g.rotation.y = Math.PI;
       g.traverse(o => { if (o.isMesh) o.receiveShadow = true; });
@@ -539,16 +643,17 @@ export function createTown(renderer) {
         const a = V(x1, 0, z1).applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position), b = V(x2, 0, z2).applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position);
         return { x1: Math.min(a.x, b.x) - .1, x2: Math.max(a.x, b.x) + .1, z1: Math.min(a.z, b.z) - .1, z2: Math.max(a.z, b.z) + .1 };
       });
-      const lot = lotExtras(T, tier, { x: home.x, w: home.lotW }, home.side, home.side * frontZ, rng(900 + tier));
+      const lot = lotExtras(T, { x: home.x, w: home.lotW }, home.side, home.side * frontZ, rng(900 + (T.seed || T.grand || 0)));
       scene.add(lot.group);
-      const dl = g.userData.door.clone().applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position); dl.y = 0;
-      doors.find(d => d.id === 'home').pos.copy(dl);
+      const toWorld = v => { const o = v.clone().applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position); o.y = 0; return o; };
+      doors.find(d => d.id === 'home').pos.copy(toWorld(g.userData.door));
+      doors.find(d => d.id === 'homeBack').pos.copy(toWorld(g.userData.backDoor));
       town.colliders = base.concat(cols, lot.cols); town.camBlockers = buildingBoxes.concat(cols);
-      town._house = g; town._lot = lot.group; town.houseTier = tier;
+      town._house = g; town._lot = lot.group; town.homeKey = key; town.homeSpec = spec;
     },
     followShadow(p) { dir.position.copy(p).add(sun.clone().multiplyScalar(60)); dir.target.position.copy(p); }
   };
-  town.setHouse(0);
+  town.setHome(0);
   return town;
 }
 function circleBox(p, r) { return { x1: p.x - r, x2: p.x + r, z1: p.z - r, z2: p.z + r }; }
