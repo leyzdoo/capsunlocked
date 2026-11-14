@@ -1,0 +1,442 @@
+{
+  "american-robin": [
+    {
+      "hex": "#de5e14",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#e5d9cf",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#4c403b",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#a29086",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#776862",
+      "name": "Slate gray"
+    }
+  ],
+  "varied-thrush": [
+    {
+      "hex": "#f5790c",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#363336",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#e6d4c5",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#878691",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#c78a56",
+      "name": "Warm ochre"
+    }
+  ],
+  "spotted-towhee": [
+    {
+      "hex": "#332d2d",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#eaddd4",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#dc783b",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#b19e95",
+      "name": "Soft gray"
+    },
+    {
+      "hex": "#74625d",
+      "name": "Slate gray"
+    }
+  ],
+  "steller-jay": [
+    {
+      "hex": "#237ad9",
+      "name": "Cobalt blue"
+    },
+    {
+      "hex": "#d5d1d2",
+      "name": "Soft gray"
+    },
+    {
+      "hex": "#302e35",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#887d7d",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#274d89",
+      "name": "Cobalt blue"
+    }
+  ],
+  "anna-hummingbird": [
+    {
+      "hex": "#66564a",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#ddd4ca",
+      "name": "Soft gray"
+    },
+    {
+      "hex": "#d8457d",
+      "name": "Rose magenta"
+    },
+    {
+      "hex": "#a5ad77",
+      "name": "Leaf green"
+    },
+    {
+      "hex": "#ad2957",
+      "name": "Rose magenta"
+    }
+  ],
+  "chestnut-chickadee": [
+    {
+      "hex": "#756259",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#eaded5",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#2c2624",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#c7a38a",
+      "name": "Warm ochre"
+    },
+    {
+      "hex": "#c27346",
+      "name": "Warm ochre"
+    }
+  ],
+  "red-breasted-nuthatch": [
+    {
+      "hex": "#6d7a8a",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#ebdfd2",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#da752a",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#3c3836",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#e0b07f",
+      "name": "Warm ochre"
+    }
+  ],
+  "american-goldfinch": [
+    {
+      "hex": "#3e3937",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#f1e6c8",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#e9bd07",
+      "name": "Golden yellow"
+    },
+    {
+      "hex": "#a69175",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#fbe85a",
+      "name": "Golden yellow"
+    }
+  ],
+  "house-finch": [
+    {
+      "hex": "#dbb9a2",
+      "name": "Warm ochre"
+    },
+    {
+      "hex": "#704736",
+      "name": "Burnt red"
+    },
+    {
+      "hex": "#ef5d51",
+      "name": "Rose red"
+    },
+    {
+      "hex": "#b0856b",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#ebd7c9",
+      "name": "Warm white"
+    }
+  ],
+  "cedar-waxwing": [
+    {
+      "hex": "#827772",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#ecdecd",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#e1ac6e",
+      "name": "Warm ochre"
+    },
+    {
+      "hex": "#453a35",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#d2bca5",
+      "name": "Soft gray"
+    }
+  ],
+  "western-tanager": [
+    {
+      "hex": "#edbc07",
+      "name": "Golden yellow"
+    },
+    {
+      "hex": "#322d29",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#e3ca8f",
+      "name": "Warm buff"
+    },
+    {
+      "hex": "#eb3c0f",
+      "name": "Rose red"
+    },
+    {
+      "hex": "#9f8055",
+      "name": "Earth brown"
+    }
+  ],
+  "northern-flicker": [
+    {
+      "hex": "#796152",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#ecd9c5",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#c59c7b",
+      "name": "Warm ochre"
+    },
+    {
+      "hex": "#43352f",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#cc7953",
+      "name": "Warm ochre"
+    }
+  ],
+  "belted-kingfisher": [
+    {
+      "hex": "#63758c",
+      "name": "Blue gray"
+    },
+    {
+      "hex": "#dfdad6",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#373f49",
+      "name": "Blue gray"
+    },
+    {
+      "hex": "#9ca8ba",
+      "name": "Soft gray"
+    },
+    {
+      "hex": "#7f8fa4",
+      "name": "Slate gray"
+    }
+  ],
+  "great-blue-heron": [
+    {
+      "hex": "#636062",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#e9ded1",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#c2976f",
+      "name": "Warm ochre"
+    },
+    {
+      "hex": "#adafb5",
+      "name": "Soft gray"
+    },
+    {
+      "hex": "#89888d",
+      "name": "Slate gray"
+    }
+  ],
+  "tufted-puffin": [
+    {
+      "hex": "#544a4c",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#f5e1c5",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#f26523",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#a58a78",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#1d1b1c",
+      "name": "Charcoal"
+    }
+  ],
+  "european-robin": [
+    {
+      "hex": "#f97f17",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#f0dfcb",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#764c2e",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#b79b81",
+      "name": "Warm ochre"
+    },
+    {
+      "hex": "#a66e3d",
+      "name": "Earth brown"
+    }
+  ],
+  "atlantic-puffin": [
+    {
+      "hex": "#ccc2ba",
+      "name": "Soft gray"
+    },
+    {
+      "hex": "#292728",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#e56626",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#6e6664",
+      "name": "Slate gray"
+    },
+    {
+      "hex": "#dea979",
+      "name": "Warm ochre"
+    }
+  ],
+  "lilac-breasted-roller": [
+    {
+      "hex": "#d57eb4",
+      "name": "Rose magenta"
+    },
+    {
+      "hex": "#384676",
+      "name": "Cobalt blue"
+    },
+    {
+      "hex": "#54c4cc",
+      "name": "Turquoise"
+    },
+    {
+      "hex": "#92676c",
+      "name": "Burnt red"
+    },
+    {
+      "hex": "#e8dbca",
+      "name": "Warm white"
+    }
+  ],
+  "mandarin-duck": [
+    {
+      "hex": "#796258",
+      "name": "Earth brown"
+    },
+    {
+      "hex": "#e6d9d2",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#f29d38",
+      "name": "Burnt orange"
+    },
+    {
+      "hex": "#32313c",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#c9a17f",
+      "name": "Warm ochre"
+    }
+  ],
+  "resplendent-quetzal": [
+    {
+      "hex": "#55a254",
+      "name": "Forest green"
+    },
+    {
+      "hex": "#d1e4ce",
+      "name": "Warm white"
+    },
+    {
+      "hex": "#b72820",
+      "name": "Rose red"
+    },
+    {
+      "hex": "#3b3837",
+      "name": "Charcoal"
+    },
+    {
+      "hex": "#abb59d",
+      "name": "Soft gray"
+    }
+  ]
+}
