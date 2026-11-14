@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
-import { createWorld } from './world.js';
+import { createWorld, WATER_Y } from './world.js';
+import { CARS, BOATS, ITEMS, makeCar, makeBoat, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
@@ -97,11 +98,11 @@ async function boot() {
     get colliders() { return town.colliders; },
     collidersAt: p => town.colliders.concat(world.collidersAt(p)),
     get camBlockers() { return town.camBlockers.concat(world.camBlockers(player.root.position)); },
-    heightAt: p => world.heightAt(p.x, p.z),
-    blocked: p => world.blocked(p),
+    heightAt: p => ride && ride.type === 'boat' ? WATER_Y + .05 : world.heightAt(p.x, p.z),
+    blocked: p => ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
-    interact() { return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position)); },
-    update(dt) { town.followShadow(player.root.position); world.update(dt, player.root.position); }
+    interact() { if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs()); },
+    update(dt) { town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
   };
   // warm-up render so the first frame after sign-in is quick
   player = makeCharacter('player', 0x3f7fd9); placeInTown(town.spawn.pos, town.spawn.yaw);
@@ -142,6 +143,7 @@ function doorAction(d) {
 let switching = false;
 G.enterRoom = async (id, opts = {}) => {
   if (switching) return; switching = true;
+  if (ride) stopRide(true);
   closeModal(); closePanel();
   fade.style.opacity = 1; await wait(260);
   if (active && active !== townPlace && active.exit) active.exit();
@@ -176,7 +178,7 @@ G.backToTown = async (doorId) => {
   refreshPlaques(); showJoy(); fade.style.opacity = 0; switching = false;
 };
 G.refresh = () => { refreshPlaques(); refreshCoins(); if (town && G.S.data) town.setHome(currentHome()); };
-function showJoy() { const walk = active && active.walks && touch; $('joy').classList.toggle('hide', !walk); $('runBtn').classList.toggle('hide', !walk); }
+function showJoy() { const walk = active && active.walks && touch; $('joy').classList.toggle('hide', !walk); $('runBtn').classList.toggle('hide', !walk); refreshRideBtn(); }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 function refreshPlaques() {
@@ -206,25 +208,25 @@ function walk(dt) {
   if (keys.a || keys.arrowleft) mx -= 1; if (keys.d || keys.arrowright) mx += 1;
   if (keys.w || keys.arrowup) my += 1; if (keys.s || keys.arrowdown) my -= 1;
   if (modalOpen() || switching) mx = my = 0;
-  const len = Math.min(1, Math.hypot(mx, my)), run = input.run || keys.shift;
+  const len = Math.min(1, Math.hypot(mx, my)), run = input.run || keys.shift, rideDef = ride ? (ride.type === 'car' ? CARS : BOATS)[ride.kind] : null;
   const p = player.root.position, ox = p.x, oz = p.z;
   let speed = 0;
   if (len > .08) {
     const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw);
     let vx = rx * mx + fx * my, vz = rz * mx + fz * my; const vl = Math.hypot(vx, vz); vx /= vl; vz /= vl;
-    speed = (run ? 6.4 : 3.3) * len;
+    speed = rideDef ? rideDef.speed * (run ? 1.35 : 1) * len : (run ? 6.4 : 3.3) * len;
     p.x += vx * speed * dt; p.z += vz * speed * dt;
     const target = Math.atan2(vx, vz); let dr = target - player.root.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr));
-    player.root.rotation.y += dr * Math.min(1, dt * 12);
+    player.root.rotation.y += dr * Math.min(1, dt * (ride ? 3.5 : 12));
     // ease the camera round behind you when walking forward
     if (!cam.drag && my > .5) { let dy = player.root.rotation.y + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.2); }
   }
-  collide(p, .38, active.collidersAt ? active.collidersAt(p) : active.colliders);
+  collide(p, ride ? 1.25 : .38, active.collidersAt ? active.collidersAt(p) : active.colliders);
   if (active.blocked && active.blocked(p)) { if (!active.blocked({ x: p.x, z: oz })) p.z = oz; else if (!active.blocked({ x: ox, z: p.z })) p.x = ox; else { p.x = ox; p.z = oz; } }
   if (active.heightAt) { const ty = active.heightAt(p); p.y += (ty - p.y) * Math.min(1, dt * 16); if (Math.abs(ty - p.y) < .005) p.y = ty; }
-  player.speedBlend(speed / 3.3);
+  player.speedBlend(ride ? 0 : speed / 3.3);
   // camera
-  const C = active.cam || { dist: 6.5, pitch: .38 };
+  const C = ride ? { dist: 10, pitch: .35 } : active.cam || { dist: 6.5, pitch: .38 };
   cam.dist += ((C.dist) - cam.dist) * Math.min(1, dt * 4);
   if (C.pitch != null && C.lockPitch) cam.pitch += (C.pitch - cam.pitch) * Math.min(1, dt * 4);
   cam.target.lerp(tmp.set(p.x, p.y + cam.height, p.z), Math.min(1, dt * 10));
@@ -256,6 +258,66 @@ function updatePrompt() {
 }
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight, false); });
 
+
+/* ---------------- cars, boats, the bag ---------------- */
+let ride = null;
+G.isRiding = () => ride;
+function startRide(type, kind, at) {
+  if (ride) stopRide(true);
+  const mesh = type === 'car' ? makeCar(kind) : makeBoat(kind);
+  player.root.add(mesh);
+  if (type === 'car') player.model.visible = false; else player.model.position.y = .25;
+  ride = { type, kind, mesh, t: 0 };
+  if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
+  refreshRideBtn(); toast(type === 'car' ? '🚗 Driving your ' + CARS[kind].name + '!' : '⛵ Sailing your ' + BOATS[kind].name + '!');
+}
+function stopRide(silent, at) {
+  if (!ride) return;
+  player.root.remove(ride.mesh); player.model.visible = true; player.model.position.y = 0; player.model.rotation.set(0, 0, 0);
+  ride.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
+  ride = null;
+  if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
+  refreshRideBtn(); if (!silent) toast('🚶 You got out.');
+}
+function rideTick(dt) {
+  ride.t += dt;
+  if (ride.type === 'boat') { ride.mesh.position.y = Math.sin(ride.t * 1.8) * .06; ride.mesh.rotation.z = Math.sin(ride.t * 1.3) * .04; player.model.rotation.z = ride.mesh.rotation.z; }
+}
+function nearPoint(test) { // look around you for water (or land)
+  const p = player.root.position;
+  for (const rad of [1.6, 2.6, 3.6]) for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, x = p.x + Math.sin(a) * rad, z = p.z + Math.cos(a) * rad; if (test(x, z)) return { x, z }; }
+  return null;
+}
+let boatCache = { t: 0, acts: [] };
+function boatActs() {
+  const now = performance.now(); if (now - boatCache.t < 250) return boatCache.acts; boatCache.t = now;
+  const u = G.S.data.up, p = player.root.position; let acts = [];
+  if (ride && ride.type === 'boat') { const land = nearPoint((x, z) => world.heightAt(x, z) > WATER_Y + .25 && !world.blocked({ x, z })); if (land) acts = [{ pos: p.clone(), r: 5, label: '🏝️ Go ashore', sub: 'Get out of your ' + BOATS[ride.kind].name, fn: () => stopRide(false, land) }]; }
+  else if (u.boat && !(ride && ride.type === 'car')) { const water = nearPoint((x, z) => world.heightAt(x, z) < WATER_Y - .35); if (water) acts = [{ pos: p.clone(), r: 5, label: '⛵ Get in your ' + BOATS[u.boat].name, sub: 'Sail on the water', fn: () => startRide('boat', u.boat, water) }]; }
+  else if (!u.boat && world.blocked({ x: p.x + Math.sin(player.root.rotation.y) * 1.5, z: p.z + Math.cos(player.root.rotation.y) * 1.5 })) acts = [{ pos: p.clone(), r: 5, label: '🌊 Water!', sub: 'Buy a boat at the Game Store to go out on it', fn: () => toast('⛵ Boats are in the Game Store — then come back here!') }];
+  boatCache.acts = acts; return acts;
+}
+function refreshRideBtn() {
+  const b = $('rideBtn'), u = G.S.data && G.S.data.up, show = !!(u && u.car && active === townPlace && !(ride && ride.type === 'boat'));
+  b.classList.toggle('hide', !show);
+  if (show) b.textContent = ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
+}
+$('rideBtn').onclick = () => { if (ride) stopRide(); else if (G.S.data.up.car) startRide('car', G.S.data.up.car); };
+function goHome() {
+  if (ride) stopRide(true);
+  const d = town.doors.find(x => x.id === 'home'); placeInTown(d.pos.clone().add(new THREE.Vector3(0, 0, -1.5)), Math.PI); toast('🏠 Back home!');
+}
+G.refreshBag = () => { if (!G.S.data) return; $('hudBag').textContent = '🎒 ' + bagCount() + '/' + capacity(); refreshRideBtn(); };
+G.collect = (type, key) => {
+  const d = G.S.data; if (!d) return false;
+  if (bagCount() >= capacity()) { if (!G._fullT || performance.now() - G._fullT > 4000) { G._fullT = performance.now(); toast('🎒 Your bag is full! Sell your stuff at the Game Store' + (d.up.car ? '.' : ', or buy a car to carry more.')); } return false; }
+  d.bag[type] = (d.bag[type] || 0) + 1;
+  if (d.got.day !== today()) d.got = { day: today(), keys: [] };
+  d.got.keys.push(key); save(); G.refreshBag();
+  toast('+1 ' + ITEMS[type].icon + ' ' + ITEMS[type].name + '  (🎒 ' + bagCount() + '/' + capacity() + ')');
+  return true;
+};
+
 /* ---------------- sign in ---------------- */
 let mode = 'in', color = COLORS[0];
 function setMode(m) { mode = m; $('tabIn').classList.toggle('on', m === 'in'); $('tabNew').classList.toggle('on', m === 'new'); $('colorPick').classList.toggle('hide', m !== 'new'); $('loginGo').textContent = m === 'new' ? 'Create player' : 'Sign in'; $('loginErr').textContent = ''; }
@@ -269,7 +331,15 @@ function initLogin() {
   $('saveNote').textContent = Store.local ? 'Test mode: progress is saved on this device only.' : 'Your progress is saved to the Mindworks Google Sheet.';
   try { const last = localStorage.getItem('mw3_last'); if (last) $('inName').value = last; } catch (e) {}
   $('btnOut').onclick = () => { flush(); location.reload(); };
-  $('btnHome').onclick = () => { if (active !== townPlace) { lastDoor = town.doors.find(d => d.id === 'home'); G.backToTown(); } else { const d = town.doors.find(x => x.id === 'home'); placeInTown(d.pos.clone().add(new THREE.Vector3(0, 0, -1.5)), Math.PI); toast('Back home!'); } };
+  $('btnHome').onclick = () => {
+    if (active !== townPlace) { lastDoor = town.doors.find(d => d.id === 'home'); G.backToTown(); return; }
+    const b = world.block || { i: 0, j: 0 }, far = Math.max(Math.abs(b.i), Math.abs(b.j));
+    if (far >= 1 && !G.S.data.up.teleporter) {
+      const dir = (b.j > 0 ? 'north' : b.j < 0 ? 'south' : '') + (b.i > 0 ? 'west' : b.i < 0 ? 'east' : '');
+      modal({ big: '🏠', title: 'Home is ' + far + ' block' + (far > 1 ? 's' : '') + ' away', text: 'Walk ' + (dir || 'back') + ' to get home — or buy the Home Teleporter at the Game Store (' + TELEPORTER_PRICE + ' coins) to zap home from anywhere.', acts: [{ label: 'OK', cls: 'go' }] }); return;
+    }
+    goHome();
+  };
   $('btnProgress').onclick = showProgress;
   $('panelClose').onclick = closePanel;
 }
@@ -296,7 +366,7 @@ function startPlaying() {
   const d = town.doors.find(x => x.id === 'home'); lastDoor = d;
   town.setHome(currentHome());
   placeInTown(town.spawn.pos, town.spawn.yaw);
-  setTitle(G.S.name); refreshCoins(); refreshPlaques(); showJoy();
+  setTitle(G.S.name); refreshCoins(); refreshPlaques(); showJoy(); G.refreshBag();
   showProgress(true);
 }
 function showProgress(first) {
@@ -315,7 +385,7 @@ function showProgress(first) {
   });
 }
 
-if (Store.local) window.__mw = { G, cam, camera, get world() { return world; }, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
+if (Store.local) window.__mw = { G, cam, camera, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
 initLogin();
 boot().catch(err => { console.error(err); setProgress(1, 'Something went wrong loading Mindworks: ' + err.message); });
 addEventListener('visibilitychange', () => { if (document.hidden) flush(); });

@@ -8,6 +8,7 @@ import { randomSpec } from './homes.js';
 import { mat, rng, signTexture } from './tex.js';
 import { makeCharacter } from './character.js';
 import { G, toast } from './game.js';
+import { makeItem, BIOME_ITEMS, today } from './vehicles.js';
 
 export const CH = 160, HALF = 80, VX = 70;     // block size; the north–south road runs at local x = 70 in every block
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -30,12 +31,14 @@ const BIOMES = {
   hills: { amp: 9, icon: '⛰️', names: ['Green Hills', 'Rolling Gears', 'Clover Hills', 'Meadow Ridge'] },
   mountains: { amp: 46, icon: '🏔️', names: ['Pine Peak', 'Snowcap Mountains', 'Granite Range', 'Thunder Peak'] },
   desert: { amp: 3.5, icon: '🏜️', names: ['Dusty Mesa', 'Cactus Flats', 'Sunbake Desert', 'Red Rock Canyon'] },
-  lake: { amp: 3, icon: '🏞️', names: ['Lake Rivet', 'Blue Lake', 'Silver Lake', 'Mirror Lake'] }
+  lake: { amp: 3, icon: '🏞️', names: ['Lake Rivet', 'Blue Lake', 'Silver Lake', 'Mirror Lake'] },
+  sea: { amp: 0, icon: '🌊', names: ['Bolt Bay', 'Gear Sea', 'Sunny Ocean', 'Coral Coast', 'Rivet Reef'] }
 };
 export function biomeOf(i, j) {
   if (!i && !j) return 'home';
   const h = hash2(i, j, 9);
   if (Math.max(Math.abs(i), Math.abs(j)) === 1) return h < .45 ? 'city' : h < .75 ? 'suburb' : 'town';
+  const wet = vnoise(i * .33 + 11.3, j * .33 - 4.1, 6); if (wet > .64) return 'sea';
   const wild = vnoise(i * .42 + 3.1, j * .42 + 7.7, 4), dry = vnoise(i * .3 - 5.3, j * .3 + 2.2, 5);
   if (wild < .4) return h < .4 ? 'city' : h < .7 ? 'suburb' : 'town';
   if (wild < .62) return dry > .6 ? 'desert' : h < .4 ? 'lake' : 'hills';
@@ -49,17 +52,17 @@ const LAKE = { x: -20, z: -48, r: 28 };
 const wf = d => d < 56 ? 1 : d > 104 ? 0 : 1 - sstep(56, 104, d);
 export function heightAt(x, z) {
   const ci = Math.round(x / CH), cj = Math.round(z / CH);
-  let amp = 0, ws = 0, lake = 0;
+  let amp = 0, ws = 0, lake = 0, sea = 0;
   for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) {
     const w = wf(Math.abs(x - i * CH)) * wf(Math.abs(z - j * CH)); if (!w) continue;
-    const b = biomeOf(i, j); amp += BIOMES[b].amp * w; ws += w;
+    const b = biomeOf(i, j); amp += BIOMES[b].amp * w; ws += w; if (b === 'sea') sea += w;
     if (b === 'lake') { const d = Math.hypot(x - i * CH - LAKE.x, z - j * CH - LAKE.z); if (d < LAKE.r * 1.3) lake = Math.max(lake, 4.2 * (1 - sstep(LAKE.r * .55, LAKE.r * 1.3, d))); }
   }
-  amp /= ws || 1;
+  amp /= ws || 1; sea /= ws || 1;
   const rx = Math.abs(((x - VX) % CH + CH * 1.5) % CH - CH / 2), rz = Math.abs(((z % CH) + CH * 1.5) % CH - CH / 2); // distance to nearest roads
   const road = sstep(7, 24, Math.min(rx, rz));
   let n = fbm(x * .011, z * .011); n = amp > 20 ? Math.pow(n, 1.7) * 1.6 : n;
-  return amp * n * road - lake * road;
+  return amp * n * road - lake * road - 7 * sstep(.15, .8, sea) * road;
 }
 export const WATER_Y = -.45;
 
@@ -81,7 +84,7 @@ function mats() {
   M.asphaltV = mat('asphalt', [], 1, 1, { roughness: .95, bump: .8 }); M.asphaltV.map.repeat.set(10 / 6, 160 / 6);
   M.yellow = std(0xe8c547, .8); M.white = std(0xf2f2ee, .8);
   M.walk = mat('concrete', ['#c4c0b8', 256, 61], 1, 1, { bump: .8 }); M.curb = shared().stone;
-  M.water = new THREE.MeshStandardMaterial({ color: 0x2f7fb0, roughness: .05, metalness: .25, transparent: true, opacity: .88 });
+  M.water = new THREE.MeshStandardMaterial({ color: 0x1d6a9a, roughness: .18, metalness: 0, transparent: true, opacity: .9, envMapIntensity: .35 });
   M.pine = std(0x2a4f2a, .9); M.trunk = std(0x4a3628, 1); M.rock = std(0x8a857c, .95); M.redrock = std(0xb0603a, .95); M.cactus = std(0x3f7a3a, .8);
   M.sand = std(0xd8c08a, 1); M.wood = mat('wood', ['#8a6440', 4, 49], 1, 1);
   return M;
@@ -158,6 +161,12 @@ export function createWorld(town) {
   let tUpd = 0;
   W.update = (dt, p) => {
     tUpd += dt; if (tUpd > .25) { tUpd = 0; W.ensure(p); }
+    for (const c of W.near(p)) for (const it of c.items) {
+      if (it.got) continue;
+      const d = Math.hypot(it.pos.x - p.x, it.pos.z - p.z);
+      if (d < 70) { it.mesh.userData.spin.rotation.y += dt * 1.6; it.mesh.userData.spin.position.y = .75 + Math.sin(performance.now() / 400 + it.pos.x) * .12; }
+      if (d < 1.5 && Math.abs(it.pos.y - p.y) < 2 && G.collect && G.collect(it.type, it.key)) { it.got = true; c.live.remove(it.mesh); }
+    }
     for (const c of W.near(p)) for (const b of c.bots) {
       const d = Math.hypot(b.act.pos.x - p.x, b.act.pos.z - p.z), vis = d < 62;
       if (b.root.visible !== vis) b.root.visible = vis;
@@ -169,7 +178,7 @@ export function createWorld(town) {
   function buildChunk(i, j, lite) {
     const biome = biomeOf(i, j), r = rng(Math.floor(hash2(i, j, 3) * 1e9)), m = mats();
     const g = new THREE.Group(); g.position.set(i * CH, 0, j * CH);
-    const C = { i, j, biome, lite: !!lite, group: g, cols: [], blockers: [], doors: [], bots: [], live: new THREE.Group() };
+    const C = { i, j, biome, lite: !!lite, items: [], group: g, cols: [], blockers: [], doors: [], bots: [], live: new THREE.Group() };
     const ox = i * CH, oz = j * CH;
     const hAt = (x, z) => heightAt(ox + x, oz + z);
     const col = (x1, x2, z1, z2, blocker) => { const b = { x1: ox + Math.min(x1, x2), x2: ox + Math.max(x1, x2), z1: oz + Math.min(z1, z2), z2: oz + Math.max(z1, z2) }; C.cols.push(b); if (blocker) C.blockers.push(b); };
@@ -199,6 +208,7 @@ export function createWorld(town) {
     const roadV = () => { const p = new THREE.Mesh(new THREE.PlaneGeometry(10, CH), m.asphaltV); p.rotation.x = -Math.PI / 2; p.position.set(VX, .014, 0); p.receiveShadow = true; g.add(p);
       [-.1, .1].forEach(x => { [[-HALF, -5.2], [5.2, HALF]].forEach(([a, b]) => { const l = new THREE.Mesh(new THREE.PlaneGeometry(.1, b - a), m.yellow); l.rotation.x = -Math.PI / 2; l.position.set(VX + x, .024, (a + b) / 2); g.add(l); }); }); };
     roadH(); roadV();
+    if (biome === 'sea') { const w = new THREE.Mesh(new THREE.PlaneGeometry(CH, CH), m.water); w.rotation.x = -Math.PI / 2; w.position.y = WATER_Y; w.userData.water = true; g.add(w); }
     if (lite) { if (biome === 'lake') { const w = new THREE.Mesh(new THREE.CircleGeometry(LAKE.r * 1.2, 48), m.water); w.rotation.x = -Math.PI / 2; w.position.set(LAKE.x, WATER_Y, LAKE.z); g.add(w); } scene.add(g); return C; }
     if (urban) {
       const walk = (x1, x2, z1, z2) => { const w = x2 - x1, d = z2 - z1; if (w <= 0 || d <= 0) return; const bg = new THREE.BoxGeometry(w, .18, d), uv = bg.attributes.uv; for (let q = 0; q < uv.count; q++) uv.setXY(q, uv.getX(q) * w / 3.2, uv.getY(q) * d / 3.2); const b = new THREE.Mesh(bg, m.walk); b.position.set((x1 + x2) / 2, .09, (z1 + z2) / 2); b.receiveShadow = true; g.add(b); };
@@ -222,11 +232,45 @@ export function createWorld(town) {
     else if (biome === 'suburb') suburbBlock(P);
     else if (biome === 'town') townBlock(P);
     else if (biome === 'lake') lakeBlock(P);
+    else if (biome === 'sea') seaBlock(P);
     else wildBlock(P, biome);
 
+    spawnItems(P, biome);
     bakeGroup(g); g.add(C.live);
     scene.add(g);
     return C;
+  }
+
+
+  function seaBlock(P) {
+    const { g, r, m, col, hAt, C } = P;
+    // a lighthouse on the causeway corner, rocks in the water, a robot fishing off the causeway
+    const lh = new THREE.Group(), white = std(0xf4f1ea, .5), red = std(0xc0392b, .5);
+    for (let k = 0; k < 5; k++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(1.5 - k * .15, 1.6 - k * .15, 2.4, 20), k % 2 ? red : white); c.position.y = 1.2 + k * 2.4; lh.add(c); }
+    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 1.2, 16), new THREE.MeshBasicMaterial({ color: 0xfff1b0 })); lamp.position.y = 12.6; lamp.userData.noBake = true; lh.add(lamp);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(1.2, 1.4, 16), std(0x222222, .5)); cap.position.y = 13.9; lh.add(cap);
+    lh.position.set(VX - 9, 0, 9); g.add(lh); col(VX - 10.6, VX - 7.4, 7.4, 10.6, true);
+    for (let k = 0; k < 18; k++) { const x = -78 + r() * 156, z = -78 + r() * 156; if (Math.abs(z) < 12 || Math.abs(x - VX) < 12) continue; const s = 1 + r() * 2.5, rk = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), m.rock); rk.position.set(x, hAt(x, z) + s * .5, z); rk.scale.y = .7; rk.castShadow = true; g.add(rk); }
+    addBot(P, { x: 20, z: -6.4, face: Math.PI, job: 'fishing 🎣', say: 'The sea is huge! If you buy a boat at the Game Store, you can sail all the way out.' });
+    addBot(P, { path: [[-60, 7.6], [40, 7.6]], job: 'walking on the causeway', pause: 3 });
+  }
+  /* things to find: a few in every block, gone for the day once you pick them up */
+  function spawnItems(P, biome) {
+    const { r, hAt, C } = P, kinds = BIOME_ITEMS[biome] || ['crate'], n = biome === 'home' ? 4 : 9;
+    const got = G.S.data && G.S.data.got && G.S.data.got.day === today() ? G.S.data.got.keys : [];
+    const inside = (x, z) => C.cols.some(b => x + P.ox > b.x1 - .6 && x + P.ox < b.x2 + .6 && z + P.oz > b.z1 - .6 && z + P.oz < b.z2 + .6);
+    for (let k = 0; k < n; k++) {
+      const type = kinds[k % kinds.length], key = C.i + ',' + C.j + ',' + k;
+      let x, z, ok = false;
+      for (let t = 0; t < 40 && !ok; t++) {
+        x = -76 + r() * 152; z = -76 + r() * 152; const h = hAt(x, z);
+        if (biome === 'home' && Math.abs(z) < 52 && x > -78 && x < 50) continue;
+        ok = !inside(x, z) && (type === 'shell' ? h > WATER_Y + .15 && h < 1.5 : h > WATER_Y + .3) && Math.abs(h) < 30;
+      }
+      if (!ok || got.includes(key)) continue;
+      const it = makeItem(type); it.position.set(x, hAt(x, z), z); C.live.add(it);
+      C.items.push({ key, type, mesh: it, pos: new THREE.Vector3(x + P.ox, it.position.y, z + P.oz) });
+    }
   }
 
   /* --- robots --- */

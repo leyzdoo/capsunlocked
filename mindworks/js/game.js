@@ -29,8 +29,8 @@ export function defaultData(color) {
   return {
     avatar: '🙂', color: color || COLORS[0], coins: 0,
     levels: { maze: 0, picture: 0, pattern: 0, chess: 0, pong: 0 },
-    up: { paddle: 0, lives: 0, chessSet: 'classic', sets: ['classic'], chessHints: 0, picHints: 0, mazeHints: 0, house: 0 },
-    jigsaws: [], wins2p: { chess: 0, pong: 0 }
+    up: { paddle: 0, lives: 0, chessSet: 'classic', sets: ['classic'], chessHints: 0, picHints: 0, mazeHints: 0, house: 0, teleporter: false, cars: [], car: null, boats: [], boat: null },
+    jigsaws: [], wins2p: { chess: 0, pong: 0 }, bag: {}, got: { day: '', keys: [] }
   };
 }
 export function normalize(d) {
@@ -107,7 +107,7 @@ export function modal(o) {
 }
 export function closeModal() { $('overlay').classList.remove('on'); }
 export const modalOpen = () => $('overlay').classList.contains('on') || $('panel').classList.contains('on');
-export function refreshCoins() { $('hudCoins').textContent = G.S.data.coins; $('panelCoins').querySelector('span').textContent = G.S.data.coins; }
+export function refreshCoins() { $('hudCoins').textContent = G.S.data.coins; $('panelCoins').querySelector('span').textContent = G.S.data.coins; G.refreshBag && G.refreshBag(); }
 export function setHelp(txt) { $('roomHelp').classList.toggle('hide', !txt); $('roomHelpTxt').textContent = txt || ''; }
 export function setTitle(txt) { $('hudTitle').textContent = txt; }
 /** buttons in the bottom-right while inside a building: [{label, fn, cls}] */

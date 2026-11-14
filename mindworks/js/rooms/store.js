@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, el, save, toast, refreshCoins, openPanel, closePanel } from '../game.js';
 import { buildHouse } from '../town.js';
 import { currentHome, designHomes, describeKind, renderHome, sketch } from '../homes.js';
+import { CARS, BOATS, ITEMS, makeCar, makeBoat, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
 import { makeRoom, shelf, plant, box, std, env, at } from './common.js';
 import { CHESS_SETS } from './chess.js';
 import { mat, signTexture } from '../tex.js';
@@ -78,6 +79,24 @@ function preview(T) {
 }
 const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
+let vpics = {};
+function vehiclePic(maker, k) {
+  const key = (maker === makeCar ? 'c' : 'b') + k;
+  if (!vpics[key]) {
+    const W = 300, H = 170, R = G.renderer, rt = new THREE.WebGLRenderTarget(W, H, { samples: 4 }), sc = new THREE.Scene();
+    sc.background = new THREE.Color(maker === makeCar ? 0xd9e6f2 : 0x9fd0ef); sc.environment = env();
+    sc.add(new THREE.HemisphereLight(0xffffff, 0x6a6050, 1.2)); const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(5, 8, 6); sc.add(dl);
+    const m = maker(k); sc.add(m);
+    if (maker !== makeCar) { const w = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), std(0x2f7fb0, .1, .2)); w.rotation.x = -Math.PI / 2; w.position.y = .05; sc.add(w); }
+    const bb = new THREE.Box3().setFromObject(m), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3()).length();
+    const cam = new THREE.PerspectiveCamera(30, W / H, .1, 100); cam.position.set(c.x + sz * 1.1, c.y + sz * .6, c.z + sz * 1.3); cam.lookAt(c);
+    R.setRenderTarget(rt); R.render(sc, cam); const pix = new Uint8Array(W * H * 4); R.readRenderTargetPixels(rt, 0, 0, W, H, pix); R.setRenderTarget(null); rt.dispose();
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d'), img = x.createImageData(W, H);
+    for (let y = 0; y < H; y++) img.data.set(pix.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4); x.putImageData(img, 0, 0);
+    vpics[key] = cv.toDataURL();
+  }
+  return el('img', { src: vpics[key], style: 'width:100%;border-radius:12px;display:block' });
+}
 function buy(cost, fn) {
   if (G.S.data.coins < cost) { toast('You need ' + (cost - G.S.data.coins) + ' more coins — play some levels!'); return false; }
   G.S.data.coins -= cost; fn(); save(true); refreshCoins(); G.refresh(); renderShop(); return true;
@@ -96,6 +115,35 @@ function renderShopInto(body) {
     b.onclick = fn; it.appendChild(b); g.appendChild(it);
   }
   houseSection(body, section);
+  // ---- sell what you found ----
+  const sv = section('Sell what you found', '🎒'), bag = G.S.data.bag, n = bagCount();
+  sv.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 10px' }, n ? 'Your bag has ' + n + ' of ' + capacity() + ' things:' : 'Your bag is empty. Explore the world to find crates, apples, gems, fossils, seashells and more! You can carry ' + capacity() + (G.S.data.up.car ? ' (your car’s trunk helps).' : ' — a car carries more.')));
+  if (n) {
+    const row = el('div', { style: 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px' });
+    Object.entries(bag).filter(([, c]) => c > 0).forEach(([k, c]) => row.appendChild(el('span', { class: 'chip' }, ITEMS[k].icon + ' ' + ITEMS[k].name + ' ×' + c + ' <small style="color:var(--coin)">(' + ITEMS[k].value + ' each)</small>')));
+    sv.appendChild(row);
+    const sb = el('button', { class: 'btn go' }, '<i class="coin"></i> Sell it all for ' + bagValue() + ' coins');
+    sb.onclick = () => { const v = bagValue(); G.S.data.coins += v; G.S.data.bag = {}; save(true); refreshCoins(); renderShop(); toast('💰 Sold! +' + v + ' coins'); };
+    sv.appendChild(sb);
+  }
+  // ---- getting around ----
+  const gg = grid(section('Getting around', '🧭'));
+  item(gg, '🏠 Home Teleporter', 'Lost? Tap 🏠 at the top to zap straight home from anywhere in the world.', u.teleporter ? 'You have it!' : '', u.teleporter ? null : TELEPORTER_PRICE, () => buy(TELEPORTER_PRICE, () => { u.teleporter = true; }));
+  const vgrid = (title, icon, CAT, ownedK, curK, maker) => {
+    const g2 = grid(section(title, icon));
+    Object.entries(CAT).forEach(([k, c]) => {
+      const owned = u[ownedK].includes(k), on = u[curK] === k;
+      const it = el('div', { class: 'item' }), pic = vehiclePic(maker, k);
+      it.appendChild(pic); it.appendChild(el('div', { class: 't' }, c.name)); it.appendChild(el('div', { class: 'd' }, c.blurb));
+      if (on) it.appendChild(el('div', { class: 'own' }, curK === 'car' ? 'Your car — tap 🚗 Drive outside' : 'Your boat — walk to the water'));
+      const b = el('button', { class: 'btn ' + (owned ? (on ? '' : 'go') : 'primary') }, owned ? (on ? 'In use' : 'Use this one') : '<i class="coin"></i> ' + c.price);
+      b.disabled = on;
+      b.onclick = owned ? () => { u[curK] = k; save(true); G.refreshBag(); renderShop(); } : () => buy(c.price, () => { u[ownedK].push(k); u[curK] = k; });
+      it.appendChild(b); g2.appendChild(it);
+    });
+  };
+  vgrid('Cars — drive anywhere, carry more', '🚗', CARS, 'cars', 'car', makeCar);
+  vgrid('Boats — sail lakes and the sea', '⛵', BOATS, 'boats', 'boat', makeBoat);
   // ---- ping pong ----
   const pg = grid(section('Ping Pong', '🏓'));
   const np = u.paddle < PADDLE_PRICES.length ? PADDLE_PRICES[u.paddle] : null;
