@@ -84,7 +84,7 @@
   .arrow{display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;font-size:1.5rem;color:var(--brass);writing-mode:horizontal-tb;text-align:center;line-height:1;}
   .arrow b{display:block;font-size:2rem;}
   .insight{
-    margin-top:min(26px,2.6vh);font-family:'Caveat',cursive;font-weight:600;font-size:clamp(1.35rem,min(2.2vw,3.4vh),1.85rem);line-height:1.2;color:var(--paper-hi);
+    margin-top:min(22px,2.2vh);font-family:'Caveat',cursive;font-weight:600;font-size:clamp(1.35rem,min(2.2vw,3.4vh),1.85rem);line-height:1.2;color:var(--paper-hi);
     max-width:46ch;padding-left:16px;border-left:3px solid var(--rust);
   }
   .stats{display:flex;gap:26px;flex-wrap:wrap;margin-top:min(20px,2vh);}
@@ -112,6 +112,48 @@
   .step h3{margin:10px 0 6px;font-family:'Special Elite',monospace;font-weight:400;font-size:1.35rem;}
   .step p{margin:0;font-size:0.98rem;line-height:1.45;color:var(--paper-dim);}
   .step:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--brass);font-size:1.2rem;z-index:2;}
+
+  /* org logo plates */
+  .headrow{display:flex;gap:16px 22px;align-items:flex-end;flex-wrap:wrap;}
+  .orgs{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .plate{display:inline-flex;align-items:center;justify-content:center;height:42px;padding:6px 13px;background:#f6f0e2;border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,0.45);}
+  .plate img{display:block;max-height:30px;max-width:170px;width:auto;height:auto;}
+  .plate.dark{background:#1d1a16;border:1px solid var(--line);}
+  .plate.text{font-family:'Special Elite',monospace;font-size:0.98rem;color:#1d1a16;letter-spacing:0.02em;white-space:nowrap;}
+  .plate.seal{gap:9px;font-family:'Special Elite',monospace;font-size:0.92rem;color:#1d1a16;}
+  .plate.seal img{max-height:32px;}
+
+  /* chapters with artifacts */
+  .chap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,270px);gap:44px;align-items:start;}
+  .chap-side{display:grid;gap:22px;padding-top:6px;align-content:start;}
+  .chap-side .orgs{margin-bottom:6px;}
+  .chap-side .plate.text{white-space:normal;height:auto;min-height:42px;line-height:1.2;text-align:center;}
+  .artifact img{max-height:min(46vh,420px);width:auto;max-width:100%;margin:0 auto;}
+  .chap h2{font-size:clamp(1.55rem,min(2.9vw,4.6vh),2.7rem);max-width:21ch;}
+  .chap .col li{font-size:clamp(0.86rem,1.8vh,0.95rem);}
+  .chap .meet{gap:12px;}
+  .artifact{position:relative;display:block;text-decoration:none;color:#1d1a16;background:#f6f0e2;padding:10px 10px 12px;box-shadow:0 18px 34px rgba(0,0,0,0.55);transform:rotate(var(--rot,2deg));transition:transform 220ms ease, box-shadow 220ms ease;}
+  .artifact:hover{transform:rotate(0deg) scale(1.03);box-shadow:0 22px 40px rgba(0,0,0,0.65);}
+  .artifact::before{content:"";position:absolute;top:-11px;left:50%;width:84px;height:24px;transform:translateX(-50%) rotate(-3deg);background:rgba(222,205,160,0.82);box-shadow:0 1px 1px rgba(0,0,0,0.25);clip-path:polygon(0 8%,4% 0,8% 10%,12% 0,100% 0,96% 12%,100% 25%,96% 40%,100% 55%,96% 70%,100% 85%,97% 100%,0 100%,4% 85%,0 70%,4% 55%,0 40%,4% 25%);}
+  .artifact img{display:block;width:100%;height:auto;}
+  .artifact .cap{display:block;margin-top:9px;font-family:'Caveat',cursive;font-weight:700;font-size:1.15rem;line-height:1.1;color:#1f2a52;}
+  .artifact .src{display:block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:#7a705e;}
+  .doc{padding:22px 18px 16px;min-height:200px;background:linear-gradient(180deg,#fbf7ec,#efe6d1);}
+  .doc .kicker{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:#a8402c;}
+  .doc .dtitle{display:block;font-family:'Special Elite',monospace;font-size:1.4rem;line-height:1.1;margin:10px 0 8px;color:#1d1a16;}
+  .doc .dsub{display:block;font-family:'Source Serif 4',serif;font-style:italic;font-size:0.98rem;color:#4a4337;}
+  .doc .credit{display:block;margin-top:14px;padding-top:10px;border-top:1px solid rgba(29,26,22,0.2);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#1d1a16;}
+  .doc .open{display:block;margin-top:10px;font-family:'Caveat',cursive;font-weight:700;font-size:1.15rem;color:#a8402c;}
+  .lightbox{position:fixed;inset:0;z-index:50;background:rgba(5,4,3,0.92);display:flex;align-items:center;justify-content:center;padding:30px;cursor:zoom-out;}
+  .lightbox img{max-width:100%;max-height:100%;box-shadow:0 30px 60px rgba(0,0,0,0.7);}
+  .lightbox a{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--paper);background:var(--rust);padding:9px 14px;text-decoration:none;}
+
+  /* logo wall on the closing slide */
+  .wall{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;max-width:1000px;}
+  .wall .plate{height:36px;padding:5px 11px;}
+  .wall .plate img{max-height:24px;max-width:130px;}
+  .wall .plate.text{font-size:0.82rem;}
+  .wall .plate.seal img{max-height:24px;}
 
   /* closing */
   .close-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;}
@@ -147,12 +189,17 @@
   .count{position:fixed;right:26px;bottom:62px;z-index:15;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--faded);}
   .keyhint{position:fixed;left:26px;bottom:62px;z-index:15;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#5e574b;}
 
+  @media (max-width: 1180px) and (min-width: 901px){
+    .chap{grid-template-columns:minmax(0,1fr) 220px;gap:28px;}
+  }
   @media (max-width: 900px){
     .slide{padding:76px 22px 112px;align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;}
     .inner{padding-bottom:20px;}
     .meet{grid-template-columns:1fr;gap:10px;}
     .arrow{transform:rotate(90deg);padding:2px 0;}
     .method{grid-template-columns:1fr 1fr;}
+    .chap{grid-template-columns:1fr;gap:20px;}
+    .chap-side{grid-template-columns:repeat(auto-fit,minmax(180px,240px));padding-top:10px;}
     .step:nth-child(2)::after{display:none;}
     .nav-btn{display:none;}
     .tick em{display:none;}
@@ -199,6 +246,21 @@
 'use strict';
 
 var LOOP = ['Listen','Map','Build','Hand off'];
+var ORG = {unt:{logo:'https://webassets.unt.edu/assets/branding/unt-stacked-logo.svg', name:'University of North Texas'},
+  fnma:{logo:'https://www.fanniemae.com/themes/custom/particle/dist/app-drupal-corp/assets/fm_logo_rgb.png', name:'Fannie Mae'},
+  wagner:{logo:'https://wagner.nyu.edu/files/global-nav/logos/wagner.svg', name:'NYU Wagner'},
+  furman:{logo:'https://www.furmancenter.org/wp-content/uploads/2025/11/nyu-furman-center-logo-purple.svg', name:'NYU Furman Center'},
+  nu:{logo:'https://nu.org.za/wp-content/uploads/2021/02/nu_logo_white2-retina.png', name:'Ndifuna Ukwazi', dark:true},
+  efc:{name:'European Foundation Centre'},
+  bb:{logo:'https://barbershopbooks.org/wp-content/uploads/2021/07/Logo-Dark.png', name:'Barbershop Books'},
+  cnt:{logo:'https://cnt.org/sites/default/files/cnt-logo.png', name:'Center for Neighborhood Technology'},
+  hpd:{logo:'https://www.nyc.gov/assets/hpd/images/content/header/logo.svg', name:'NYC Housing Preservation & Development'},
+  ohcs:{logo:'https://www.oregon.gov/ohcs/PublishingImages/OCHS-logo-web.png', name:'Oregon Housing and Community Services'},
+  leg:{logo:'https://commons.wikimedia.org/wiki/Special:FilePath/Seal_of_Oregon.svg', name:'Oregon Legislature', seal:true},
+  rp:{logo:'https://rebuildparadise.org/wp-content/uploads/2025/02/cropped-Copy-of-REBUILD-PARADISE-1200-x-788-px-2.png', name:'Rebuild Paradise Foundation'},
+  gmac:{name:'GMAC ResCap'},
+  tabula:{name:'Tabula Rasa'},
+  ns:{name:'Nationstar Mortgage'}};
 
 /* Each chapter: who I listened to (enters from the left), what that let me build
    (enters from the right), and what it taught me. Facts from my resume and LinkedIn. */
@@ -206,13 +268,13 @@ var SLIDES = [
   {id:'hello', tick:'Hi', ghost:'J.L.', kind:'cover'},
   {id:'method', tick:'Method', ghost:'loop', kind:'method'},
 
-  {id:'roots', tick:'Denton', ghost:'UNT', place:'Denton, Texas', years:'The beginning', role:'BA, Sociology · University of North Texas',
+  {id:'roots', orgs:['unt'], tick:'Denton', ghost:'UNT', place:'Denton, Texas', years:'The beginning', role:'BA, Sociology · University of North Texas',
    title:'First lesson: outcomes come from structures.',
    lede:'Sociology gave me the lens I still use. When something keeps going wrong for people, look past the individual moment to the rules, incentives and institutions producing it.',
    loop:[0,1],
    insight:'Every chapter after this is that same question, asked inside a different system.'},
 
-  {id:'gmac', tick:'Chicago', ghost:'2003', place:'Chicago and across the U.S.', years:'2003–2010', role:'District Manager · GMAC ResCap',
+  {id:'gmac', orgs:['gmac'], tick:'Chicago', ghost:'2003', place:'Chicago and across the U.S.', years:'2003–2010', role:'District Manager · GMAC ResCap',
    title:'The foreclosure crisis, one kitchen table at a time.',
    lede:'During the financial crisis I worked face to face with homeowners, and alongside the city and community partners trying to slow foreclosures in Chicago.',
    listen:['Homeowners, in on-the-ground outreach interviews across the U.S.','City, Federal Reserve and nonprofit partners in Chicago\'s foreclosure task force','National policy task forces: HAMP, HARP and HOPE Now'],
@@ -220,7 +282,7 @@ var SLIDES = [
    loop:[0,2],
    insight:'The fix for a failing loan was rarely in the file. It was in the conversation.'},
 
-  {id:'fnma1', tick:'Fannie Mae', ghost:'2010', place:'Chicago', years:'2010–2012', role:'Senior Portfolio Manager · Fannie Mae',
+  {id:'fnma1', orgs:['fnma'], tick:'Fannie Mae', ghost:'2010', place:'Chicago', years:'2010–2012', role:'Senior Portfolio Manager · Fannie Mae',
    title:'From one homeowner to 510,000 mortgages.',
    lede:'Same problem, bigger lens: the performance of 450 banks and servicers, and the operations behind every number.',
    stats:[['450','banks & servicers'],['510K','mortgages'],['$80B','portfolio']],
@@ -229,7 +291,7 @@ var SLIDES = [
    loop:[0,1,2],
    insight:'Audit findings stick when the people who run the process help map it.'},
 
-  {id:'tabula', tick:'Tabula Rasa', ghost:'board', place:'Chicago', years:'2010–2014', role:'Board Member · Tabula Rasa',
+  {id:'tabula', orgs:['tabula'], tick:'Tabula Rasa', ghost:'board', place:'Chicago', years:'2010–2014', role:'Board Member · Tabula Rasa',
    title:'Recidivism is a systems outcome, too.',
    lede:'Alongside the portfolio work, I served on the board of Tabula Rasa, a Chicago nonprofit focused on reducing youth recidivism.',
    listen:['The organization\'s leadership and staff','A mission centered on Chicago young people trying to stay out of the justice system'],
@@ -237,7 +299,7 @@ var SLIDES = [
    loop:[0,3],
    insight:'What happens after a young person comes home decides whether they come back.'},
 
-  {id:'nationstar', tick:'Dallas', ghost:'2012', place:'Dallas', years:'2012–2013', role:'Assistant Vice President, Government Relations · Nationstar Mortgage',
+  {id:'nationstar', orgs:['ns'], tick:'Dallas', ghost:'2012', place:'Dallas', years:'2012–2013', role:'Assistant Vice President, Government Relations · Nationstar Mortgage',
    title:'Growth that fast breaks accountability, unless someone rebuilds it.',
    lede:'I led a government relations and field outreach team of 40 through 400% portfolio growth.',
    listen:['Local, state and federal agencies and nonprofits','Hardest Hit Fund and HAMP partners, state mediators, the courts'],
@@ -245,23 +307,34 @@ var SLIDES = [
    loop:[0,1,3],
    insight:'When a system scales, the handoffs are where people fall through.'},
 
-  {id:'nyu', tick:'NYU', ghost:'NYU', place:'New York · Cape Town · Brussels', years:'2013–2015', role:'Master of Urban Planning · NYU Wagner',
+  {id:'nyu', orgs:['wagner','furman'], tick:'NYU', ghost:'NYU', place:'New York', years:'2013–2015', role:'Master of Urban Planning · NYU Wagner',
    title:'Stepping back to study the whole system.',
-   lede:'Planning school named what I had been doing all along: treating a neighborhood, a market or a program as interacting parts. Then I took the lens abroad.',
-   listen:['Building owners after Superstorm Sandy (NYU Furman Center research)','Community and legal advocates in Cape Town working on land and inequality','Twenty global foundations investing in underrepresented communities'],
-   build:['Research on retrofit financing for NYC multifamily owners','The People\'s Law Journal edition on land use and inequality, and the first Urban Land Colloquium (100+ strategists)','A co-written report for the European Foundation Centre\'s Funders Forum for Sustainable Cities'],
+   lede:'Planning school named what I had been doing all along: treating a neighborhood, a market or a program as a system of interacting parts. I also started a podcast to hear how classmates saw public service.',
+   listen:['Classmates and the wider Wagner community, as host of The Policy Shop, the NYU Wagner Review\'s podcast partner','Multifamily building owners in New York after Superstorm Sandy'],
+   build:['The Policy Shop: interviews with Wagner\'s own on pressing public service issues','NYU Furman Center research on retrofit financing needs and policy options for NYC multifamily owners'],
    loop:[0,1],
-   insight:'Inequality is designed into land, money and rules, which means it can be redesigned.'},
+   artifacts:[{type:'image', src:'assets/bio/policy-shop.jpg', cap:'The Policy Shop, the podcast I ran at NYU Wagner', src2:'NYU Wagner Review', rot:'-2deg'}],
+   insight:'The fastest way into a field is to interview the people already working in it.'},
 
-  {id:'barbershop', tick:'Barbershop', ghost:'books', place:'New York', years:'2014–2015', role:'Founding Advisor · Barbershop Books',
+  {id:'capetown', orgs:['nu','efc'], tick:'Cape Town', ghost:'2014', place:'Cape Town · Brussels', years:'2014–2015', role:'Editor-in-Chief, Ndifuna Ukwazi · Consultant, European Foundation Centre',
+   title:'Inequality is designed into land. So it can be redesigned.',
+   lede:'In Cape Town I edited a journal on how urban land use shapes inequality in South African cities. Then I helped document how global foundations measure results in underrepresented communities.',
+   listen:['Housing and legal advocates working to undo apartheid-era land divisions','100+ political, legal and economic strategists at the first Urban Land Colloquium','Twenty global foundations investing in underrepresented communities'],
+   build:['The People\'s Law Journal, Issue 2: The Urban Land Question (Editor)','The first annual Urban Land Colloquium (coordinator)','A co-written report for the Funders Forum for Sustainable Cities'],
+   loop:[0,1,2],
+   artifacts:[{type:'doc', href:'https://nu.org.za/wp-content/uploads/2021/10/PLJ_Urban-Land-Justice-2016.pdf', kicker:'Ndifuna Ukwazi · Issue 2 · Sept 2014', title:'The People\'s Law Journal', sub:'The Urban Land Question', credit:'Editor: James Leyba', rot:'2.5deg'}],
+   insight:'Zoning, finance and law decide who gets to live where. Change those, and the city changes.'},
+
+  {id:'barbershop', orgs:['bb'], tick:'Barbershop', ghost:'books', place:'New York', years:'2014–2015', role:'Founding Advisor · Barbershop Books',
    title:'Put the solution where people already are.',
    lede:'I was a founding advisor to Barbershop Books, a nonprofit committed to improving the reading proficiency of young Black males.',
    listen:['The founder, and a model built around meeting boys where they already spend time: the barbershop'],
    build:['Founding advisory support as the nonprofit took shape, around a model that brings books into barbershops'],
    loop:[0,1,3],
+   artifacts:[{type:'doc', href:'https://www.governing.com/archive/gov-barbershop-books-alvin-irby.html', kicker:'Governing · April 3, 2015', title:'Can Reforming Barbershops Improve Black Boys\' Literacy?', sub:'Press on the Barbershop Books model', credit:'by J.B. Wogan', rot:'-2deg'}],
    insight:'The best intervention fits into the life people already have.'},
 
-  {id:'cnt', tick:'Chicago', ghost:'2016', place:'Chicago', years:'2016', role:'Transit-Oriented Development Project Manager · Center for Neighborhood Technology',
+  {id:'cnt', orgs:['cnt'], tick:'Chicago', ghost:'2016', place:'Chicago', years:'2016', role:'Transit-Oriented Development Project Manager · Center for Neighborhood Technology',
    title:'Housing, transit and health are one system.',
    lede:'Technical assistance so that affordable housing, clinics, childcare and good jobs could be built near transit.',
    listen:['Chicago nonprofits and residents, through a HUD Section 4 grant','A new regional coalition: I was an original member of Elevated Chicago'],
@@ -269,16 +342,16 @@ var SLIDES = [
    loop:[0,2],
    insight:'Where a home sits decides how much opportunity comes with it.'},
 
-  {id:'hpd', tick:'NYC', ghost:'NYC', place:'New York City', years:'2016–2018', role:'Director of Disposition · NYC Dept. of Housing Preservation & Development',
+  {id:'hpd', orgs:['hpd'], tick:'NYC', ghost:'NYC', place:'New York City', years:'2016–2018', role:'Director of Disposition · NYC Dept. of Housing Preservation & Development',
    title:'When people already live there, the strategy starts with them.',
    lede:'I led strategy for 100+ city-owned homes and buildings, many occupied by long-term residents, and built new programs from concept to launch.',
-   stats:[['100+','city-owned properties'],['$12M','Habitat deal, 20 homes'],['30 yrs','affordability terms']],
    listen:['Residents, community boards and City Council','The Mayor\'s Office, nonprofits and funders shaping Community Land Trusts'],
    build:['The City\'s Community Land Trust RFEI (co-author)','HomeFix and the Basement Conversion Pilot, from lending terms to RFP','A $12M Habitat for Humanity homeownership deal for households up to 70% AMI'],
    loop:[0,1,2,3],
+   artifacts:[{type:'image', src:'assets/bio/clt-panel-2018.jpg', href:'assets/bio/clt-panel-2018.pdf', cap:'Speaking for HPD on Community Land Trusts in NYC and Barcelona', src2:'The New School · Feb 28, 2018', rot:'2deg'}],
    insight:'Ownership models only last when the community helped design them.'},
 
-  {id:'oregon', tick:'Salem', ghost:'2019', place:'Salem, Oregon', years:'2019–2020', role:'Senior Policy & Program Advisor, OHCS · Policy Analyst, Oregon Legislature',
+  {id:'oregon', orgs:['ohcs','leg'], tick:'Salem', ghost:'2019', place:'Salem, Oregon', years:'2019–2020', role:'Senior Policy & Program Advisor, OHCS · Policy Analyst, Oregon Legislature',
    title:'Sometimes the system to redesign is the engagement itself.',
    lede:'At the state housing agency I worked on homeownership for Oregon\'s communities of color. Then I moved to the Legislature just as COVID-19 pushed its emergency session online.',
    listen:['Funders, providers and policymakers in homeless services','Oregonians who needed to testify without being in the room'],
@@ -286,7 +359,7 @@ var SLIDES = [
    loop:[0,2,3],
    insight:'If people can\'t be heard, the policy can\'t be right.'},
 
-  {id:'paradise', tick:'Paradise', ghost:'2020', place:'Paradise, California', years:'2020–2022', role:'Volunteer Product Manager · Rebuild Paradise Foundation',
+  {id:'paradise', orgs:['rp'], tick:'Paradise', ghost:'2020', place:'Paradise, California', years:'2020–2022', role:'Volunteer Product Manager · Rebuild Paradise Foundation',
    title:'Rebuilding after the fire, with tools and with hammers.',
    lede:'After the Camp Fire, I volunteered with the town\'s rebuild effort, on the systems side and on the job site.',
    listen:['Residents and volunteers coordinating a town rebuild'],
@@ -294,7 +367,7 @@ var SLIDES = [
    loop:[0,2],
    insight:'A recovery runs on coordination as much as on lumber.'},
 
-  {id:'fnma2', tick:'Portland', ghost:'NOW', place:'Portland, Oregon', years:'2020–today', role:'Advisor & Designated AI Champion · Fannie Mae',
+  {id:'fnma2', orgs:['fnma'], tick:'Portland', ghost:'NOW', place:'Portland, Oregon', years:'2020–today', role:'Advisor & Designated AI Champion · Fannie Mae',
    title:'Risk, crisis and now AI: same method, new tools.',
    lede:'I lead oversight of the nation\'s largest mortgage servicer portfolio: M&A assessments, cybersecurity incident response, investor reporting and risk. And I help my colleagues adopt generative AI.',
    listen:['Servicer leadership and operations teams, and FHFA as regulator','200+ servicers working through COVID-19 forbearance','Business teams figuring out what AI could actually do for their work'],
@@ -319,11 +392,22 @@ function loopHTML(on, d){
   return '<div class="loop fx" style="--d:' + d + '" aria-label="Method: ' + on.map(function(i){ return LOOP[i]; }).join(', ') + '">' +
     LOOP.map(function(l, i){ return '<span class="' + (on.indexOf(i) > -1 ? 'on' : '') + '">' + l + '</span>'; }).join('<i>→</i>') + '</div>';
 }
+function plateHTML(k){
+  var o = ORG[k]; if (!o) return '';
+  if (!o.logo) return '<span class="plate text">' + esc(o.name) + '</span>';
+  var img = '<img src="' + o.logo + '" alt="' + esc(o.name) + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add(\'text\');this.parentNode.classList.remove(\'dark\');this.replaceWith(document.createTextNode(this.alt))">';
+  if (o.seal) return '<span class="plate seal">' + img + '<span>' + esc(o.name) + '</span></span>';
+  return '<span class="plate' + (o.dark ? ' dark' : '') + '" title="' + esc(o.name) + '">' + img + '</span>';
+}
+function artifactHTML(a, d){
+  var style = ' style="--rot:' + (a.rot || '2deg') + ';--d:' + d + '"';
+  if (a.type === 'image') return '<a class="artifact fx from-right" href="' + (a.href || a.src) + '" data-zoom="' + a.src + '"' + (a.href ? ' data-href="' + a.href + '"' : '') + style + '><img src="' + a.src + '" alt="' + esc(a.cap) + '" loading="lazy"><span class="cap">' + esc(a.cap) + '</span><span class="src">' + esc(a.src2 || '') + '</span></a>';
+  return '<a class="artifact doc fx from-right" href="' + a.href + '" target="_blank" rel="noopener"' + style + '><span class="kicker">' + esc(a.kicker) + '</span><span class="dtitle">' + esc(a.title) + '</span><span class="dsub">' + esc(a.sub) + '</span><span class="credit">' + esc(a.credit) + '</span><span class="open">read it ↗</span></a>';
+}
 function chapterHTML(s){
-  var d = 0, h = '<div class="inner">';
+  var d = 0, h = '<div class="inner">' + (s.artifacts ? '<div class="chap"><div class="chap-main">' : '');
   h += loopHTML(s.loop || [], d++);
-  h += '<div class="stamp fx" style="--d:' + (d++) + '"><span class="yrs">' + esc(s.years) + '</span><span>' + esc(s.place) + '</span></div>';
-  h += '<div class="role fx" style="--d:' + (d++) + '">' + esc(s.role) + '</div>';
+  h += '<div class="headrow fx" style="--d:' + (d++) + '"><div><div class="stamp"><span class="yrs">' + esc(s.years) + '</span><span>' + esc(s.place) + '</span></div><div class="role">' + esc(s.role) + '</div></div>' + (s.orgs && !s.artifacts ? '<div class="orgs">' + s.orgs.map(plateHTML).join('') + '</div>' : '') + '</div>';
   h += '<h2 class="fx" style="--d:' + (d++) + '">' + esc(s.title) + '</h2>';
   h += '<p class="lede fx" style="--d:' + (d++) + '">' + esc(s.lede) + '</p>';
   if (s.stats) h += '<div class="stats">' + s.stats.map(function(st){ return '<div class="stat fx from-below" style="--d:' + (d++) + '"><b>' + esc(st[0]) + '</b><span>' + esc(st[1]) + '</span></div>'; }).join('') + '</div>';
@@ -336,6 +420,7 @@ function chapterHTML(s){
     d += 4;
   }
   if (s.insight) h += '<div class="insight fx from-below" style="--d:' + (d + 1) + '">' + esc(s.insight) + '</div>';
+  if (s.artifacts) h += '</div><div class="chap-side">' + (s.orgs ? '<div class="orgs fx from-right" style="--d:3">' + s.orgs.map(plateHTML).join('') + '</div>' : '') + s.artifacts.map(function(a, i){ return artifactHTML(a, 4 + i * 2); }).join('') + '</div></div>';
   return h + '</div>';
 }
 function coverHTML(){
@@ -366,6 +451,7 @@ function closeHTML(){
     '<div class="stamp fx" style="--d:0"><span class="yrs">What I believe</span><span>and what\'s next</span></div>' +
     '<h2 class="fx" style="--d:1">Housing is a social determinant of health.</h2>' +
     '<p class="lede fx" style="--d:2">And technology, directed with intention, can give the people and institutions in it more room to create opportunity. I do my best work where private-sector risk logic meets public purpose, building the mechanism that lets both sides win.</p>' +
+    '<div class="wall fx from-below" style="--d:3" aria-label="Places I have worked and served">' + ['fnma','hpd','ohcs','leg','cnt','wagner','furman','nu','bb','rp','unt','gmac','ns','tabula','efc'].map(plateHTML).join('') + '</div>' +
     '<div class="insight fx from-below" style="--d:4">Working on a problem that sits between two departments, two sectors or two disciplines? That\'s usually where I can help.</div>' +
     '<div class="close-links fx from-below" style="--d:6">' +
       '<a class="cta primary" href="https://www.linkedin.com/in/jamesleyba/" target="_blank" rel="noopener">Connect on LinkedIn ↗</a>' +
@@ -415,13 +501,26 @@ function go(n){
 document.getElementById('prev').addEventListener('click', function(){ go(cur - 1); });
 document.getElementById('next').addEventListener('click', function(){ go(cur + 1); });
 document.addEventListener('keydown', function(e){
+  if (lb){ if (e.key === 'Escape' || e.key === 'ArrowRight' || e.key === 'ArrowLeft') closeLb(); return; }
   if (e.altKey || e.metaKey || e.ctrlKey) return;
   if (e.key === 'ArrowRight' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey)){ e.preventDefault(); go(cur + 1); }
   else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || (e.key === ' ' && e.shiftKey)){ e.preventDefault(); go(cur - 1); }
   else if (e.key === 'Home') go(0);
   else if (e.key === 'End') go(SLIDES.length - 1);
 });
-deck.addEventListener('click', function(e){ var g = e.target.closest('[data-go]'); if (g){ e.preventDefault(); go(+g.getAttribute('data-go')); } });
+var lb = null;
+function closeLb(){ if (lb){ lb.remove(); lb = null; } }
+deck.addEventListener('click', function(e){
+  var g = e.target.closest('[data-go]'); if (g){ e.preventDefault(); go(+g.getAttribute('data-go')); return; }
+  var z = e.target.closest('[data-zoom]');
+  if (z){
+    e.preventDefault();
+    lb = document.createElement('div'); lb.className = 'lightbox'; lb.setAttribute('role','dialog'); lb.setAttribute('aria-label','Artifact');
+    lb.innerHTML = '<img src="' + z.getAttribute('data-zoom') + '" alt="">' + (z.getAttribute('data-href') ? '<a href="' + z.getAttribute('data-href') + '" target="_blank" rel="noopener">Open the original PDF ↗</a>' : '');
+    lb.addEventListener('click', function(ev){ if (!ev.target.closest('a')) closeLb(); });
+    document.body.appendChild(lb);
+  }
+});
 var sx = null, sy = null;
 deck.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
 deck.addEventListener('touchend', function(e){
