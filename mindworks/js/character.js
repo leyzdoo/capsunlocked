@@ -23,7 +23,8 @@ export function makeCharacter(look = 'player', color = 0x3f7fd9) {
       if (!o.isMesh) return;
       o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
       const isJoint = /Joints/i.test(o.material.name);
-      if (look === 'robot') o.material = new THREE.MeshStandardMaterial({ color: isJoint ? 0x222428 : 0xd7dbe0, metalness: isJoint ? .5 : 1, roughness: isJoint ? .5 : .22 });
+      if (look === 'bot') o.material = new THREE.MeshStandardMaterial({ color: isJoint ? 0x222428 : color, metalness: isJoint ? .5 : .75, roughness: isJoint ? .5 : .28 });
+      else if (look === 'robot') o.material = new THREE.MeshStandardMaterial({ color: isJoint ? 0x222428 : 0xd7dbe0, metalness: isJoint ? .5 : 1, roughness: isJoint ? .5 : .22 });
       else o.material = new THREE.MeshStandardMaterial({ color: isJoint ? 0x2a2d33 : color, metalness: .1, roughness: isJoint ? .55 : .45 });
     });
     mixer = new THREE.AnimationMixer(model);
@@ -38,7 +39,7 @@ export function makeCharacter(look = 'player', color = 0x3f7fd9) {
   }
   root.add(model);
   // name tag / ring under feet
-  const ring = new THREE.Mesh(new THREE.RingGeometry(.32, .4, 32), new THREE.MeshBasicMaterial({ color: look === 'robot' ? 0xff6b6b : 0xffffff, transparent: true, opacity: .55, depthWrite: false }));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(.32, .4, 32), new THREE.MeshBasicMaterial({ color: look === 'robot' ? 0xff6b6b : look === 'bot' ? 0x9fd0ff : 0xffffff, transparent: true, opacity: .55, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = .03; root.add(ring);
 
   let w = { idle: 1, walk: 0, run: 0 }, oneShot = null;

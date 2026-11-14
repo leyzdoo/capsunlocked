@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
+import { createWorld } from './world.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
@@ -15,7 +16,7 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 G.renderer = renderer; setAnisotropy(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, .1, 700);
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, .1, 230);
 const fade = el('div', { style: 'position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .25s;z-index:35' }); document.body.appendChild(fade);
 const touch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
@@ -79,7 +80,7 @@ export function collide(p, r, boxes) {
 }
 
 /* ---------------- world ---------------- */
-let town = null, player = null, townPlace = null, active = null, lastDoor = null;
+let town = null, world = null, player = null, townPlace = null, active = null, lastDoor = null;
 function setProgress(p, t) { $('loadBar').style.width = Math.round(p * 100) + '%'; if (t) $('loadTxt').textContent = t; }
 async function boot() {
   setProgress(.15, 'Loading your character…');
@@ -87,12 +88,20 @@ async function boot() {
   setProgress(.55, 'Building the town…');
   await new Promise(r => setTimeout(r, 30));
   town = createTown(renderer);
+  setProgress(.75, 'Building the blocks around town…');
+  await new Promise(r => setTimeout(r, 30));
+  world = createWorld(town); world.ensure(town.spawn.pos, true);
   setProgress(.9, 'Opening the doors…');
   townPlace = {
     id: 'town', scene: town.scene, walks: true, cam: { dist: 6.5, pitch: .38 },
-    get colliders() { return town.colliders; }, get camBlockers() { return town.camBlockers; },
-    interact() { return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })); },
-    update() { town.followShadow(player.root.position); }
+    get colliders() { return town.colliders; },
+    collidersAt: p => town.colliders.concat(world.collidersAt(p)),
+    get camBlockers() { return town.camBlockers.concat(world.camBlockers(player.root.position)); },
+    heightAt: p => world.heightAt(p.x, p.z),
+    blocked: p => world.blocked(p),
+    camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
+    interact() { return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position)); },
+    update(dt) { town.followShadow(player.root.position); world.update(dt, player.root.position); }
   };
   // warm-up render so the first frame after sign-in is quick
   player = makeCharacter('player', 0x3f7fd9); placeInTown(town.spawn.pos, town.spawn.yaw);
@@ -103,7 +112,8 @@ async function boot() {
 }
 function placeInTown(pos, faceYaw) {
   camera.fov = 55; camera.updateProjectionMatrix();
-  town.scene.add(player.root); player.root.position.copy(pos); player.root.rotation.y = faceYaw;
+  if (world) world.ensure(pos, true);
+  town.scene.add(player.root); player.root.position.copy(pos); if (world) player.root.position.y = world.heightAt(pos.x, pos.z); player.root.rotation.y = faceYaw;
   cam.yaw = cam.tYaw = faceYaw; cam.pitch = .38; cam.dist = 6.5; cam.target.copy(pos);
 }
 function doorAction(d) {
@@ -135,10 +145,10 @@ G.enterRoom = async (id, opts = {}) => {
   closeModal(); closePanel();
   fade.style.opacity = 1; await wait(260);
   if (active && active !== townPlace && active.exit) active.exit();
-  if (active === townPlace) lastDoor = town.doors.find(d => d.id === (opts.door === 'back' ? 'homeBack' : id)) || lastDoor;
+  if (active === townPlace) lastDoor = opts.doorObj || town.doors.find(d => d.id === (opts.door === 'back' ? 'homeBack' : id)) || lastDoor;
   try {
     const level = opts.level != null ? opts.level : (G.S.data.levels[id] || 0) + 1;
-    const room = await ROOMS[id].enter({ level, mode: opts.mode || 'robot', player, camera, makeCharacter, door: opts.door });
+    const room = await ROOMS[id].enter({ level, mode: opts.mode || 'robot', player, camera, makeCharacter, door: opts.door, data: opts.data });
     room.id = id; active = room;
     camera.up.set(0, 1, 0);
     if (room.walks) {
@@ -161,7 +171,7 @@ G.backToTown = async (doorId) => {
   if (active && active !== townPlace && active.exit) active.exit();
   active = townPlace; setTitle(G.S.name); setHelp(''); setRoomButtons(null);
   const d = lastDoor || town.doors.find(x => x.id === 'home');
-  const out = d.pos.clone(); out.z += d.facing === 0 ? .6 : -.6;
+  const out = d.pos.clone(); out.x += Math.sin(d.facing) * .6; out.z += Math.cos(d.facing) * .6;
   placeInTown(out, d.facing);
   refreshPlaques(); showJoy(); fade.style.opacity = 0; switching = false;
 };
@@ -197,7 +207,7 @@ function walk(dt) {
   if (keys.w || keys.arrowup) my += 1; if (keys.s || keys.arrowdown) my -= 1;
   if (modalOpen() || switching) mx = my = 0;
   const len = Math.min(1, Math.hypot(mx, my)), run = input.run || keys.shift;
-  const p = player.root.position;
+  const p = player.root.position, ox = p.x, oz = p.z;
   let speed = 0;
   if (len > .08) {
     const fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw), rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw);
@@ -210,6 +220,7 @@ function walk(dt) {
     if (!cam.drag && my > .5) { let dy = player.root.rotation.y + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.2); }
   }
   collide(p, .38, active.collidersAt ? active.collidersAt(p) : active.colliders);
+  if (active.blocked && active.blocked(p)) { if (!active.blocked({ x: p.x, z: oz })) p.z = oz; else if (!active.blocked({ x: ox, z: p.z })) p.x = ox; else { p.x = ox; p.z = oz; } }
   if (active.heightAt) { const ty = active.heightAt(p); p.y += (ty - p.y) * Math.min(1, dt * 16); if (Math.abs(ty - p.y) < .005) p.y = ty; }
   player.speedBlend(speed / 3.3);
   // camera
@@ -304,7 +315,7 @@ function showProgress(first) {
   });
 }
 
-if (Store.local) window.__mw = { G, cam, camera, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
+if (Store.local) window.__mw = { G, cam, camera, get world() { return world; }, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
 initLogin();
 boot().catch(err => { console.error(err); setProgress(1, 'Something went wrong loading Mindworks: ' + err.message); });
 addEventListener('visibilitychange', () => { if (document.hidden) flush(); });

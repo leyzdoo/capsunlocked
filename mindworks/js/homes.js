@@ -159,3 +159,13 @@ export function sketch(canvas, T, ms = 1800, done) {
   })();
   return () => { stop = true; };
 }
+
+/** a random design for a robot's house or a city tower (used by the endless world) */
+export function randomSpec(kind, seed) {
+  const r = rng(seed);
+  if (kind === 'tower') { const T = towerSpec(r, 'tower', null, r() < .3, false, seed, seed); T.floors = Math.round(8 + r() * 30); return T; }
+  const T = houseSpec(r, kind, '', null, false, false, seed);
+  T.wings = 0; T.bigWings = false; T.tower = false; T.turrets = kind === 'castle'; T.statues = false;
+  T.w = Math.min(T.w, 14); T.d = Math.min(T.d, 11); if (T.portico) T.portico = 4; T.stories = Math.min(T.stories, 2);
+  return T;
+}

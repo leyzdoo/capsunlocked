@@ -7,4 +7,5 @@ import * as pattern from './pattern.js';
 import * as chess from './chess.js';
 import * as pong from './pong.js';
 import * as jigsaw from './jigsaw.js';
-export const ROOMS = { home, store, maze, picture, pattern, chess, pong, jigsaw };
+import * as apartment from './apartment.js';
+export const ROOMS = { home, store, maze, picture, pattern, chess, pong, jigsaw, apartment };

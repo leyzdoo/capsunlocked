@@ -3,12 +3,13 @@ import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mat, signTexture, stripes, rng, COLORS } from './tex.js';
+import { bakeGroup } from './bake.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const std = (color, rough = .7, metal = 0, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, ...extra });
 
 export const SHARED = {};
-function shared() {
+export function shared() {
   if (SHARED.glass) return SHARED;
   SHARED.glass = new THREE.MeshStandardMaterial({ color: 0x23323f, roughness: .06, metalness: .9, transparent: true, opacity: .78 });
   SHARED.glassDark = new THREE.MeshStandardMaterial({ color: 0x1b2530, roughness: .05, metalness: .95 });
@@ -22,17 +23,17 @@ function shared() {
   return SHARED;
 }
 
-function box(w, h, d, material, x = 0, y = 0, z = 0, shadow = true) {
+export function box(w, h, d, material, x = 0, y = 0, z = 0, shadow = true) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
   m.position.set(x, y, z); if (shadow) { m.castShadow = true; m.receiveShadow = true; } return m;
 }
-function texBox(w, h, d, kind, args, tileW, tileH, x, y, z, opts) {
+export function texBox(w, h, d, kind, args, tileW, tileH, x, y, z, opts) {
   const m = mat(kind, args, w / tileW, h / tileH, opts);
   return box(w, h, d, m, x, y, z);
 }
 
 /* ---------------- a commercial building (front faces +z in local space) ---------------- */
-function shopBuilding(o) {
+export function shopBuilding(o) {
   const S = shared(), g = new THREE.Group();
   const w = o.w, d = o.d, floors = o.floors, fh = 3.6, h = floors * fh + .6;
   // main mass
@@ -488,7 +489,7 @@ const leafMats = [0x2f5a1f, 0x3a6a26, 0x2a4f1c, 0x46772c].map(c => std(c, .9));
 const leafGeo = (function () { let g = new THREE.IcosahedronGeometry(1, 4); g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g); const p = g.attributes.position, v = new THREE.Vector3();
   for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const n = Math.sin(v.x * 5.1) * Math.cos(v.y * 4.3) * Math.sin(v.z * 6.7) * .13 + Math.sin(v.x * 11 + v.z * 9) * .05; v.multiplyScalar(1 + n); p.setXYZ(i, v.x, v.y, v.z); }
   g.computeVertexNormals(); return g; })();
-function tree(r, s = 1) {
+export function tree(r, s = 1) {
   const g = new THREE.Group();
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.14 * s, .24 * s, 3.2 * s, 8), mat('concrete', ['#4a3628', 0, 41], 1, 3, { bump: 3, roughness: 1 }));
   trunk.position.y = 1.6 * s; trunk.castShadow = true; g.add(trunk);
@@ -500,7 +501,7 @@ function tree(r, s = 1) {
   }
   return g;
 }
-function streetLight() {
+export function streetLight() {
   const S = shared(), g = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(.07, .11, 5.6, 10), S.black); pole.position.y = 2.8; pole.castShadow = true; g.add(pole);
   const base = new THREE.Mesh(new THREE.CylinderGeometry(.2, .26, .5, 10), S.black); base.position.y = .25; g.add(base);
@@ -509,14 +510,14 @@ function streetLight() {
   const bulb = new THREE.Mesh(new THREE.CircleGeometry(.34, 16), new THREE.MeshBasicMaterial({ color: 0xfff1d0 })); bulb.rotation.x = Math.PI / 2; bulb.position.set(0, 5.17, 1.2); g.add(bulb);
   return g;
 }
-function bench() {
+export function bench() {
   const g = new THREE.Group(), wd = mat('wood', ['#8a5a35', 4, 42], 1, 1), S = shared();
   for (let i = 0; i < 3; i++) g.add(box(1.8, .06, .13, wd, 0, .48, -.2 + i * .16));
   for (let i = 0; i < 2; i++) { const b = box(1.8, .06, .13, wd, 0, .75 + i * .17, -.32); b.rotation.x = -.2; g.add(b); }
   [-.8, .8].forEach(x => { g.add(box(.06, .48, .5, S.black, x, .24, -.08)); g.add(box(.06, .5, .06, S.black, x, .7, -.33)); });
   return g;
 }
-function car(color, r) {
+export function car(color, r) {
   const g = new THREE.Group(), S = shared();
   const paint = new THREE.MeshPhysicalMaterial({ color, roughness: .25, metalness: .6, clearcoat: 1, clearcoatRoughness: .08 });
   const side = new THREE.Shape();
@@ -553,14 +554,14 @@ export const BUILDINGS = [
   { id: 'pong', name: 'Ping Pong', side: 1, x: 0, w: 15, d: 13, floors: 3, wall: { kind: 'brick', args: ['#6f7f8c', '#c9d0d6', 56] }, signBg: '#0f2b45', signFg: '#cfe8ff', awning: ['#2f6fa8', '#eef5fb'], door: 0x14385a },
   { id: 'jigsaw', name: 'Jigsaw', side: 1, x: 24, w: 15, d: 13, floors: 4, wall: { kind: 'brick', args: ['#a8566d', '#e2d4d6', 57] }, signBg: '#3b0f22', signFg: '#ffd0e4', awning: ['#b8436f', '#fbecf2'], trim: 'white', door: 0x4a1028 }
 ];
-const SETBACK = 10.5; // building front line distance from street centre
+export const SETBACK = 10.5; // building front line distance from street centre
 
 export function createTown(renderer) {
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0xc9dcef, 70, 190);
+  scene.fog = new THREE.Fog(0xc9dcef, 60, 175);
   const r = rng(4242);
   // sky + sun
-  const sky = new Sky(); sky.scale.setScalar(4000);
+  const sky = new Sky(); sky.scale.setScalar(200);
   const sun = new THREE.Vector3().setFromSphericalCoords(1, THREE.MathUtils.degToRad(52), THREE.MathUtils.degToRad(210));
   const u = sky.material.uniforms; u.turbidity.value = 4; u.rayleigh.value = 1.4; u.mieCoefficient.value = .004; u.mieDirectionalG.value = .8; u.sunPosition.value.copy(sun);
   scene.add(sky);
@@ -572,23 +573,9 @@ export function createTown(renderer) {
   dir.castShadow = true; dir.shadow.mapSize.set(2048, 2048); const sc = dir.shadow.camera; sc.left = -38; sc.right = 38; sc.top = 38; sc.bottom = -38; sc.near = 1; sc.far = 160; dir.shadow.bias = -.0004; dir.shadow.normalBias = .03;
   scene.add(dir); scene.add(dir.target);
 
-  // ground
-  const grass = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), mat('grass', [], 80, 80, { roughness: 1 }));
-  grass.rotation.x = -Math.PI / 2; grass.receiveShadow = true; scene.add(grass);
-  const L = 150;
-  const road = new THREE.Mesh(new THREE.PlaneGeometry(L, 10), mat('asphalt', [], L / 6, 10 / 6, { roughness: .95, bump: .8 }));
-  road.rotation.x = -Math.PI / 2; road.position.y = .01; road.receiveShadow = true; scene.add(road);
-  // lane markings
-  const yellow = new THREE.MeshStandardMaterial({ color: 0xe8c547, roughness: .8 }), white = new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: .8 });
-  [-.1, .1].forEach(z => { const m = new THREE.Mesh(new THREE.PlaneGeometry(L, .1), yellow); m.rotation.x = -Math.PI / 2; m.position.set(0, .02, z); scene.add(m); });
-  [-4.6, 4.6].forEach(z => { const m = new THREE.Mesh(new THREE.PlaneGeometry(L, .12), white); m.rotation.x = -Math.PI / 2; m.position.set(0, .02, z); scene.add(m); });
-  [-24, 0, 24].forEach(x => { for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.5, 9), white); m.rotation.x = -Math.PI / 2; m.position.set(x - 2.6 + i * .75, .025, 0); scene.add(m); } });
-  // sidewalks + curbs
-  [-1, 1].forEach(s => {
-    const sw = new THREE.Mesh(new THREE.BoxGeometry(L, .18, 5.3), mat('concrete', ['#c4c0b8', 256, 61], L / 3.2, 5.3 / 3.2, { bump: .8 }));
-    sw.position.set(0, .09, s * 7.65); sw.receiveShadow = true; scene.add(sw);
-    const curb = box(L, .2, .25, shared().stone, 0, .1, s * 5.1); curb.material = curb.material.clone(); scene.add(curb);
-  });
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: .8 });
+  const stat = new THREE.Group(); scene.add(stat);
+  [-24, 0, 24].forEach(x => { for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.5, 9), white); m.rotation.x = -Math.PI / 2; m.position.set(x - 2.6 + i * .75, .025, 0); stat.add(m); } });
   // buildings
   const doors = [], base = [], plaques = {};
   let home = null;
@@ -599,7 +586,7 @@ export function createTown(renderer) {
     const cz = b.side < 0 ? -(SETBACK + b.d / 2) : (SETBACK + b.d / 2);
     g.position.set(b.x, 0, cz); if (b.side > 0) g.rotation.y = Math.PI;
     g.traverse(o => { if (o.isMesh) o.receiveShadow = true; });
-    scene.add(g);
+    stat.add(g);
     const dl = g.userData.door.clone().applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position); dl.y = 0;
     doors.push({ id: b.id, name: b.name, pos: dl, facing: b.side < 0 ? 0 : Math.PI });
     const hw = b.w / 2 + .1, hd = b.d / 2 + .1;
@@ -609,23 +596,16 @@ export function createTown(renderer) {
   const colliders = base;
   const buildingBoxes = base.slice();
   // street trees, lights, benches, cars
-  for (let x = -66; x <= 66; x += 12) [-1, 1].forEach(s => {
+  for (let x = -78; x <= 58; x += 12) [-1, 1].forEach(s => {
     if (BUILDINGS.some(b => Math.abs(b.x - x) < 3)) return;
-    const t = tree(r, .9 + r() * .3); t.position.set(x + (r() - .5) * 2, 0, s * 8.6); scene.add(t); colliders.push(circleBox(t.position, .35));
-    const pit = box(1.4, .02, 1.4, std(0x3d2e22, 1), t.position.x, .19, t.position.z, false); scene.add(pit);
+    const t = tree(r, .9 + r() * .3); t.position.set(x + (r() - .5) * 2, 0, s * 8.6); stat.add(t); colliders.push(circleBox(t.position, .35));
+    const pit = box(1.4, .02, 1.4, std(0x3d2e22, 1), t.position.x, .19, t.position.z, false); stat.add(pit);
   });
-  for (let x = -60; x <= 60; x += 24) [-1, 1].forEach(s => { const l = streetLight(); l.position.set(x, .18, s * 5.6); l.rotation.y = s > 0 ? Math.PI : 0; scene.add(l); colliders.push(circleBox(l.position, .2)); });
-  [[-24, -1], [24, -1], [-12, 1], [12, 1]].forEach(([x, s]) => { const b = bench(); b.position.set(x, .18, s * 9.4); b.rotation.y = s > 0 ? Math.PI : 0; scene.add(b); colliders.push({ x1: x - .95, x2: x + .95, z1: s * 9.4 - .4, z2: s * 9.4 + .4 }); });
+  for (let x = -60; x <= 60; x += 24) [-1, 1].forEach(s => { const l = streetLight(); l.position.set(x, .18, s * 5.6); l.rotation.y = s > 0 ? Math.PI : 0; stat.add(l); colliders.push(circleBox(l.position, .2)); });
+  [[-24, -1], [24, -1], [-12, 1], [12, 1]].forEach(([x, s]) => { const b = bench(); b.position.set(x, .18, s * 9.4); b.rotation.y = s > 0 ? Math.PI : 0; stat.add(b); colliders.push({ x1: x - .95, x2: x + .95, z1: s * 9.4 - .4, z2: s * 9.4 + .4 }); });
   const carCols = [0x9b1c1c, 0x1f3f7a, 0xd9d9d9, 0x2b2b2b, 0x3f6e5a, 0xb08a2e];
-  [-54, -30, 4, 30, 54].forEach((x, i) => { const s = i % 2 ? 1 : -1; const c = car(carCols[i], r); c.position.set(x + (r() - .5) * 4, 0, s * 3.4); if (s > 0) c.rotation.y = Math.PI; scene.add(c); });
-  // background rows of buildings beyond the town (simple silhouettes for depth)
-  for (let x = -90; x <= 90; x += 11) [-1, 1].forEach(s => {
-    const hgt = 10 + r() * 22, m = box(9 + r() * 3, hgt, 9, mat('concrete', [COLORS.shade(['#9a8f86', '#8a8f99', '#b29f8f', '#7f8a86'][Math.floor(r() * 4)], 0), 0, 70 + Math.floor(r() * 5)], 3, hgt / 4), x, hgt / 2, s * (48 + r() * 10));
-    scene.add(m);
-  });
-  // invisible world bounds
-  base.push({ x1: -75, x2: 75, z1: -40, z2: -39 }, { x1: -40, x2: 75, z1: 39, z2: 40 }, { x1: -76, x2: -75, z1: -40, z2: 60 }, { x1: 75, x2: 76, z1: -40, z2: 40 });
-
+  [-54, -30, 4, 30, 54].forEach((x, i) => { const s = i % 2 ? 1 : -1; const c = car(carCols[i], r); c.position.set(x + (r() - .5) * 4, 0, s * 3.4); if (s > 0) c.rotation.y = Math.PI; stat.add(c); });
+  bakeGroup(stat);
   const town = {
     scene, doors, colliders: base.slice(), camBlockers: base.slice(), plaques, sun: dir, homeKey: null,
     spawn: { pos: V(home.x, 0, home.side * (SETBACK - 1.8)), yaw: Math.PI },
@@ -638,20 +618,20 @@ export function createTown(renderer) {
       const cz = home.side * (frontZ + T.d / 2);
       g.position.set(home.x, 0, cz); if (home.side > 0) g.rotation.y = Math.PI;
       g.traverse(o => { if (o.isMesh) o.receiveShadow = true; });
-      scene.add(g);
+      bakeGroup(g); scene.add(g);
       const cols = g.userData.cols.map(([x1, x2, z1, z2]) => {
         const a = V(x1, 0, z1).applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position), b = V(x2, 0, z2).applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position);
         return { x1: Math.min(a.x, b.x) - .1, x2: Math.max(a.x, b.x) + .1, z1: Math.min(a.z, b.z) - .1, z2: Math.max(a.z, b.z) + .1 };
       });
       const lot = lotExtras(T, { x: home.x, w: home.lotW }, home.side, home.side * frontZ, rng(900 + (T.seed || T.grand || 0)));
-      scene.add(lot.group);
+      bakeGroup(lot.group); scene.add(lot.group);
       const toWorld = v => { const o = v.clone().applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position); o.y = 0; return o; };
       doors.find(d => d.id === 'home').pos.copy(toWorld(g.userData.door));
       doors.find(d => d.id === 'homeBack').pos.copy(toWorld(g.userData.backDoor));
       town.colliders = base.concat(cols, lot.cols); town.camBlockers = buildingBoxes.concat(cols);
       town._house = g; town._lot = lot.group; town.homeKey = key; town.homeSpec = spec;
     },
-    followShadow(p) { dir.position.copy(p).add(sun.clone().multiplyScalar(60)); dir.target.position.copy(p); }
+    followShadow(p) { dir.position.copy(p).add(sun.clone().multiplyScalar(60)); dir.target.position.copy(p); sky.position.set(p.x, 0, p.z); }
   };
   town.setHome(0);
   return town;
