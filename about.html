@@ -392,10 +392,15 @@ function loopHTML(on, d){
   return '<div class="loop fx" style="--d:' + d + '" aria-label="Method: ' + on.map(function(i){ return LOOP[i]; }).join(', ') + '">' +
     LOOP.map(function(l, i){ return '<span class="' + (on.indexOf(i) > -1 ? 'on' : '') + '">' + l + '</span>'; }).join('<i>→</i>') + '</div>';
 }
+window.fitLogo = function(img){
+  if (img.width || !img.naturalWidth) return;
+  var h = parseFloat(getComputedStyle(img).maxHeight) || 30;
+  img.style.height = h + 'px'; img.style.width = (h * img.naturalWidth / img.naturalHeight) + 'px';
+};
 function plateHTML(k){
   var o = ORG[k]; if (!o) return '';
   if (!o.logo) return '<span class="plate text">' + esc(o.name) + '</span>';
-  var img = '<img src="' + o.logo + '" alt="' + esc(o.name) + '" loading="lazy" referrerpolicy="no-referrer" onload="if(!this.width&&this.naturalWidth){var h=parseFloat(getComputedStyle(this).maxHeight)||30;this.style.height=h+'px';this.style.width=(h*this.naturalWidth/this.naturalHeight)+'px';}" onerror="this.parentNode.classList.add(\'text\');this.parentNode.classList.remove(\'dark\');this.replaceWith(document.createTextNode(this.alt))">';
+  var img = '<img src="' + o.logo + '" alt="' + esc(o.name) + '" loading="lazy" referrerpolicy="no-referrer" onload="fitLogo(this)" onerror="this.parentNode.classList.add(\'text\');this.parentNode.classList.remove(\'dark\');this.replaceWith(document.createTextNode(this.alt))">';
   if (o.seal) return '<span class="plate seal">' + img + '<span>' + esc(o.name) + '</span></span>';
   return '<span class="plate' + (o.dark ? ' dark' : '') + '" title="' + esc(o.name) + '">' + img + '</span>';
 }
