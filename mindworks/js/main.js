@@ -4,7 +4,7 @@ import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, f
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
 import { createWorld, WATER_Y } from './world.js';
-import { CARS, BOATS, ITEMS, makeCar, makeBoat, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
+import { CARS, BOATS, PLANE, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
@@ -97,11 +97,11 @@ async function boot() {
     id: 'town', scene: town.scene, walks: true, cam: { dist: 6.5, pitch: .38 },
     get colliders() { return town.colliders; },
     collidersAt: p => town.colliders.concat(world.collidersAt(p)),
-    get camBlockers() { return town.camBlockers.concat(world.camBlockers(player.root.position)); },
-    heightAt: p => ride && ride.type === 'boat' ? WATER_Y + .05 : world.heightAt(p.x, p.z),
-    blocked: p => ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
+    get camBlockers() { if (ride && ride.type === 'plane' && ride.alt > 3) return []; return town.camBlockers.concat(world.camBlockers(player.root.position)); },
+    heightAt: p => ride && ride.type === 'plane' ? p.y : ride && ride.type === 'boat' ? WATER_Y + .05 : world.heightAt(p.x, p.z),
+    blocked: p => ride && ride.type === 'plane' ? false : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
-    interact() { if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs()); },
+    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs()); },
     update(dt) { town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
   };
   // warm-up render so the first frame after sign-in is quick
@@ -178,7 +178,7 @@ G.backToTown = async (doorId) => {
   refreshPlaques(); showJoy(); fade.style.opacity = 0; switching = false;
 };
 G.refresh = () => { refreshPlaques(); refreshCoins(); if (town && G.S.data) town.setHome(currentHome()); };
-function showJoy() { const walk = active && active.walks && touch; $('joy').classList.toggle('hide', !walk); $('runBtn').classList.toggle('hide', !walk); refreshRideBtn(); }
+function showJoy() { const walk = active && active.walks && touch && !(ride && ride.type === 'plane'); $('joy').classList.toggle('hide', !walk); $('runBtn').classList.toggle('hide', !walk); refreshRideBtn(); }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 function refreshPlaques() {
@@ -208,7 +208,8 @@ function walk(dt) {
   if (keys.a || keys.arrowleft) mx -= 1; if (keys.d || keys.arrowright) mx += 1;
   if (keys.w || keys.arrowup) my += 1; if (keys.s || keys.arrowdown) my -= 1;
   if (modalOpen() || switching) mx = my = 0;
-  const len = Math.min(1, Math.hypot(mx, my)), run = input.run || keys.shift, rideDef = ride ? (ride.type === 'car' ? CARS : BOATS)[ride.kind] : null;
+  if (ride && ride.type === 'plane') { mx = my = 0; flyStep(dt); }
+  const len = Math.min(1, Math.hypot(mx, my)), run = input.run || keys.shift, rideDef = ride && ride.type !== 'plane' ? (ride.type === 'car' ? CARS : BOATS)[ride.kind] : null;
   const p = player.root.position, ox = p.x, oz = p.z;
   let speed = 0;
   if (len > .08) {
@@ -221,12 +222,12 @@ function walk(dt) {
     // ease the camera round behind you when walking forward
     if (!cam.drag && my > .5) { let dy = player.root.rotation.y + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.2); }
   }
-  collide(p, ride ? 1.25 : .38, active.collidersAt ? active.collidersAt(p) : active.colliders);
+  if (!(ride && ride.type === 'plane' && ride.alt > 1.5)) collide(p, ride ? (ride.type === 'plane' ? 2.2 : 1.25) : .38, active.collidersAt ? active.collidersAt(p) : active.colliders);
   if (active.blocked && active.blocked(p)) { if (!active.blocked({ x: p.x, z: oz })) p.z = oz; else if (!active.blocked({ x: ox, z: p.z })) p.x = ox; else { p.x = ox; p.z = oz; } }
   if (active.heightAt) { const ty = active.heightAt(p); p.y += (ty - p.y) * Math.min(1, dt * 16); if (Math.abs(ty - p.y) < .005) p.y = ty; }
   player.speedBlend(ride ? 0 : speed / 3.3);
   // camera
-  const C = ride ? { dist: 10, pitch: .35 } : active.cam || { dist: 6.5, pitch: .38 };
+  const C = ride ? (ride.type === 'plane' ? { dist: 16 + ride.alt * .12 } : { dist: 10, pitch: .35 }) : active.cam || { dist: 6.5, pitch: .38 };
   cam.dist += ((C.dist) - cam.dist) * Math.min(1, dt * 4);
   if (C.pitch != null && C.lockPitch) cam.pitch += (C.pitch - cam.pitch) * Math.min(1, dt * 4);
   cam.target.lerp(tmp.set(p.x, p.y + cam.height, p.z), Math.min(1, dt * 10));
@@ -264,20 +265,22 @@ let ride = null;
 G.isRiding = () => ride;
 function startRide(type, kind, at) {
   if (ride) stopRide(true);
-  const mesh = type === 'car' ? makeCar(kind) : makeBoat(kind);
+  const mesh = type === 'car' ? makeCar(kind) : type === 'plane' ? makePlane() : makeBoat(kind);
   player.root.add(mesh);
-  if (type === 'car') player.model.visible = false; else player.model.position.y = .25;
-  ride = { type, kind, mesh, t: 0 };
+  if (type === 'car' || type === 'plane') player.model.visible = false; else player.model.position.y = .25;
+  ride = { type, kind, mesh, t: 0, alt: 0, v: 0 };
+  if (type === 'plane') { flight.wheel = 0; flight.lever = 0; setLever(0); }
   if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
-  refreshRideBtn(); toast(type === 'car' ? '🚗 Driving your ' + CARS[kind].name + '!' : '⛵ Sailing your ' + BOATS[kind].name + '!');
+  showJoy(); refreshRideBtn(); toast(type === 'plane' ? '✈️ Push the lever up to take off — steer with the wheel!' : type === 'car' ? '🚗 Driving your ' + CARS[kind].name + '!' : '⛵ Sailing your ' + BOATS[kind].name + '!');
 }
 function stopRide(silent, at) {
   if (!ride) return;
   player.root.remove(ride.mesh); player.model.visible = true; player.model.position.y = 0; player.model.rotation.set(0, 0, 0);
   ride.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
-  ride = null;
+  const wasPlane = ride.type === 'plane'; ride = null;
+  if (wasPlane) { const p = player.root.position; p.y = world.heightAt(p.x, p.z); }
   if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
-  refreshRideBtn(); if (!silent) toast('🚶 You got out.');
+  showJoy(); refreshRideBtn(); if (!silent) toast('🚶 You got out.');
 }
 function rideTick(dt) {
   ride.t += dt;
@@ -298,11 +301,70 @@ function boatActs() {
   boatCache.acts = acts; return acts;
 }
 function refreshRideBtn() {
-  const b = $('rideBtn'), u = G.S.data && G.S.data.up, show = !!(u && u.car && active === townPlace && !(ride && ride.type === 'boat'));
+  const b = $('rideBtn'), u = G.S.data && G.S.data.up, out = active === townPlace, flying = ride && ride.type === 'plane';
+  const landed = flying && ride.alt < .3 && ride.v < 3;
+  const show = !!(u && out && (landed || (u.car && !(ride && (ride.type === 'boat' || flying)))));
   b.classList.toggle('hide', !show);
-  if (show) b.textContent = ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
+  if (show) b.textContent = landed ? '🚶 Get out' : ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
+  $('flyBtn').classList.toggle('hide', !(u && u.plane && out && !ride));
+  $('wheel').classList.toggle('hide', !flying); $('lever').classList.toggle('hide', !flying);
 }
-$('rideBtn').onclick = () => { if (ride) stopRide(); else if (G.S.data.up.car) startRide('car', G.S.data.up.car); };
+/* ---------------- the plane: steering wheel + height lever ---------------- */
+const clamp = THREE.MathUtils.clamp, flight = { wheel: 0, lever: 0, held: false, warned: 0 };
+const MAX_ALT = 60;
+function setLever(v) {
+  flight.lever = clamp(v, 0, 1); $('leverKnob').style.bottom = (flight.lever * 100) + '%';
+  $('leverLab').textContent = flight.lever < .02 ? 'Ground' : Math.round(flight.lever * MAX_ALT) + ' m';
+}
+(function cockpit() {
+  const w = $('wheel'), rot = $('wheelRot'); let id = null, x0 = 0;
+  w.addEventListener('pointerdown', e => { id = e.pointerId; x0 = e.clientX; flight.held = true; w.setPointerCapture(id); e.preventDefault(); });
+  w.addEventListener('pointermove', e => { if (e.pointerId === id) flight.wheel = clamp((e.clientX - x0) / 70, -1, 1); });
+  const end = e => { if (e.pointerId !== id) return; id = null; flight.held = false; };
+  w.addEventListener('pointerup', end); w.addEventListener('pointercancel', end);
+  G._wheelRot = rot;
+  const lv = $('lever'), tr = lv.querySelector('.track'); let lid = null;
+  const set = e => { const r = tr.getBoundingClientRect(); setLever(1 - (e.clientY - r.top) / r.height); };
+  lv.addEventListener('pointerdown', e => { lid = e.pointerId; lv.setPointerCapture(lid); set(e); e.preventDefault(); });
+  lv.addEventListener('pointermove', e => { if (e.pointerId === lid) set(e); });
+  lv.addEventListener('pointerup', e => { if (e.pointerId === lid) lid = null; }); lv.addEventListener('pointercancel', () => { lid = null; });
+})();
+function flyStep(dt) {
+  const p = player.root.position, k = keys;
+  // keyboard: A/D or ←/→ steer, W/S or ↑/↓ move the lever
+  const kSteer = (k.d || k.arrowright ? 1 : 0) - (k.a || k.arrowleft ? 1 : 0);
+  if (kSteer) flight.wheel = clamp(flight.wheel + kSteer * dt * 3, -1, 1);
+  else if (!flight.held) flight.wheel *= Math.max(0, 1 - dt * 4); // the wheel springs back to the middle
+  const kLev = (k.w || k.arrowup ? 1 : 0) - (k.s || k.arrowdown ? 1 : 0);
+  if (kLev) setLever(flight.lever + kLev * dt * .5);
+  G._wheelRot.setAttribute('transform', 'rotate(' + (flight.wheel * 90) + ' 50 50)');
+  const ground = world.heightAt(p.x, p.z), wet = ground < WATER_Y, floor = Math.max(ground, WATER_Y);
+  let target = floor + flight.lever * MAX_ALT;
+  if (wet && flight.lever < .05) { target = WATER_Y + 3; if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast('🌊 Can’t land on water — fly to land first!'); } }
+  const air = ride.alt > .3;
+  // speed: rolls on the runway, flies at full speed in the air, stops when it lands with the lever down
+  const wantV = flight.lever > .02 || air || wet ? PLANE.speed : 0;
+  ride.v += (wantV - ride.v) * Math.min(1, dt * (wantV ? 1.1 : 1.6));
+  // steering turns the plane (less while it is rolling slowly on the ground)
+  player.root.rotation.y -= flight.wheel * dt * (air ? 1.1 : .9) * Math.min(1, ride.v / 6);
+  const yaw = player.root.rotation.y;
+  p.x += Math.sin(yaw) * ride.v * dt; p.z += Math.cos(yaw) * ride.v * dt;
+  // climb only once it is going fast enough to lift off
+  const lift = ride.v > PLANE.speed * .45 || air ? 1 : 0;
+  const ny = lift ? p.y + clamp(target - p.y, -9 * dt, 7 * dt) : floor;
+  const climb = (ny - p.y) / Math.max(dt, 1e-4); p.y = Math.max(ny, floor);
+  ride.alt = p.y - floor;
+  // tilt the plane: bank into turns, nose up when climbing
+  ride.mesh.rotation.z += ((air ? flight.wheel * .55 : 0) - ride.mesh.rotation.z) * Math.min(1, dt * 4);
+  ride.mesh.rotation.x += (clamp(-climb * .05, -.35, .35) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
+  ride.mesh.userData.prop.rotation.z += dt * (6 + ride.v * 2);
+  // keep the camera behind the plane
+  if (!cam.drag) { let dy = yaw + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.6); }
+  if (!cam.drag) cam.pitch += ((air ? .32 : .25) - cam.pitch) * Math.min(1, dt * 2);
+  refreshRideBtn();
+}
+$('flyBtn').onclick = () => { if (!ride && G.S.data.up.plane && active === townPlace) startRide('plane', 'sky'); };
+$('rideBtn').onclick = () => { if (ride) stopRide(false); else if (G.S.data.up.car) startRide('car', G.S.data.up.car); };
 function goHome() {
   if (ride) stopRide(true);
   const d = town.doors.find(x => x.id === 'home'); placeInTown(d.pos.clone().add(new THREE.Vector3(0, 0, -1.5)), Math.PI); toast('🏠 Back home!');

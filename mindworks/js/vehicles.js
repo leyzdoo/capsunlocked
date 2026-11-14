@@ -15,6 +15,7 @@ export const BOATS = {
   sail: { name: 'Sailboat', price: 35, speed: 9, blurb: 'Sails with the wind — faster than rowing.' },
   speed: { name: 'Speedboat', price: 55, speed: 16, blurb: 'Zoom across the ocean!' }
 };
+export const PLANE = { name: 'Sky Plane', price: 0, speed: 24, blurb: 'Free! Steer with the wheel and push the lever up to fly over the whole world.' };
 export const ITEMS = {
   crate: { name: 'Crate', icon: '📦', value: 2 }, gear: { name: 'Gear', icon: '⚙️', value: 2 }, apple: { name: 'Apple', icon: '🍎', value: 1 },
   wood: { name: 'Wood', icon: '🪵', value: 1 }, gem: { name: 'Gem', icon: '💎', value: 5 }, fossil: { name: 'Fossil', icon: '🦴', value: 4 },
@@ -71,6 +72,20 @@ export function makeBoat(kind) {
     const sail = new THREE.Mesh(new THREE.ShapeGeometry(sl), new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide, roughness: .8 })); sail.rotation.y = Math.PI / 2; sail.position.set(0, .7, .35); g.add(sail); g.userData.sail = sail;
   }
   if (kind === 'speed') { const ws = bx(g, 1.4, .5, .06, std(0x22303a, .1, .8), 0, .65, .5); ws.rotation.x = -.5; bx(g, 1.5, .08, 1.2, std(0xf4f1ea, .4), 0, .32, 1.2); bx(g, .5, .5, .5, std(0x222222, .4, .6), 0, .2, -L / 2 - .1); }
+  return g;
+}
+/** one plane, faces +z; propeller is g.userData.prop */
+export function makePlane() {
+  const g = new THREE.Group(), paint = std(0xf2f4f7, .35, .3), red = std(0xd8352a, .4, .2), dark = std(0x1e1e1e, .6), glass = std(0x22303a, .1, .8);
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(.62, .42, 5.6, 16), paint); body.rotation.x = Math.PI / 2; body.position.set(0, 1.5, 0); body.castShadow = true; g.add(body);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(.62, 16, 12), red); nose.scale.z = .8; nose.position.set(0, 1.5, 2.8); g.add(nose);
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(.42, 1.4, 16), paint); tail.rotation.x = -Math.PI / 2; tail.position.set(0, 1.5, -3.5); g.add(tail);
+  const cock = new THREE.Mesh(new THREE.SphereGeometry(.5, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), glass); cock.scale.set(.9, .8, 1.6); cock.position.set(0, 2, .6); g.add(cock);
+  bx(g, 7.4, .12, 1.4, paint, 0, 1.35, .5); [-1, 1].forEach(s => bx(g, .9, .14, 1.42, red, s * 3.3, 1.36, .5));
+  bx(g, 2.6, .1, .8, paint, 0, 1.6, -3.4); bx(g, .1, 1.1, .9, red, 0, 2.15, -3.5);
+  const prop = new THREE.Group(); prop.position.set(0, 1.5, 3.35); bx(prop, .14, 2, .06, dark, 0, 0, 0); bx(prop, 2, .14, .06, dark, 0, 0, 0); g.add(prop); g.userData.prop = prop;
+  [[.9, 1.3], [-.9, 1.3]].forEach(([x, z]) => { bx(g, .08, .8, .08, dark, x, .75, z); wheel(g, x, z, .32, .22); });
+  bx(g, .06, .5, .06, dark, 0, .85, -3.2); wheel(g, 0, -3.2, .18, .14);
   return g;
 }
 const ITEM_MESH = {

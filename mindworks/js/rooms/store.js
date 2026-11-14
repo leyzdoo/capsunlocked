@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, el, save, toast, refreshCoins, openPanel, closePanel } from '../game.js';
 import { buildHouse } from '../town.js';
 import { currentHome, designHomes, describeKind, renderHome, sketch } from '../homes.js';
-import { CARS, BOATS, ITEMS, makeCar, makeBoat, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
+import { CARS, BOATS, PLANE, ITEMS, makeCar, makeBoat, makePlane, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
 import { makeRoom, shelf, plant, box, std, env, at } from './common.js';
 import { CHESS_SETS } from './chess.js';
 import { mat, signTexture } from '../tex.js';
@@ -81,13 +81,13 @@ const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': 
 
 let vpics = {};
 function vehiclePic(maker, k) {
-  const key = (maker === makeCar ? 'c' : 'b') + k;
+  const key = (maker === makeCar ? 'c' : maker === makePlane ? 'p' : 'b') + k;
   if (!vpics[key]) {
     const W = 300, H = 170, R = G.renderer, rt = new THREE.WebGLRenderTarget(W, H, { samples: 4 }), sc = new THREE.Scene();
-    sc.background = new THREE.Color(maker === makeCar ? 0xd9e6f2 : 0x9fd0ef); sc.environment = env();
+    sc.background = new THREE.Color(maker === makeCar ? 0xd9e6f2 : maker === makePlane ? 0xbfe0ff : 0x9fd0ef); sc.environment = env();
     sc.add(new THREE.HemisphereLight(0xffffff, 0x6a6050, 1.2)); const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(5, 8, 6); sc.add(dl);
     const m = maker(k); sc.add(m);
-    if (maker !== makeCar) { const w = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), std(0x2f7fb0, .1, .2)); w.rotation.x = -Math.PI / 2; w.position.y = .05; sc.add(w); }
+    if (maker === makeBoat) { const w = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), std(0x2f7fb0, .1, .2)); w.rotation.x = -Math.PI / 2; w.position.y = .05; sc.add(w); }
     const bb = new THREE.Box3().setFromObject(m), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3()).length();
     const cam = new THREE.PerspectiveCamera(30, W / H, .1, 100); cam.position.set(c.x + sz * 1.1, c.y + sz * .6, c.z + sz * 1.3); cam.lookAt(c);
     R.setRenderTarget(rt); R.render(sc, cam); const pix = new Uint8Array(W * H * 4); R.readRenderTargetPixels(rt, 0, 0, W, H, pix); R.setRenderTarget(null); rt.dispose();
@@ -144,6 +144,13 @@ function renderShopInto(body) {
   };
   vgrid('Cars — drive anywhere, carry more', '🚗', CARS, 'cars', 'car', makeCar);
   vgrid('Boats — sail lakes and the sea', '⛵', BOATS, 'boats', 'boat', makeBoat);
+  // ---- the plane (one, free) ----
+  const pl = grid(section('Plane — fly over everything', '✈️')), pit = el('div', { class: 'item' });
+  pit.appendChild(vehiclePic(makePlane, 'sky')); pit.appendChild(el('div', { class: 't' }, PLANE.name)); pit.appendChild(el('div', { class: 'd' }, PLANE.blurb));
+  if (u.plane) pit.appendChild(el('div', { class: 'own' }, 'Your plane — tap ✈️ Fly outside'));
+  const pb = el('button', { class: 'btn ' + (u.plane ? '' : 'go') }, u.plane ? 'You have it!' : '🎁 Get it free'); pb.disabled = !!u.plane;
+  pb.onclick = () => { u.plane = true; save(true); G.refreshBag(); renderShop(); toast('✈️ The plane is yours! Tap ✈️ Fly when you are outside.'); };
+  pit.appendChild(pb); pl.appendChild(pit);
   // ---- ping pong ----
   const pg = grid(section('Ping Pong', '🏓'));
   const np = u.paddle < PADDLE_PRICES.length ? PADDLE_PRICES[u.paddle] : null;
