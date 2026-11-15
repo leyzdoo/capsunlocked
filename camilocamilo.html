@@ -14,6 +14,7 @@
     --james:#2F6FDE; --james-soft:#EAF1FD; --james-line:#C3D6F7;
     --open:#B4BBC4; --ink:#1C2330; --muted:#6B7380; --faint:#9AA1AB;
     --line:#E6E8EC; --track:#F2F3F5;
+    --both:#7C5CC4; --both-soft:#F2EDFB; --both-line:#D6C8F0;
     --hol:#B7791F; --hol-soft:#FFF5E3; --sum:#0F8A8A; --sum-soft:#E6F6F6;
     --cw:84px;
   }
@@ -45,7 +46,7 @@
   .brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
   .legend{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:4px}
-  .dot.a{background:var(--ale)} .dot.j{background:var(--james)} .dot.o{background:#fff;border:2px solid var(--open)}
+  .dot.a{background:var(--ale)} .dot.b{background:linear-gradient(90deg,#2E9E5B 0 50%,#2F6FDE 50% 100%)} .dot.j{background:var(--james)} .dot.o{background:#fff;border:2px solid var(--open)}
   .dot.ring{background:#fff;border:3px solid var(--ink)}
   .me{font-size:11px;color:var(--faint);margin-top:6px}
   .me b{color:var(--ink);font-weight:600}
@@ -56,7 +57,7 @@
   .counter th:first-child{text-align:left;padding-left:0}
   .counter td{padding:2px 4px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
   .counter td:first-child{text-align:left;padding-left:0;font-weight:500;color:var(--muted)}
-  .counter .ca{color:var(--ale)} .counter .cj{color:var(--james)} .counter .co{color:var(--faint)}
+  .counter .ca{color:var(--ale)} .counter .cj{color:var(--james)} .counter .co{color:var(--faint)} .counter .cb{color:var(--both)}
   .counter .foot{font-size:10.5px;color:var(--faint);margin-top:4px;display:flex;justify-content:space-between;gap:8px}
   .counter .await{color:#C2410C;font-weight:600}
 
@@ -67,7 +68,15 @@
   .row{border:1px solid var(--line);border-left:5px solid #E3E6EA;border-radius:14px;padding:10px 12px 12px;margin:10px 0;background:#fff;transition:border-color .25s}
   .row.w-ale{border-left-color:var(--ale)}
   .row.w-james{border-left-color:var(--james)}
-  .row.w-split{border-left-color:#8E7CC3}
+  .row.w-split{border-left-color:#9AA1AB}
+  .row.w-both{border-left-color:var(--both)}
+  .state{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;background:#F3F4F6;color:var(--muted)}
+  .state.ale{background:var(--ale-soft);color:#1E6B3E}
+  .state.james{background:var(--james-soft);color:#1F4FA8}
+  .state.both{background:var(--both-soft);color:#5B3FA0}
+  .state.split{background:#F3F4F6;color:var(--ink)}
+  .cell .wh{font-size:10px;font-weight:700;margin-top:4px;height:12px;line-height:12px;color:var(--faint)}
+  .cell.s-ale .wh{color:var(--ale)} .cell.s-james .wh{color:var(--james)} .cell.s-both .wh{color:var(--both)}
   .rhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
   .rtitle{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .tag{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--hol-soft);color:var(--hol);white-space:nowrap}
@@ -75,7 +84,7 @@
   .tag.est{background:#F3F4F6;color:var(--muted)}
   .tag.await{background:#FFF1E8;color:#C2410C}
   .rall{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--faint);flex:none}
-  .rall .tg{width:86px;max-width:none;margin:0;height:24px;cursor:pointer}
+  .rall .tg{width:76px;max-width:none;margin:0;height:24px;cursor:pointer}
   .rall .ball{width:18px;height:18px}
 
   .line{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}
@@ -97,7 +106,8 @@
   .cell.hol{border-color:#F1D7A6;border-style:dashed}
   .cell.s-ale{background:var(--ale-soft);border-color:var(--ale-line)}
   .cell.s-james{background:var(--james-soft);border-color:var(--james-line)}
-  .cell.hol.s-ale,.cell.hol.s-james{border-style:dashed}
+  .cell.s-both{background:linear-gradient(135deg,var(--ale-soft) 50%,var(--james-soft) 50%);border-color:var(--both-line)}
+  .cell.hol.s-ale,.cell.hol.s-james,.cell.hol.s-both{border-style:dashed}
   .cell.extra{--cw:76px}
 
   .tg{position:relative;height:22px;border-radius:12px;background:var(--track);border:1px solid #E1E4E8;width:100%;max-width:64px;margin:6px auto 0;transition:background .2s,border-color .2s}
@@ -114,6 +124,9 @@
   .rall.s-james .tg{background:#D6E4FB;border-color:var(--james-line)}
   .rall.s-ale .ball{background:var(--ale);border-color:var(--ale)}
   .rall.s-james .ball{background:var(--james);border-color:var(--james)}
+  .s-both .tg,.rall.s-both .tg{background:var(--both-soft);border-color:var(--both-line)}
+  .s-both .ball,.rall.s-both .ball{left:50%;background:linear-gradient(90deg,var(--ale) 50%,var(--james) 50%);border-color:#fff;box-shadow:0 0 0 1px var(--both)}
+  .st-proposed.s-both .ball{border-color:var(--both)!important;box-shadow:none}
   .rall.s-mixed .ball{background:linear-gradient(90deg,var(--ale) 50%,var(--james) 50%);border-color:#fff}
   /* proposed = hollow ring, agreed / Compás = solid */
   .st-proposed .ball{background:#fff!important;border-width:5px}
@@ -139,7 +152,7 @@
     .cell.extra{--cw:58px}
     .hwrap{padding:10px 12px 8px}
     main{padding:4px 10px 80px}
-    .brand h1{font-size:20px}
+    .brand h1{font-size:20px;white-space:nowrap}
     .brand .sub,.legend .hint{display:none}
     .legend{gap:8px;font-size:11px;margin-top:6px}
     .me{margin-top:4px}
@@ -182,22 +195,23 @@
     <div class="hwrap">
       <div class="brand">
         <h1>Camilo · 2027</h1>
-        <div class="sub">Weekends &amp; weeks off — tap a day to move the ball</div>
+        <div class="sub">Weekends &amp; weeks off — tap left, right, or middle (middle twice = Both)</div>
         <div class="legend">
-          <span><span class="dot a"></span>Ale ←</span>
-          <span><span class="dot o"></span>Open</span>
-          <span>→ James<span class="dot j" style="margin:0 0 0 4px"></span></span>
+          <span><span class="dot a"></span>Ale</span>
+          <span><span class="dot b"></span>Both</span>
+          <span><span class="dot o"></span>Undetermined</span>
+          <span><span class="dot j"></span>James</span>
           <span class="hint" style="color:var(--faint)">· solid = agreed · ring = proposed</span>
         </div>
         <div class="me" id="meLine"></div>
       </div>
       <div class="counter" aria-live="polite">
         <table>
-          <thead><tr><th></th><th class="ca">Ale</th><th>Open</th><th class="cj">James</th></tr></thead>
+          <thead><tr><th></th><th class="ca">Ale</th><th class="cb">Both</th><th>Open</th><th class="cj">James</th></tr></thead>
           <tbody>
-            <tr><td>Weekends</td><td class="ca" id="cWa">0</td><td class="co" id="cWo">0</td><td class="cj" id="cWj">0</td></tr>
-            <tr><td>Days</td><td class="ca" id="cDa">0</td><td class="co" id="cDo">0</td><td class="cj" id="cDj">0</td></tr>
-            <tr><td>Holidays</td><td class="ca" id="cHa">0</td><td class="co" id="cHo">0</td><td class="cj" id="cHj">0</td></tr>
+            <tr><td>Weekends</td><td class="ca" id="cWa">0</td><td class="cb" id="cWb">0</td><td class="co" id="cWo">0</td><td class="cj" id="cWj">0</td></tr>
+            <tr><td>Days</td><td class="ca" id="cDa">0</td><td class="cb" id="cDb">0</td><td class="co" id="cDo">0</td><td class="cj" id="cDj">0</td></tr>
+            <tr><td>Holidays</td><td class="ca" id="cHa">0</td><td class="cb" id="cHb">0</td><td class="co" id="cHo">0</td><td class="cj" id="cHj">0</td></tr>
           </tbody>
         </table>
         <div class="foot"><span id="cSplit"></span><span id="cAwait" class="await"></span></div>
@@ -377,6 +391,7 @@ function cellHTML(k, extra){
     <div class="dow">${DOW[d.getDay()]}</div>
     <div class="dt">${md(k)}</div>
     <div class="tg"><span class="ball"></span></div>
+    <div class="wh"></div>
     <div class="meta"></div>
     <div class="hn">${hn}</div>
   </div>`;
@@ -403,7 +418,7 @@ function renderAll(){
     html += `<section class="row" id="r-${r.fri}" data-fri="${r.fri}">
       <div class="rhead">
         <div class="rtitle">${rangeLabel(r.core[0], r.core[2])}${tags}<span class="tag await hidden"></span></div>
-        <div class="rall"><span>${r.all.length > 3 ? `All ${r.all.length}` : "Weekend"}</span><div class="tg" data-row="${r.fri}"><span class="ball"></span></div></div>
+        <div class="rall"><span class="state"></span><div class="tg" data-row="${r.fri}"><span class="ball"></span></div></div>
       </div>
       ${strip(r.left, false)}
       <div class="line">
@@ -423,7 +438,7 @@ function paint(){
   const me = S.me;
   document.querySelectorAll(".cell").forEach(el => {
     const k = el.dataset.k, e = eff(k);
-    el.classList.remove("s-ale","s-james","st-proposed","st-confirmed","st-compas","mine","theirs");
+    el.classList.remove("s-ale","s-james","s-both","st-proposed","st-confirmed","st-compas","mine","theirs");
     if (e.who) el.classList.add("s-" + e.who);
     if (e.status !== "open") el.classList.add("st-" + e.status);
     let meta = "";
@@ -431,9 +446,10 @@ function paint(){
     else if (e.status === "confirmed") meta = "✓ agreed";
     else if (e.status === "compas") meta = "Compás";
     el.querySelector(".meta").textContent = meta;
+    el.querySelector(".wh").textContent = SHORT[e.who];
   });
 
-  const c = { W:{ale:0,james:0,open:0,split:0}, D:{ale:0,james:0,open:0}, H:{ale:0,james:0,open:0} };
+  const c = { W:{ale:0,james:0,both:0,open:0,split:0}, D:{ale:0,james:0,both:0,open:0}, H:{ale:0,james:0,both:0,open:0} };
   let awaitMe = 0;
   ROWS.forEach(r => {
     const rowEl = document.getElementById("r-" + r.fri); if (!rowEl) return;
@@ -441,14 +457,20 @@ function paint(){
     let w = core.includes("") ? (core.every(x => x === "") ? "open" : (new Set(core.filter(Boolean)).size > 1 ? "split" : "open"))
                               : (new Set(core).size === 1 ? core[0] : "split");
     c.W[w]++;
-    rowEl.classList.remove("w-ale","w-james","w-split");
+    rowEl.classList.remove("w-ale","w-james","w-both","w-split");
     if (w !== "open") rowEl.classList.add("w-" + w);
 
     const all = r.all.map(k => eff(k).who), uniq = new Set(all);
     const rall = rowEl.querySelector(".rall");
-    rall.classList.remove("s-ale","s-james","s-mixed");
-    if (uniq.size === 1 && all[0]) rall.classList.add("s-" + all[0]);
-    else if (uniq.has("ale") && uniq.has("james")) rall.classList.add("s-mixed");
+    rall.classList.remove("s-ale","s-james","s-both","s-mixed");
+    // Row label: whole row one way → that name; anything unset → Undetermined; otherwise Split
+    // Label describes the Fri–Sun weekend; "· all N" when the attached days off match too
+    const cu = new Set(core);
+    const rs = (cu.size === 1) ? (core[0] || "") : (cu.has("") ? "" : "split");
+    const pill = rall.querySelector(".state");
+    pill.className = "state " + (rs || "open");
+    if (rs === "split") rall.classList.add("s-mixed"); else if (rs) rall.classList.add("s-" + rs);
+    pill.textContent = rs === "split" ? "Split" : (NAME[rs] + (rs && r.all.length > 3 && uniq.size === 1 ? ` · all ${r.all.length}` : ""));
 
     let rowAwait = 0;
     r.all.forEach(k => {
@@ -462,9 +484,7 @@ function paint(){
     t.textContent = rowAwait ? `${rowAwait} to confirm` : "";
   });
   const set = (id, v) => { $(id).textContent = v; };
-  set("#cWa", c.W.ale); set("#cWo", c.W.open); set("#cWj", c.W.james);
-  set("#cDa", c.D.ale); set("#cDo", c.D.open); set("#cDj", c.D.james);
-  set("#cHa", c.H.ale); set("#cHo", c.H.open); set("#cHj", c.H.james);
+  for (const [g, o] of Object.entries(c)) { set(`#c${g}a`, o.ale); set(`#c${g}b`, o.both); set(`#c${g}o`, o.open); set(`#c${g}j`, o.james); }
   set("#cSplit", c.W.split ? `${c.W.split} split wknd${c.W.split > 1 ? "s" : ""}` : "");
   set("#cAwait", awaitMe ? `${awaitMe} awaiting you` : "");
   $("#meLine").innerHTML = `Signed in as <b>${me === "JL" ? "James" : "Alejandra"}</b>`;
@@ -472,10 +492,19 @@ function paint(){
 
 /* ================= interaction ================= */
 function zone(el, clientX){
-  const tg = el.classList.contains("tg") ? el : el;
-  const r = tg.getBoundingClientRect(), x = (clientX - r.left) / r.width;
-  return x < 1/3 ? "ale" : x > 2/3 ? "james" : "";
+  const r = el.getBoundingClientRect(), x = (clientX - r.left) / r.width;
+  return x < 1/3 ? "ale" : x > 2/3 ? "james" : "mid";
 }
+// Middle tap: Undetermined → Both → Undetermined. From Ale/James it goes back to Undetermined.
+// If the other parent proposed Both, a middle tap agrees to it.
+function midTarget(k){
+  const e = eff(k);
+  if (e.who === "") return "both";
+  if (e.who === "both" && e.status === "proposed" && e.by !== S.me) return "both";
+  return "";
+}
+const NAME = { ale:"Alejandra", james:"James", both:"Both", "":"Undetermined" };
+const SHORT = { ale:"Ale", james:"James", both:"Both", "":"" };
 function changed(keys){
   save(); paint(); schedulePush();
   keys.forEach(k => { const el = document.querySelector(`.cell[data-k="${k}"]`); if (el){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); } });
@@ -483,18 +512,25 @@ function changed(keys){
 list.addEventListener("click", ev => {
   const rowTg = ev.target.closest(".rall .tg");
   if (rowTg) {
-    const r = ROWS.find(x => x.fri === rowTg.dataset.row), v = zone(rowTg, ev.clientX);
+    const r = ROWS.find(x => x.fri === rowTg.dataset.row), z = zone(rowTg, ev.clientX);
+    let v = z;
+    if (z === "mid") {
+      const whos = r.all.map(k => eff(k).who);
+      const awaitingBoth = r.all.some(k => { const e = eff(k); return e.who === "both" && e.status === "proposed" && e.by !== S.me; });
+      v = whos.every(w => w === "") ? "both" : (whos.every(w => w === "both") && awaitingBoth) ? "both" : "";
+    }
     const did = r.all.filter(k => setDay(k, v));
-    if (did.length) { changed(did); toast(v ? `${r.all.length > 3 ? "All days" : "Weekend"} → ${v === "ale" ? "Ale" : "James"}` : "Cleared"); }
+    if (did.length) { changed(did); toast(`${r.all.length > 3 ? `All ${r.all.length} days` : "Weekend"} → ${NAME[v]}`); }
     return;
   }
   const cell = ev.target.closest(".cell");
-  if (cell) { const k = cell.dataset.k; if (setDay(k, zone(cell, ev.clientX))) changed([k]); }
+  if (cell) { const k = cell.dataset.k, z = zone(cell, ev.clientX); if (setDay(k, z === "mid" ? midTarget(k) : z)) changed([k]); }
 });
 list.addEventListener("keydown", ev => {
   const cell = ev.target.closest(".cell"); if (!cell) return;
   const k = cell.dataset.k, cur = eff(k).who;
-  const order = ["ale","","james"]; let i = order.indexOf(cur);
+  const order = ["ale","","james"]; let i = Math.max(0, order.indexOf(cur === "both" ? "" : cur));
+  if (ev.key === "b" || ev.key === "B") { if (setDay(k, midTarget(k))) changed([k]); ev.preventDefault(); return; }
   if (ev.key === "ArrowLeft") i = Math.max(0, i - 1);
   else if (ev.key === "ArrowRight") i = Math.min(2, i + 1);
   else if (ev.key === "Enter" || ev.key === " ") { if (cur && setDay(k, cur)) changed([k]); ev.preventDefault(); return; }
@@ -507,7 +543,7 @@ let tt;
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 1600); }
 
 /* ================= sync (Compás WeekendPlan via Apps Script) ================= */
-const CODE = { ale:"ABB", james:"JL" }, UNCODE = { ABB:"ale", JL:"james" };
+const CODE = { ale:"ABB", james:"JL", both:"BOTH" }, UNCODE = { ABB:"ale", JL:"james", BOTH:"both" };
 function toRow(k){
   const p = S.plan[k], d = sheetDate(k);
   return { PlanID:`${d}|AllDay`, Date:d, Segment:"AllDay", Status:p.status, Who:CODE[p.who] || "",
