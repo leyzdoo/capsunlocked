@@ -35,8 +35,7 @@ const BIOMES = {
   sea: { amp: 0, icon: '🌊', names: ['Bolt Bay', 'Gear Sea', 'Sunny Ocean', 'Coral Coast', 'Rivet Reef'] },
   airport: { amp: 0, icon: '🛫', names: ['Sky Harbor Airport', 'Gearfield Airport', 'Robo International Airport', 'Cloud Nine Airport', 'Propeller Point Airport', 'Jetway Airport', 'Bolt City Airport'] }
 };
-const STRIPS = ['Lonely Mesa Airstrip', 'Tumbleweed Airstrip', 'Hilltop Airstrip', 'Cactus Airstrip', 'Windy Meadow Airstrip', 'Dusty Airstrip'];
-/* airports: just north of your house (Hometown Airport), and on a grid every 3 blocks — big airports by
+/* airports: just south of your house (Hometown Airport), and on a grid every 3 blocks — big airports by
    towns and cities, little airstrips out in the middle of nowhere (hills or desert) */
 const apGrid = (i, j) => ((i % 3) + 3) % 3 === 0 && ((j + 1) % 3 + 3) % 3 === 0;
 export function biomeOf(i, j) {
@@ -57,7 +56,7 @@ function baseBiome(i, j) {
 }
 export function blockName(i, j) {
   const b = biomeOf(i, j), B = BIOMES[b];
-  if (b === 'airport') return !i && j === -1 ? 'Hometown Airport' : isStrip(i, j) ? STRIPS[Math.floor(hash2(i, j, 11) * STRIPS.length)] : B.names[Math.floor(hash2(i, j, 11) * B.names.length)];
+  if (b === 'airport') { if (!i && j === -1) return 'Hometown Airport'; const bb = baseBiome(i, j), BB = BIOMES[bb], nm = BB.names[Math.floor(hash2(i, j, 11) * BB.names.length)]; return nm + (isStrip(i, j) ? ' Airstrip' : ' Airport'); }
   return B.name || B.names[Math.floor(hash2(i, j, 11) * B.names.length)];
 }
 /* the airfield (runway + parking apron) in an airport block, local coords */
@@ -223,7 +222,7 @@ export function createWorld(town) {
     for (let k = 0; k < pos.count; k++) {
       const x = pos.getX(k), z = pos.getZ(k), h = hAt(x, z); pos.setY(k, h);
       const n = vnoise((ox + x) * .05, (oz + z) * .05, 7) * .12;
-      if (biome === 'desert') cc.setRGB(.86 - n, .72 - n, .5 - n * .5);
+      if (biome === 'desert' || (biome === 'airport' && baseBiome(i, j) === 'desert')) cc.setRGB(.86 - n, .72 - n, .5 - n * .5);
       else if (h > 30) cc.setRGB(.93, .94, .97);
       else if (h > 15) cc.setRGB(.5 - n, .48 - n, .45 - n);
       else if (h < -.2) cc.setRGB(.82, .74, .55);
@@ -301,7 +300,7 @@ export function createWorld(town) {
     ws.position.set(F.x2 - 8, 0, F.runZ - 15); g.add(ws);
     // terminal on the road, with the plane desk inside
     const tw = strip ? 18 : 40, owner = robotName(r);
-    const t = roadBuilding(P, strip ? -30 : -20, SETBACK + (strip ? 7 : 10), Math.PI, { w: tw, d: strip ? 14 : 20, floors: strip ? 1 : 2, wall: strip ? ['brick', ['#b8875c', '#ded3c3']] : ['concrete', ['#d8dde3', 160]], awning: strip ? AWN[1] : AWN[3], sign: strip ? 'AIRSTRIP' : home ? 'HOMETOWN AIRPORT' : 'AIRPORT', owner });
+    const t = roadBuilding(P, strip ? -30 : -20, SETBACK + (strip ? 7 : 10), Math.PI, { w: tw, d: strip ? 14 : 20, floors: strip ? 1 : 2, wall: strip ? ['brick', ['#b8875c', '#ded3c3']] : ['concrete', ['#d8dde3', 160]], awning: strip ? AWN[1] : null, sign: strip ? 'AIRSTRIP' : 'AIRPORT', owner });
     const wpos = t.door.clone().add(V(P.ox, 0, P.oz));
     C.doors.push({ pos: wpos, r: 2.4, label: '✈️ Go into the ' + (strip ? 'airstrip' : 'airport'), sub: 'The plane desk — switch planes here', fn: () => G.airportDesk && G.airportDesk({ i: C.i, j: C.j, name }) });
     addBot(P, { x: t.door.x + 1.8, z: t.door.z - 1.6, face: Math.PI, name: owner, job: 'the airport greeter ✈️', owns: 'airport', say: 'Welcome to ' + name + '! Go inside to the plane desk to switch planes. Your planes can only land at airports!' });

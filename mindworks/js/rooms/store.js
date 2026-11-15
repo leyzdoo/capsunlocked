@@ -165,7 +165,7 @@ function renderShopInto(body) {
     it.appendChild(vehiclePic(makePlane, k)); it.appendChild(el('div', { class: 't' }, c.name)); it.appendChild(el('div', { class: 'd' }, c.blurb));
     if (owned) it.appendChild(el('div', { class: 'own' }, '🛫 Waiting at the airport'));
     const b = el('button', { class: 'btn ' + (owned ? '' : 'go') }, owned ? 'You have it!' : '🎁 Get it free'); b.disabled = owned;
-    b.onclick = () => { u.planes.push(k); if (!u.planeKind) u.planeKind = k; u.plane = true; save(true); G.refreshBag(); renderShop(); toast('✈️ The ' + c.name + ' is yours! It’s waiting at Hometown Airport, just north of your house.'); };
+    b.onclick = () => { u.planes.push(k); if (!u.planeKind) u.planeKind = k; u.plane = true; save(true); G.refreshBag(); renderShop(); toast('✈️ The ' + c.name + ' is yours! It’s waiting at Hometown Airport, just south of your house.'); };
     it.appendChild(b); pl.appendChild(it);
   });
   // ---- ping pong ----

@@ -507,7 +507,7 @@ function whereIs(kind) {
 function dirTo(x, z) {
   const p = player.root.position, dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz);
   if (d < 90) return 'right here';
-  const blocks = Math.max(1, Math.round(d / 160)), ns = dz < -Math.abs(dx) * .4 ? 'north' : dz > Math.abs(dx) * .4 ? 'south' : '', ew = dx > Math.abs(dz) * .4 ? 'west' : dx < -Math.abs(dz) * .4 ? 'east' : '';
+  const blocks = Math.max(1, Math.round(d / 160)), ns = dz > Math.abs(dx) * .4 ? 'north' : dz < -Math.abs(dx) * .4 ? 'south' : '', ew = dx > Math.abs(dz) * .4 ? 'west' : dx < -Math.abs(dz) * .4 ? 'east' : '';
   return blocks + ' block' + (blocks > 1 ? 's' : '') + ' ' + (ns + ew || 'away');
 }
 function myPlanes() {
@@ -519,7 +519,7 @@ function myPlanes() {
     owned.forEach(k => { const s = spotOf(k); box.appendChild(el('div', { class: 'prow' }, '<b>' + PLANES[k].name + '</b><span style="flex:1;text-align:right;color:#ffd34d">🛫 ' + whereIs(k) + ' · ' + dirTo(s.x, s.z) + '</span>')); });
     body.appendChild(box);
     const hd = dirTo(HOME_AP.i * 160, HOME_AP.j * 160 - 40);
-    body.appendChild(el('p', { class: 'note' }, 'Hometown Airport is just north of your house' + (hd === 'right here' ? ' — you’re there!' : ' (' + hd + ').') + ' Any airport’s plane desk can bring a plane to you.'));
+    body.appendChild(el('p', { class: 'note' }, 'Hometown Airport is just south of your house' + (hd === 'right here' ? ' — you’re there!' : ' (' + hd + ').') + ' Any airport’s plane desk can bring a plane to you.'));
   });
 }
 /* the plane desk inside every airport: bring any of your planes here */
@@ -624,7 +624,7 @@ function showProgress(first) {
   });
 }
 
-if (Store.local) window.__mw = { G, cam, camera, get shown() { return shown; }, get ride() { return ride; }, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
+if (Store.local) window.__mw = { syncPlanes, spotOf, sim(n, dt = .05) { for (let k = 0; k < n; k++) { walk(dt); active.update && active.update(dt); } }, keys, G, cam, camera, get shown() { return shown; }, get ride() { return ride; }, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
 initLogin();
 boot().catch(err => { console.error(err); setProgress(1, 'Something went wrong loading Mindworks: ' + err.message); });
 addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
