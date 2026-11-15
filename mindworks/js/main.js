@@ -338,12 +338,13 @@ function flyStep(dt) {
   const kLev = (k.w || k.arrowup ? 1 : 0) - (k.s || k.arrowdown ? 1 : 0);
   if (kLev) setLever(flight.lever + kLev * dt * .5);
   G._wheelRot.setAttribute('transform', 'rotate(' + (flight.wheel * 90) + ' 50 50)');
-  const ground = world.heightAt(p.x, p.z), wet = ground < WATER_Y, floor = Math.max(ground, WATER_Y);
-  const PL = PLANES[ride.kind]; let target = floor + flight.lever * PL.top;
-  if (wet && flight.lever < .05) { target = WATER_Y + 3; if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast('🌊 Can’t land on water — fly to land first!'); } }
+  const PL = PLANES[ride.kind], ground = world.heightAt(p.x, p.z), wet = ground < WATER_Y, floor = Math.max(ground, WATER_Y);
+  let target = floor + flight.lever * PL.top;
+  ride.onWater = wet && PL.water && ride.alt < .3;
+  if (wet && !PL.water && flight.lever < .05) { target = WATER_Y + 3; if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast('🌊 Can’t land on water — fly to land first!'); } }
   const air = ride.alt > .3;
   // speed: rolls on the runway, flies at full speed in the air, stops when it lands with the lever down
-  const wantV = flight.lever > .02 || air || wet ? PL.speed : 0;
+  const wantV = flight.lever > .02 || air || (wet && !PL.water) ? PL.speed : wet ? 5 : 0; // the seaplane taxis slowly on water so you can steer to shore
   ride.v += (wantV - ride.v) * Math.min(1, dt * (wantV ? 1.1 : 1.6));
   // steering turns the plane (less while it is rolling slowly on the ground)
   player.root.rotation.y -= flight.wheel * dt * (air ? 1.1 : .9) * Math.min(1, ride.v / 6);
@@ -357,6 +358,8 @@ function flyStep(dt) {
   // tilt the plane: bank into turns, nose up when climbing
   ride.mesh.rotation.z += ((air ? flight.wheel * .55 : 0) - ride.mesh.rotation.z) * Math.min(1, dt * 4);
   ride.mesh.rotation.x += (clamp(-climb * .05, -.35, .35) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
+  ride.mesh.position.y = ride.onWater ? Math.sin(ride.t * 1.8) * .07 - .15 : 0; // bob on the waves
+  if (ride.onWater && performance.now() - flight.warned > 6000) { flight.warned = performance.now(); toast('🌊 Splashdown! Steer to the shore to get out.'); }
   ride.mesh.userData.prop.rotation.z += dt * (6 + ride.v * 2);
   if (ride.mesh.userData.flame) ride.mesh.userData.flame.scale.setScalar(.4 + ride.v / PL.speed * (.8 + Math.random() * .3));
   // keep the camera behind the plane

@@ -17,6 +17,7 @@ export const BOATS = {
 };
 export const PLANES = {
   sky: { name: 'Sky Plane', price: 0, speed: 24, top: 60, blurb: 'Free! Steer with the wheel and push the lever up to fly over the whole world.' },
+  sea: { name: 'Seaplane', price: 0, speed: 22, top: 50, water: true, blurb: 'Free! Has floats, so it can land on lakes and the sea. Pull the lever down over water to land, then steer to the shore.' },
   jet: { name: 'Jet', price: 0, speed: 36, top: 95, blurb: 'Free! The fastest thing in Mindworks. Flies higher too, and needs a longer run to take off.' }
 };
 export const ITEMS = {
@@ -80,7 +81,7 @@ export function makeBoat(kind) {
 /** one plane, faces +z; propeller is g.userData.prop */
 export function makePlane(kind) {
   if (kind === 'jet') return makeJet();
-  const g = new THREE.Group(), paint = std(0xf2f4f7, .35, .3), red = std(0xd8352a, .4, .2), dark = std(0x1e1e1e, .6), glass = std(0x22303a, .1, .8);
+  const sea = kind === 'sea', g = new THREE.Group(), paint = std(sea ? 0xffd23f : 0xf2f4f7, .35, .3), red = std(sea ? 0x1f6fd1 : 0xd8352a, .4, .2), dark = std(0x1e1e1e, .6), glass = std(0x22303a, .1, .8);
   const body = new THREE.Mesh(new THREE.CylinderGeometry(.62, .42, 5.6, 16), paint); body.rotation.x = Math.PI / 2; body.position.set(0, 1.5, 0); body.castShadow = true; g.add(body);
   const nose = new THREE.Mesh(new THREE.SphereGeometry(.62, 16, 12), red); nose.scale.z = .8; nose.position.set(0, 1.5, 2.8); g.add(nose);
   const tail = new THREE.Mesh(new THREE.ConeGeometry(.42, 1.4, 16), paint); tail.rotation.x = -Math.PI / 2; tail.position.set(0, 1.5, -3.5); g.add(tail);
@@ -88,8 +89,15 @@ export function makePlane(kind) {
   bx(g, 7.4, .12, 1.4, paint, 0, 1.35, .5); [-1, 1].forEach(s => bx(g, .9, .14, 1.42, red, s * 3.3, 1.36, .5));
   bx(g, 2.6, .1, .8, paint, 0, 1.6, -3.4); bx(g, .1, 1.1, .9, red, 0, 2.15, -3.5);
   const prop = new THREE.Group(); prop.position.set(0, 1.5, 3.35); bx(prop, .14, 2, .06, dark, 0, 0, 0); bx(prop, 2, .14, .06, dark, 0, 0, 0); g.add(prop); g.userData.prop = prop;
-  [[.9, 1.3], [-.9, 1.3]].forEach(([x, z]) => { bx(g, .08, .8, .08, dark, x, .75, z); wheel(g, x, z, .32, .22); });
-  bx(g, .06, .5, .06, dark, 0, .85, -3.2); wheel(g, 0, -3.2, .18, .14);
+  if (sea) { // two floats instead of wheels
+    [-1.15, 1.15].forEach(x => {
+      const f = new THREE.Mesh(new THREE.CapsuleGeometry(.32, 3.6, 6, 12), std(0xf4f1ea, .4)); f.rotation.x = Math.PI / 2; f.position.set(x, .32, .3); f.castShadow = true; g.add(f);
+      [1.3, -.6].forEach(z => { const st = bx(g, .08, .95, .08, dark, x * .7, .95, z); st.rotation.z = x > 0 ? .4 : -.4; });
+    });
+  } else {
+    [[.9, 1.3], [-.9, 1.3]].forEach(([x, z]) => { bx(g, .08, .8, .08, dark, x, .75, z); wheel(g, x, z, .32, .22); });
+    bx(g, .06, .5, .06, dark, 0, .85, -3.2); wheel(g, 0, -3.2, .18, .14);
+  }
   return g;
 }
 function makeJet() {
