@@ -8,7 +8,7 @@ import { randomSpec } from './homes.js';
 import { mat, rng, signTexture } from './tex.js';
 import { makeCharacter } from './character.js';
 import { G, toast } from './game.js';
-import { makeItem, BIOME_ITEMS, today } from './vehicles.js';
+import { makeItem, makePlane, BIOME_ITEMS, today } from './vehicles.js';
 
 export const CH = 160, HALF = 80, VX = 70;     // block size; the north–south road runs at local x = 70 in every block
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -32,9 +32,20 @@ const BIOMES = {
   mountains: { amp: 46, icon: '🏔️', names: ['Pine Peak', 'Snowcap Mountains', 'Granite Range', 'Thunder Peak'] },
   desert: { amp: 3.5, icon: '🏜️', names: ['Dusty Mesa', 'Cactus Flats', 'Sunbake Desert', 'Red Rock Canyon'] },
   lake: { amp: 3, icon: '🏞️', names: ['Lake Rivet', 'Blue Lake', 'Silver Lake', 'Mirror Lake'] },
-  sea: { amp: 0, icon: '🌊', names: ['Bolt Bay', 'Gear Sea', 'Sunny Ocean', 'Coral Coast', 'Rivet Reef'] }
+  sea: { amp: 0, icon: '🌊', names: ['Bolt Bay', 'Gear Sea', 'Sunny Ocean', 'Coral Coast', 'Rivet Reef'] },
+  airport: { amp: 0, icon: '🛫', names: ['Sky Harbor Airport', 'Gearfield Airport', 'Robo International Airport', 'Cloud Nine Airport', 'Propeller Point Airport', 'Jetway Airport', 'Bolt City Airport'] }
 };
+const STRIPS = ['Lonely Mesa Airstrip', 'Tumbleweed Airstrip', 'Hilltop Airstrip', 'Cactus Airstrip', 'Windy Meadow Airstrip', 'Dusty Airstrip'];
+/* airports: just north of your house (Hometown Airport), and on a grid every 3 blocks — big airports by
+   towns and cities, little airstrips out in the middle of nowhere (hills or desert) */
+const apGrid = (i, j) => ((i % 3) + 3) % 3 === 0 && ((j + 1) % 3 + 3) % 3 === 0;
 export function biomeOf(i, j) {
+  const b = baseBiome(i, j);
+  return b !== 'home' && apGrid(i, j) && b !== 'mountains' && b !== 'sea' && b !== 'lake' ? 'airport' : b;
+}
+/* is this airport by a town (big) or out in the wild (an airstrip)? */
+export const isStrip = (i, j) => { const b = baseBiome(i, j); return b === 'hills' || b === 'desert'; };
+function baseBiome(i, j) {
   if (!i && !j) return 'home';
   const h = hash2(i, j, 9);
   if (Math.max(Math.abs(i), Math.abs(j)) === 1) return h < .45 ? 'city' : h < .75 ? 'suburb' : 'town';
@@ -44,7 +55,23 @@ export function biomeOf(i, j) {
   if (wild < .62) return dry > .6 ? 'desert' : h < .4 ? 'lake' : 'hills';
   return dry > .62 ? 'desert' : 'mountains';
 }
-export function blockName(i, j) { const b = biomeOf(i, j), B = BIOMES[b]; return B.name || B.names[Math.floor(hash2(i, j, 11) * B.names.length)]; }
+export function blockName(i, j) {
+  const b = biomeOf(i, j), B = BIOMES[b];
+  if (b === 'airport') return !i && j === -1 ? 'Hometown Airport' : isStrip(i, j) ? STRIPS[Math.floor(hash2(i, j, 11) * STRIPS.length)] : B.names[Math.floor(hash2(i, j, 11) * B.names.length)];
+  return B.name || B.names[Math.floor(hash2(i, j, 11) * B.names.length)];
+}
+/* the airfield (runway + parking apron) in an airport block, local coords */
+export const FIELD = { x1: -78, x2: 64, z1: -78, z2: -7, runZ: -66 };
+/** the airport you're over (only the runway and apron count), or null */
+export function airportAt(x, z) {
+  const i = Math.round(x / CH), j = Math.round(z / CH); if (biomeOf(i, j) !== 'airport') return null;
+  const lx = x - i * CH, lz = z - j * CH;
+  return lx > FIELD.x1 && lx < FIELD.x2 && lz > FIELD.z1 && lz < FIELD.z2 ? { i, j, name: blockName(i, j) } : null;
+}
+/** where planes park at an airport (world coords; the planes face the runway) */
+export const SLOTS = { jumbo: [-52, -30], jet: [-24, -20], sky: [-6, -20], sea: [12, -20], heli: [30, -20] };
+export const slotAt = (i, j, kind) => ({ x: i * CH + SLOTS[kind][0], z: j * CH + SLOTS[kind][1], y: 0, yaw: Math.PI });
+export const runwayAt = (i, j) => ({ x: i * CH - 7, z: j * CH + FIELD.runZ });
 export const blockIcon = (i, j) => BIOMES[biomeOf(i, j)].icon;
 const LAKE = { x: -20, z: -48, r: 28 };
 
@@ -62,7 +89,9 @@ export function heightAt(x, z) {
   const rx = Math.abs(((x - VX) % CH + CH * 1.5) % CH - CH / 2), rz = Math.abs(((z % CH) + CH * 1.5) % CH - CH / 2); // distance to nearest roads
   const road = sstep(7, 24, Math.min(rx, rz));
   let n = fbm(x * .011, z * .011); n = amp > 20 ? Math.pow(n, 1.7) * 1.6 : n;
-  return amp * n * road - lake * road - 7 * sstep(.15, .8, sea) * road;
+  const h = amp * n * road - lake * road - 7 * sstep(.15, .8, sea) * road;
+  if (biomeOf(ci, cj) === 'airport') { const lx = x - ci * CH, lz = z - cj * CH; return h * (1 - sstep(-12, -2, -Math.max(FIELD.x1 - lx, lx - FIELD.x2, FIELD.z1 - lz, lz - FIELD.z2))); }
+  return h;
 }
 export const WATER_Y = -.45;
 /* height of a skyscraper roof at a point (a dome curves up in the middle) */
@@ -236,6 +265,7 @@ export function createWorld(town) {
     else if (biome === 'town') townBlock(P);
     else if (biome === 'lake') lakeBlock(P);
     else if (biome === 'sea') seaBlock(P);
+    else if (biome === 'airport') airportBlock(P);
     else wildBlock(P, biome);
 
     spawnItems(P, biome);
@@ -244,6 +274,54 @@ export function createWorld(town) {
     return C;
   }
 
+
+  /* ---- an airport: runway, parking apron, terminal with the plane desk, control tower, hangar ---- */
+  function airportBlock(P) {
+    const { g, r, col, C } = P, F = FIELD, strip = isStrip(C.i, C.j), name = blockName(C.i, C.j), home = !C.i && C.j === -1;
+    const flat = (w, d, mt, x, y, z) => { const o = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mt); o.rotation.x = -Math.PI / 2; o.position.set(x, y, z); o.receiveShadow = true; g.add(o); return o; };
+    const L = F.x2 - F.x1, cx = (F.x1 + F.x2) / 2;
+    const apron = mat('concrete', ['#bdbab2', 256, 77], 1, 1, { roughness: .95 }); apron.map.repeat.set(L / 8, 49 / 8);
+    const run = mat('asphalt', [], 1, 1, { roughness: .95 }); run.map.repeat.set(L / 6, 22 / 6);
+    flat(L, 49, apron, cx, .03, (-56 + F.z2) / 2);
+    flat(L, 22, run, cx, .04, F.runZ);
+    const white = std(0xf4f4f0, .7), yel = std(0xffc94a, .7);
+    for (let x = F.x1 + 16; x < F.x2 - 16; x += 9) flat(4.5, .4, white, x, .05, F.runZ); // centre line
+    [F.x1 + 3, F.x2 - 3].forEach(x => { for (let k = -4; k <= 4; k++) if (k) flat(5, .9, white, x, .05, F.runZ + k * 2.2); }); // the stripes at each end
+    [-1, 1].forEach(s => flat(L - 2, .3, white, cx, .05, F.runZ + s * 10.5));
+    [['09', F.x1 + 11, -Math.PI / 2], ['27', F.x2 - 11, Math.PI / 2]].forEach(([t, x, rot]) => { const n = flat(6, 3, new THREE.MeshStandardMaterial({ map: signTexture(t, { bg: null, fg: '#f4f4f0', font: '700 200px Arial', w: 512, h: 256 }), transparent: true, roughness: .8 }), x, .055, F.runZ); n.rotation.z = rot; });
+    flat(L - 4, .35, yel, cx, .05, -44); // taxi line along the apron
+    // little edge lights
+    const lights = new THREE.InstancedMesh(new THREE.BoxGeometry(.3, .4, .3), new THREE.MeshBasicMaterial({ color: 0x9fd2ff }), 64), m4 = new THREE.Matrix4(); let n = 0;
+    for (let x = F.x1 + 2; x < F.x2 && n < 62; x += 9) [-1, 1].forEach(s => { m4.makeTranslation(x, .2, F.runZ + s * 11.3); lights.setMatrixAt(n++, m4); });
+    lights.count = n; g.add(lights);
+    // parking spots painted on the apron
+    Object.values(SLOTS).forEach(([x, z]) => { flat(.3, 14, yel, x, .05, z - 6); flat(5, .3, yel, x, .05, z + 1); });
+    // windsock
+    const ws = new THREE.Group(); ws.add(box(.15, 6, .15, std(0x888888, .5, .6), 0, 3, 0)); const sock = new THREE.Mesh(new THREE.ConeGeometry(.6, 3, 12, 1, true), std(0xff7a1a, .8)); sock.rotation.z = Math.PI / 2; sock.position.set(1.5, 5.6, 0); ws.add(sock);
+    ws.position.set(F.x2 - 8, 0, F.runZ - 15); g.add(ws);
+    // terminal on the road, with the plane desk inside
+    const tw = strip ? 18 : 40, owner = robotName(r);
+    const t = roadBuilding(P, strip ? -30 : -20, SETBACK + (strip ? 7 : 10), Math.PI, { w: tw, d: strip ? 14 : 20, floors: strip ? 1 : 2, wall: strip ? ['brick', ['#b8875c', '#ded3c3']] : ['concrete', ['#d8dde3', 160]], awning: strip ? AWN[1] : AWN[3], sign: strip ? 'AIRSTRIP' : home ? 'HOMETOWN AIRPORT' : 'AIRPORT', owner });
+    const wpos = t.door.clone().add(V(P.ox, 0, P.oz));
+    C.doors.push({ pos: wpos, r: 2.4, label: '✈️ Go into the ' + (strip ? 'airstrip' : 'airport'), sub: 'The plane desk — switch planes here', fn: () => G.airportDesk && G.airportDesk({ i: C.i, j: C.j, name }) });
+    addBot(P, { x: t.door.x + 1.8, z: t.door.z - 1.6, face: Math.PI, name: owner, job: 'the airport greeter ✈️', owns: 'airport', say: 'Welcome to ' + name + '! Go inside to the plane desk to switch planes. Your planes can only land at airports!' });
+    if (!strip) { // control tower + hangar + a parking lot
+      const tx = 40, tz = 42, tower = new THREE.Group();
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.8, 22, 16), std(0xd8dde3, .6)); shaft.position.y = 11; shaft.castShadow = true; tower.add(shaft);
+      const cab = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 3.4, 3.2, 16), std(0x1f3a52, .1, .6)); cab.position.y = 23.6; tower.add(cab);
+      const capT = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.6, .5, 16), std(0xeeeeee, .6)); capT.position.y = 25.4; tower.add(capT);
+      tower.position.set(tx, 0, tz); g.add(tower); col(tx - 3, tx + 3, tz - 3, tz + 3, true);
+      const hx = -58, hz = 50, hg = new THREE.Group(), hm = std(0x8a9099, .5, .5);
+      const arch = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 22, 20, 1, false, 0, Math.PI), hm); arch.rotation.z = Math.PI / 2; arch.rotation.y = Math.PI / 2; arch.position.y = 0; hg.add(arch);
+      hg.add(box(14, 8, .2, std(0x2a2d33, .6), 0, 4, -11)); hg.position.set(hx, 0, hz); g.add(hg); col(hx - 9, hx + 9, hz - 11, hz + 11, true);
+      const cs = [0x9b1c1c, 0x1f3f7a, 0xd9d9d9, 0x2b2b2b, 0x3f6e5a];
+      for (let k = 0; k < 6; k++) { const c = car(cs[Math.floor(r() * cs.length)], r), x = 16 + k * 5; c.position.set(x, 0, 30); c.rotation.y = Math.PI / 2; g.add(c); col(x - 1, x + 1, 27.7, 32.3); }
+    }
+    // robot pilots, and a robot's own plane that isn't yours
+    addBot(P, { path: [[-40, -12], [40, -12]], job: 'a pilot walking to the plane 🧑‍✈️', pause: 3 });
+    if (!home) { const rp = makePlane(strip ? 'sky' : r() < .5 ? 'jumbo' : 'jet'); const big = rp.userData.outside; rp.position.set(big ? 48 : 50, 0, big ? -34 : -22); rp.rotation.y = Math.PI + .3; g.add(rp); col(46, 54, -26, -18); addBot(P, { x: 44, z: -14, face: Math.PI, job: 'washing the plane 🧽', say: 'This plane isn’t yours, it’s mine! Yours are at the plane desk inside.' }); }
+    else addBot(P, { x: -44, z: -12, face: Math.PI, job: 'looking after your planes 🔧', say: 'All your planes are parked right here. Walk up to a door to get on!' });
+  }
 
   function seaBlock(P) {
     const { g, r, m, col, hAt, C } = P;

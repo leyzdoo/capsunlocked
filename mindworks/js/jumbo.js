@@ -91,7 +91,7 @@ export function drawMap(canvas, px, pz, R = 4) {
   const step = 6, img = c.createImageData(canvas.width, canvas.height);
   for (let y = 0; y < canvas.height; y += step) for (let x = 0; x < canvas.width; x += step) {
     const wx = (ci + R) * CH + CH / 2 - x / S * CH, wz = (cj + R) * CH + CH / 2 - y / S * CH, h = heightAt(wx, wz), b = biomeOf(Math.round(wx / CH), Math.round(wz / CH));
-    let col = h < WATER_Y ? [70 - h * 4, 150 - h * 6, 220] : b === 'desert' ? [232, 196, 120] : h > 30 ? [235, 240, 248] : h > 12 ? [128, 128, 120] : (b === 'city' || b === 'suburb' || b === 'town' || b === 'home') ? [170, 176, 160] : [96 + h * 3, 170 - h * 2, 90];
+    let col = h < WATER_Y ? [70 - h * 4, 150 - h * 6, 220] : b === 'desert' ? [232, 196, 120] : h > 30 ? [235, 240, 248] : h > 12 ? [128, 128, 120] : b === 'airport' ? [150, 150, 158] : (b === 'city' || b === 'suburb' || b === 'town' || b === 'home') ? [170, 176, 160] : [96 + h * 3, 170 - h * 2, 90];
     for (let yy = 0; yy < step; yy++) for (let xx = 0; xx < step; xx++) { const k = ((y + yy) * canvas.width + x + xx) * 4; if (k < img.data.length) { img.data[k] = col[0]; img.data[k + 1] = col[1]; img.data[k + 2] = col[2]; img.data[k + 3] = 255; } }
   }
   c.putImageData(img, 0, 0);

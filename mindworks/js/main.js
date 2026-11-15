@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
-import { createWorld, WATER_Y, blockName, roofY } from './world.js';
+import { createWorld, WATER_Y, blockName, roofY, biomeOf, airportAt, slotAt, runwayAt } from './world.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { SEATS, drawMap } from './jumbo.js';
@@ -105,7 +105,7 @@ async function boot() {
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
     interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs(), parkedActs()); },
     update(dt) { const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
-      town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
+      town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); syncT += dt; if (syncT > .5) { syncT = 0; syncPlanes(); } }
   };
   // warm-up render so the first frame after sign-in is quick
   player = makeCharacter('player', 0x3f7fd9); placeInTown(town.spawn.pos, town.spawn.yaw);
@@ -329,10 +329,10 @@ function refreshRideBtn() {
   const show = !!(u && out && (landed || (u.car && !(ride && (ride.type === 'boat' || flying)))));
   b.classList.toggle('hide', !show);
   if (show) b.textContent = landed ? '🚶 Get out' : ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
-  $('flyBtn').classList.toggle('hide', !(u && u.planeKind && out && !ride)); if (u && u.planeKind) $('flyBtn').textContent = '✈️ Board the ' + PLANES[u.planeKind].name;
+  $('flyBtn').classList.toggle('hide', !(u && (u.planes || []).length && out && !ride)); $('flyBtn').textContent = '✈️ My planes';
   const relax = flying && ride.relax != null, big = flying && PLANES[ride.kind].big;
   $('wheel').classList.toggle('hide', !flying || relax); $('lever').classList.toggle('hide', !flying || relax);
-  $('jumboBtns').classList.toggle('hide', !big); $('autoChip').classList.toggle('hide', !(big && ride.auto));
+  $('jumboBtns').classList.toggle('hide', !flying); $('autoChip').classList.toggle('hide', !(flying && ride.auto)); $('relaxBtn').classList.toggle('hide', !big);
   if (big) { $('relaxBtn').textContent = relax ? '🪑 Change seat (' + SEATS[ride.relax].name + ')' : '🛋️ Relax in the back'; $('cockpitBtn').classList.toggle('hide', !relax); }
 }
 /* ---------------- the plane: steering wheel + height lever ---------------- */
@@ -371,6 +371,11 @@ function flyStep(dt) {
   ride.onRoof = roof > ground + 2 && Math.abs(p.y - roof) < .4;
   let target = floor + flight.lever * PL.top;
   ride.onWater = wet && PL.water && ride.alt < .3;
+  const onRoofTop = roof > ground + 2 && roof < p.y + .5;
+  if (flight.lever < .08 && !canLand(p, PL, wet, onRoofTop) && !(ride.alt < .3 && ride.v < 1)) { // no landing here — hover until you reach an airport
+    target = Math.max(target, floor + 8);
+    if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast(PL.heli ? '🛬 Helicopters land at airports or on skyscraper roofs!' : '🛬 Planes can only land at an airport! Tap 🗺️ Map to find one.'); }
+  }
   if (wet && !PL.water && flight.lever < .05) { target = WATER_Y + 3; if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast('🌊 Can’t land on water — fly to land first!'); } }
   const air = ride.alt > .3;
   // speed: rolls on the runway, flies at full speed in the air, stops when it lands with the lever down
@@ -415,9 +420,9 @@ function openMap() {
   openPanel('🗺️ Where do you want to go?', body => {
     const wrap = el('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:10px' });
     const cv = el('canvas', { width: 540, height: 540, style: 'width:min(540px,100%);border-radius:16px;touch-action:none;cursor:crosshair' });
-    const info = el('p', { style: 'margin:0;color:var(--muted);font-weight:700;text-align:center' }, 'Tap anywhere on land. North is up. ✈️ is you.');
+    const info = el('p', { style: 'margin:0;color:var(--muted);font-weight:700;text-align:center' }, 'Tap an airport 🛫 to fly there. North is up. ✈️ is you.');
     const row = el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap;justify-content:center' });
-    const go = el('button', { class: 'btn go', disabled: '' }, '🤖 Autopilot — fly me there'), home = el('button', { class: 'btn primary' }, '🏠 Fly me home');
+    const go = el('button', { class: 'btn go', disabled: '' }, '🤖 Autopilot — fly me there'), home = el('button', { class: 'btn primary' }, '🏠 Fly to Hometown Airport');
     row.appendChild(go); row.appendChild(home); wrap.appendChild(cv); wrap.appendChild(info); wrap.appendChild(row); body.appendChild(wrap);
     const p = player.root.position, M = drawMap(cv, p.x, p.z), base = cv.getContext('2d').getImageData(0, 0, 540, 540); let dest = null;
     function marks() {
@@ -428,14 +433,16 @@ function openMap() {
     marks();
     cv.addEventListener('pointerdown', e => {
       const r = cv.getBoundingClientRect(), w = M.toWorld((e.clientX - r.left) / r.width * 540, (e.clientY - r.top) / r.height * 540);
-      if (world.heightAt(w.x, w.z) < WATER_Y + .1) { info.textContent = '🌊 That’s water — pick a spot on land so the 747 can land.'; return; }
-      const bi = Math.round(w.x / 160), bj = Math.round(w.z / 160);
-      dest = { x: w.x, z: w.z, name: !bi && !bj ? 'Home' : blockName(bi, bj) };
+      // planes can only land at airports, so pick the airport closest to where you tapped
+      const ti = Math.round(w.x / 160), tj = Math.round(w.z / 160); let best = null, bd = 1e9;
+      for (let i = ti - 3; i <= ti + 3; i++) for (let j = tj - 3; j <= tj + 3; j++) { if (biomeOf(i, j) !== 'airport') continue; const rw = runwayAt(i, j), d = Math.hypot(rw.x - w.x, rw.z - w.z); if (d < bd) { bd = d; best = { ...rw, name: blockName(i, j) }; } }
+      if (!best) { info.textContent = 'No airport near there — look for a 🛫 on the map.'; return; }
+      dest = best;
       info.textContent = '📍 ' + dest.name + ' — ' + Math.round(Math.hypot(w.x - p.x, w.z - p.z)) + ' m away'; go.disabled = false; marks();
     });
-    const fly = d => { ride.auto = d; if (flight.lever < .1) setLever(.15); closePanel(); toast('🤖 Autopilot on — flying to ' + d.name + '. Relax in the back if you like!'); refreshRideBtn(); };
+    const fly = d => { ride.auto = d; if (flight.lever < .1) setLever(.15); closePanel(); toast('🤖 Autopilot on — flying to ' + d.name + (PLANES[ride.kind].big ? '. Relax in the back if you like!' : '. Sit back and enjoy the view!')); refreshRideBtn(); };
     go.onclick = () => dest && fly(dest);
-    home.onclick = () => { const d = town.doors.find(x => x.id === 'home'); fly({ x: d.pos.x, z: d.pos.z - 30, name: 'Home' }); };
+    home.onclick = () => fly({ ...runwayAt(HOME_AP.i, HOME_AP.j), name: HOME_AP.name });
   });
 }
 function setSeat(i) {
@@ -448,7 +455,7 @@ function setSeat(i) {
 $('mapBtn').onclick = () => { if (ride && ride.type === 'plane') openMap(); };
 $('relaxBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(ride.relax == null ? 0 : (ride.relax + 1) % SEATS.length); };
 $('cockpitBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(null); };
-$('flyBtn').onclick = () => { const u = G.S.data.up; if (!ride && u.planeKind && active === townPlace) G.boardPlane(u.planeKind); };
+$('flyBtn').onclick = () => { if (!ride && active === townPlace) myPlanes(); };
 $('rideBtn').onclick = () => {
   if (ride && ride.type === 'plane') return modal({ big: '✈️', title: 'You landed!', text: 'What do you want to do?', acts: [
     { label: '🚪 Walk inside the plane', cls: 'go', fn: () => { const k = ride.kind; park(k, player.root.position, player.root.rotation.y); stopRide(true); G.boardPlane(k); } },
@@ -456,35 +463,87 @@ $('rideBtn').onclick = () => {
     { label: 'Stay in the cockpit', cls: 'ghost' }] });
   if (ride) stopRide(false); else if (G.S.data.up.car) startRide('car', G.S.data.up.car);
 };
-/* ---------- a plane parked on the ground: walk aboard it, then fly it from the cockpit ---------- */
-let parked = null;
-function park(kind, pos, yaw) {
-  unpark();
-  const mesh = makePlane(kind); mesh.position.copy(pos); mesh.rotation.y = yaw; town.scene.add(mesh);
-  parked = { kind, pos: pos.clone(), yaw, mesh };
+/* ---------- planes wait at airports: all of them at Hometown Airport, unless you left one somewhere else ---------- */
+const HOME_AP = { i: 0, j: -1, name: 'Hometown Airport' };
+const spots = () => G.S.data.up.planeSpots || (G.S.data.up.planeSpots = {});
+function spotOf(kind) { const s = spots()[kind]; return s || slotAt(HOME_AP.i, HOME_AP.j, kind); }
+function park(kind, pos, yaw) { spots()[kind] = { x: pos.x, y: pos.y, z: pos.z, yaw }; save(true); syncPlanes(true); }
+const shown = new Map(); // kind → { mesh, key }
+let syncT = 0;
+function syncPlanes(force) {
+  if (!town || !G.S.data) return;
+  const p = player.root.position, owned = G.S.data.up.planes || [];
+  for (const [k, o] of shown) {
+    const s = spotOf(k), key = s.x + ',' + s.z + ',' + s.yaw;
+    if (!owned.includes(k) || (ride && ride.type === 'plane' && ride.kind === k) || o.key !== key || Math.hypot(s.x - p.x, s.z - p.z) > 280) { town.scene.remove(o.mesh); o.mesh.traverse(m => { if (m.isMesh) m.geometry.dispose(); }); shown.delete(k); }
+  }
+  for (const k of owned) {
+    if (shown.has(k) || (ride && ride.type === 'plane' && ride.kind === k)) continue;
+    const s = spotOf(k); if (Math.hypot(s.x - p.x, s.z - p.z) > 250) continue;
+    const mesh = makePlane(k); mesh.position.set(s.x, s.y || world.heightAt(s.x, s.z), s.z); mesh.rotation.y = s.yaw; town.scene.add(mesh);
+    shown.set(k, { mesh, key: s.x + ',' + s.z + ',' + s.yaw });
+  }
 }
-function unpark() { if (!parked) return; town.scene.remove(parked.mesh); parked.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); }); parked = null; }
-function planeSpot(pk, lx, lz) { const c = Math.cos(pk.yaw), sn = Math.sin(pk.yaw); return new THREE.Vector3(pk.pos.x + c * lx + sn * lz, pk.pos.y, pk.pos.z - sn * lx + c * lz); }
-function doorOut(pk) { const [lx, lz] = DOOR_OUT[pk.kind] || [2, 0], c = Math.cos(pk.yaw), sn = Math.sin(pk.yaw); return { pos: planeSpot(pk, lx, lz), facing: Math.atan2(c, -sn) }; }
+function planeSpot(pk, lx, lz) { const c = Math.cos(pk.yaw), sn = Math.sin(pk.yaw); return new THREE.Vector3(pk.x + c * lx + sn * lz, pk.y || 0, pk.z - sn * lx + c * lz); }
+function doorOut(kind) { const pk = spotOf(kind), [lx, lz] = DOOR_OUT[kind] || [2, 0], c = Math.cos(pk.yaw), sn = Math.sin(pk.yaw); return { pos: planeSpot(pk, lx, lz), facing: Math.atan2(c, -sn) }; }
 function parkedActs() {
-  if (!parked || ride) return [];
-  const d = doorOut(parked), big = PLANES[parked.kind].big;
-  return [{ pos: d.pos, r: big ? 4 : 2.6, label: '🚪 Walk aboard the ' + PLANES[parked.kind].name, sub: 'Go inside — then sit in the cockpit to fly', fn: () => G.boardPlane(parked.kind) }];
+  if (ride) return [];
+  const out = [];
+  for (const k of shown.keys()) { const d = doorOut(k); out.push({ pos: d.pos, r: PLANES[k].big ? 4 : 2.6, label: '🚪 Walk aboard the ' + PLANES[k].name, sub: 'Go inside — then sit in the cockpit to fly', fn: () => G.boardPlane(k) }); }
+  return out;
 }
-G.boardPlane = kind => {
-  const p = player.root.position;
-  if (!parked || parked.kind !== kind || Math.hypot(parked.pos.x - p.x, parked.pos.z - p.z) > 40) park(kind, p, player.root.rotation.y);
-  G.enterRoom('cabin', { data: { kind }, doorObj: doorOut(parked) });
-};
+G.boardPlane = kind => { G.S.data.up.planeKind = kind; save(true); G.enterRoom('cabin', { data: { kind }, doorObj: doorOut(kind) }); };
 G.takeOff = async () => {
-  const pk = parked; if (!pk) return G.backToTown();
-  await G.backToTown(doorOut(pk));
-  unpark(); player.root.position.copy(pk.pos); player.root.rotation.y = pk.yaw;
-  startRide('plane', pk.kind); cam.yaw = cam.tYaw = pk.yaw + Math.PI; cam.target.copy(pk.pos);
+  const kind = G.S.data.up.planeKind; if (!kind) return G.backToTown();
+  const pk = spotOf(kind); await G.backToTown(doorOut(kind));
+  player.root.position.set(pk.x, pk.y || world.heightAt(pk.x, pk.z), pk.z); player.root.rotation.y = pk.yaw;
+  startRide('plane', kind); syncPlanes(true); cam.yaw = cam.tYaw = pk.yaw + Math.PI; cam.target.copy(player.root.position);
 };
+/* where is each plane? */
+function whereIs(kind) {
+  const s = spotOf(kind), ap = airportAt(s.x, s.z);
+  return ap ? ap.name : 'out in ' + blockName(Math.round(s.x / 160), Math.round(s.z / 160));
+}
+function dirTo(x, z) {
+  const p = player.root.position, dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz);
+  if (d < 90) return 'right here';
+  const blocks = Math.max(1, Math.round(d / 160)), ns = dz < -Math.abs(dx) * .4 ? 'north' : dz > Math.abs(dx) * .4 ? 'south' : '', ew = dx > Math.abs(dz) * .4 ? 'west' : dx < -Math.abs(dz) * .4 ? 'east' : '';
+  return blocks + ' block' + (blocks > 1 ? 's' : '') + ' ' + (ns + ew || 'away');
+}
+function myPlanes() {
+  const owned = G.S.data.up.planes || [];
+  openPanel('✈️ My planes', body => {
+    if (!owned.length) { body.appendChild(el('p', { style: 'color:var(--muted);font-weight:700' }, 'You don’t have a plane yet — they’re free at the Game Store!')); return; }
+    body.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 12px' }, 'Planes wait at airports. Walk up to a plane’s door to get on. You can only land at an airport.'));
+    const box = el('div', { class: 'prog' });
+    owned.forEach(k => { const s = spotOf(k); box.appendChild(el('div', { class: 'prow' }, '<b>' + PLANES[k].name + '</b><span style="flex:1;text-align:right;color:#ffd34d">🛫 ' + whereIs(k) + ' · ' + dirTo(s.x, s.z) + '</span>')); });
+    body.appendChild(box);
+    const hd = dirTo(HOME_AP.i * 160, HOME_AP.j * 160 - 40);
+    body.appendChild(el('p', { class: 'note' }, 'Hometown Airport is just north of your house' + (hd === 'right here' ? ' — you’re there!' : ' (' + hd + ').') + ' Any airport’s plane desk can bring a plane to you.'));
+  });
+}
+/* the plane desk inside every airport: bring any of your planes here */
+G.airportDesk = ap => {
+  const owned = G.S.data.up.planes || [];
+  openPanel('✈️ ' + ap.name + ' — plane desk', body => {
+    if (!owned.length) { body.appendChild(el('p', { style: 'color:var(--muted);font-weight:700' }, 'You don’t have any planes yet. Get free planes at the Game Store, and they’ll wait for you at Hometown Airport.')); return; }
+    body.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 12px' }, '🤖 “Which plane would you like? I’ll have it parked out front in a jiffy!”'));
+    const list = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
+    owned.forEach(k => {
+      const s = spotOf(k), here = (() => { const a = airportAt(s.x, s.z); return a && a.i === ap.i && a.j === ap.j; })();
+      const row = el('div', { class: 'prow', style: 'gap:12px' }, '<b>' + PLANES[k].name + '</b><span style="flex:1;color:var(--muted)">' + (here ? '✅ Parked here' : '🛫 ' + whereIs(k)) + '</span>');
+      const b = el('button', { class: 'btn ' + (here ? 'ghost' : 'go') }, here ? 'It’s outside' : 'Bring it here');
+      b.onclick = () => { const t = slotAt(ap.i, ap.j, k); park(k, new THREE.Vector3(t.x, 0, t.z), t.yaw); G.S.data.up.planeKind = k; save(true); closePanel(); toast('🛬 Your ' + PLANES[k].name + ' just landed at ' + ap.name + ' — it’s parked out on the apron. Walk to its door!'); };
+      if (here) b.onclick = () => { closePanel(); toast('✈️ Your ' + PLANES[k].name + ' is parked out on the apron behind the terminal.'); };
+      row.appendChild(b); list.appendChild(row);
+    });
+    body.appendChild(list);
+  });
+};
+/* planes can only land at airports (the helicopter can land on skyscraper roofs too; the seaplane on water) */
+function canLand(p, PL, wet, onRoofTop) { return !!airportAt(p.x, p.z) || (PL.heli && onRoofTop) || (PL.water && wet); }
 function goHome() {
-  if (ride) stopRide(true);
-  unpark();
+  if (ride) { const wasPlane = ride.type === 'plane' && ride.kind; stopRide(true); if (wasPlane) { delete spots()[wasPlane]; save(true); } }
   const d = town.doors.find(x => x.id === 'home'); placeInTown(d.pos.clone().add(new THREE.Vector3(0, 0, -1.5)), Math.PI); toast('🏠 Back home!');
 }
 G.refreshBag = () => { if (!G.S.data) return; $('hudBag').textContent = '🎒 ' + bagCount() + '/' + capacity(); refreshRideBtn(); };
@@ -565,7 +624,7 @@ function showProgress(first) {
   });
 }
 
-if (Store.local) window.__mw = { G, cam, camera, get parked() { return parked; }, get ride() { return ride; }, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
+if (Store.local) window.__mw = { G, cam, camera, get shown() { return shown; }, get ride() { return ride; }, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
 initLogin();
 boot().catch(err => { console.error(err); setProgress(1, 'Something went wrong loading Mindworks: ' + err.message); });
 addEventListener('visibilitychange', () => { if (document.hidden) flush(); });

@@ -27,7 +27,7 @@ export const ITEMS = {
   wood: { name: 'Wood', icon: '🪵', value: 1 }, gem: { name: 'Gem', icon: '💎', value: 5 }, fossil: { name: 'Fossil', icon: '🦴', value: 4 },
   shell: { name: 'Seashell', icon: '🐚', value: 3 }, gold: { name: 'Gold nugget', icon: '✨', value: 6 }
 };
-export const BIOME_ITEMS = { home: ['gear', 'apple'], city: ['crate', 'gear'], suburb: ['apple', 'crate'], town: ['apple', 'gear', 'crate'], hills: ['wood', 'apple'], mountains: ['gem', 'wood', 'gem'], desert: ['fossil', 'gold', 'fossil'], lake: ['shell', 'wood'], sea: ['shell', 'shell', 'gem'] };
+export const BIOME_ITEMS = { home: ['gear', 'apple'], city: ['crate', 'gear'], suburb: ['apple', 'crate'], town: ['apple', 'gear', 'crate'], hills: ['wood', 'apple'], mountains: ['gem', 'wood', 'gem'], desert: ['fossil', 'gold', 'fossil'], lake: ['shell', 'wood'], sea: ['shell', 'shell', 'gem'], airport: ['gear', 'crate'] };
 export const BAG = 5;
 export const TELEPORTER_PRICE = 5;
 export const capacity = () => BAG + (G.S.data.up.car ? CARS[G.S.data.up.car].trunk : 0);
