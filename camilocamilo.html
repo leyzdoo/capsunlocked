@@ -46,7 +46,7 @@
   .brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
   .legend{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:4px}
-  .dot.a{background:var(--ale)} .dot.b{background:linear-gradient(90deg,#2E9E5B 0 50%,#2F6FDE 50% 100%)} .dot.j{background:var(--james)} .dot.o{background:#fff;border:2px solid var(--open)}
+  .dot.a{background:var(--ale)} .dot.b{background:#2F6FDE;box-shadow:inset 5px 0 0 #2E9E5B} .dot.j{background:var(--james)} .dot.o{background:#fff;border:2px solid var(--open)}
   .dot.ring{background:#fff;border:3px solid var(--ink)}
   .me{font-size:11px;color:var(--faint);margin-top:6px}
   .me b{color:var(--ink);font-weight:600}
@@ -132,7 +132,18 @@
   .st-proposed .ball{background:#fff!important;border-width:5px}
   .cell.st-proposed.mine .meta{color:var(--muted)}
   .cell.st-proposed.theirs .meta{color:#C2410C;font-weight:600}
-  .cell.st-confirmed .meta{color:var(--ink)}
+  .cell.st-confirmed .meta{color:var(--ink);font-weight:600}
+  .rconf{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
+  .rconf .lab{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+  .rconf .lab.ok{color:var(--ink)}
+  .chip{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:20px;border:1px solid var(--line);color:var(--faint);background:#fff;white-space:nowrap}
+  .chip.a.on{background:var(--ale-soft);border-color:var(--ale-line);color:#1E6B3E}
+  .chip.j.on{background:var(--james-soft);border-color:var(--james-line);color:#1F4FA8}
+  .cbtn{font:inherit;font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;margin-left:4px}
+  .cbtn.me-ABB{background:var(--ale);border-color:var(--ale)} .cbtn.me-JL{background:var(--james);border-color:var(--james)}
+  .cbtn.undo{background:#fff;color:var(--muted);border-color:var(--line)}
+  .cbtn:disabled{background:#F3F4F6;border-color:var(--line);color:var(--faint);cursor:default}
+  .row.done{box-shadow:0 0 0 1px rgba(28,35,48,.06), 0 2px 10px rgba(28,35,48,.05)}
   .cell.flash{animation:fl .6s}
   @keyframes fl{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
 
@@ -163,6 +174,7 @@
     .cell .dt{font-size:14px}
     .tg{max-width:54px}
   }
+  @media (max-width:640px){ .chip{font-size:11px;padding:3px 8px} .rconf .lab{font-size:10px} .cbtn{padding:6px 12px} }
   @media (max-width:380px){ :root{--cw:56px} .cell.extra{--cw:52px} }
 </style>
 </head>
@@ -195,13 +207,13 @@
     <div class="hwrap">
       <div class="brand">
         <h1>Camilo · 2027</h1>
-        <div class="sub">Weekends &amp; weeks off — tap left, right, or middle (middle twice = Both)</div>
+        <div class="sub">Tap left / right / middle (middle twice = Both). Nothing is final until both of you tap Confirm.</div>
         <div class="legend">
           <span><span class="dot a"></span>Ale</span>
           <span><span class="dot b"></span>Both</span>
           <span><span class="dot o"></span>Undetermined</span>
           <span><span class="dot j"></span>James</span>
-          <span class="hint" style="color:var(--faint)">· solid = agreed · ring = proposed</span>
+          <span class="hint" style="color:var(--faint)">· ring = proposal · solid = confirmed by both</span>
         </div>
         <div class="me" id="meLine"></div>
       </div>
@@ -327,31 +339,50 @@ function load(){
 function save(){ try { localStorage.setItem(LS, JSON.stringify(S)); } catch(e){} }
 const endpoint = () => (S.endpoint || DEFAULT_ENDPOINT || "").trim();
 
+// A day is a PROPOSAL until both parents confirm it. Any change to a day clears its confirmations.
+// plan[k] = { who, by, at, updated, cJL, cABB }   (cJL / cABB = timestamp when that parent confirmed)
 function eff(k){
   const p = S.plan[k];
   if (p) {
-    if (p.status === "cleared" || !p.who) return { who:"", status:"open" };
-    return { who:p.who, status:p.status, by:p.by, cby:p.confirmedBy };
+    if (p.status === "cleared" || !p.who) return { who:"", status:"open", cJL:"", cABB:"" };
+    const cJL = p.cJL || "", cABB = p.cABB || "";
+    return { who:p.who, by:p.by, cJL, cABB, src:"plan", status:(cJL && cABB) ? "confirmed" : "proposed" };
   }
-  if (S.compas[k]) return { who:S.compas[k], status:"compas" };
-  return { who:"", status:"open" };
+  if (S.compas[k]) return { who:S.compas[k], by:"compas", cJL:"", cABB:"", src:"compas", status:"proposed" };
+  return { who:"", status:"open", cJL:"", cABB:"" };
 }
 
 function setDay(k, v){
   const cur = eff(k), now = stamp(), me = S.me;
-  if (v === "") {
-    if (cur.who === "") return false;
-    S.plan[k] = { who:"", status:"cleared", by:me, at:now, updated:now };
-  } else if (cur.who === v) {
-    if ((cur.status === "proposed" && cur.by !== me) || cur.status === "compas") {
-      const p = S.plan[k] || { who:v, by:"compas", at:now };
-      S.plan[k] = { ...p, who:v, status:"confirmed", confirmedBy:me, confirmedAt:now, updated:now };
-    } else return false;
-  } else {
-    S.plan[k] = { who:v, status:"proposed", by:me, at:now, updated:now };
-  }
+  if (v === cur.who) return false;
+  S.plan[k] = v === ""
+    ? { who:"", status:"cleared", by:me, at:now, updated:now, cJL:"", cABB:"" }
+    : { who:v, status:"proposed", by:me, at:now, updated:now, cJL:"", cABB:"" };
   S.pending[k] = true;
   return true;
+}
+
+// Confirm (or withdraw) the signed-in parent's ✓ on every set day in a row
+function confirmRow(r, on){
+  const now = stamp(), field = "c" + S.me, did = [];
+  r.all.forEach(k => {
+    const e = eff(k); if (!e.who) return;
+    if (!!e[field] === on) return;
+    const base = S.plan[k] && S.plan[k].status !== "cleared" ? S.plan[k] : { who:e.who, by:"compas", at:now, cJL:"", cABB:"" };
+    S.plan[k] = { ...base, [field]: on ? now : "", updated:now };
+    S.plan[k].status = (S.plan[k].cJL && S.plan[k].cABB) ? "confirmed" : "proposed";
+    S.pending[k] = true; did.push(k);
+  });
+  return did;
+}
+
+// Row summary: which set days each parent has confirmed
+function rowConf(r){
+  const set = r.all.filter(k => eff(k).who);
+  const has = f => set.length > 0 && set.every(k => eff(k)[f]);
+  const n = f => set.filter(k => eff(k)[f]).length;
+  const coreSet = r.core.every(k => eff(k).who);
+  return { set:set.length, JL:has("cJL"), ABB:has("cABB"), nJL:n("cJL"), nABB:n("cABB"), done: coreSet && has("cJL") && has("cABB") };
 }
 
 /* ================= rows ================= */
@@ -427,30 +458,36 @@ function renderAll(){
         <div class="side r">${r.right.length === 1 ? cellHTML(r.right[0], true) : ""}</div>
       </div>
       ${strip(r.right, true)}
+      <div class="rconf" data-row="${r.fri}">
+        <span class="lab">Proposal</span>
+        <span class="chip a">Alejandra ○</span><span class="chip j">James ○</span>
+        <button class="cbtn" type="button">Confirm</button>
+      </div>
     </section>`;
   });
   list.innerHTML = html;
   paint();
 }
 
-const initial = c => c === "JL" ? "J" : c === "ABB" ? "A" : "";
 function paint(){
   const me = S.me;
   document.querySelectorAll(".cell").forEach(el => {
     const k = el.dataset.k, e = eff(k);
-    el.classList.remove("s-ale","s-james","s-both","st-proposed","st-confirmed","st-compas","mine","theirs");
+    el.classList.remove("s-ale","s-james","s-both","st-proposed","st-confirmed","mine","theirs");
     if (e.who) el.classList.add("s-" + e.who);
     if (e.status !== "open") el.classList.add("st-" + e.status);
     let meta = "";
-    if (e.status === "proposed") { const mine = e.by === me; el.classList.add(mine ? "mine" : "theirs"); meta = mine ? "sent" : `${initial(e.by)} · tap ✓`; }
-    else if (e.status === "confirmed") meta = "✓ agreed";
-    else if (e.status === "compas") meta = "Compás";
+    if (e.status === "confirmed") meta = "✓ both";
+    else if (e.status === "proposed") {
+      if (e.cJL || e.cABB) meta = `${e.cABB ? "A✓" : "A○"} ${e.cJL ? "J✓" : "J○"}`;
+      else meta = e.src === "compas" ? "Compás" : "proposal";
+    }
     el.querySelector(".meta").textContent = meta;
     el.querySelector(".wh").textContent = SHORT[e.who];
   });
 
   const c = { W:{ale:0,james:0,both:0,open:0,split:0}, D:{ale:0,james:0,both:0,open:0}, H:{ale:0,james:0,both:0,open:0} };
-  let awaitMe = 0;
+  let awaitMe = 0, confirmedWknds = 0;
   ROWS.forEach(r => {
     const rowEl = document.getElementById("r-" + r.fri); if (!rowEl) return;
     const core = r.core.map(k => eff(k).who);
@@ -472,21 +509,36 @@ function paint(){
     if (rs === "split") rall.classList.add("s-mixed"); else if (rs) rall.classList.add("s-" + rs);
     pill.textContent = rs === "split" ? "Split" : (NAME[rs] + (rs && r.all.length > 3 && uniq.size === 1 ? ` · all ${r.all.length}` : ""));
 
-    let rowAwait = 0;
     r.all.forEach(k => {
       const e = eff(k), bucket = e.who || "open";
       c.D[bucket]++;
       if (OFF[k] && OFF[k].kind === "hol") c.H[bucket]++;
-      if (e.status === "proposed" && e.by && e.by !== me) { awaitMe++; rowAwait++; }
     });
+    const rc = rowConf(r), mine = rc[me], other = me === "JL" ? rc.ABB : rc.JL;
+    if (rc.done) confirmedWknds++;
+    const needsMe = rc.set > 0 && !mine;
+    if (needsMe) awaitMe++;
     const t = rowEl.querySelector(".tag.await");
-    t.classList.toggle("hidden", !rowAwait);
-    t.textContent = rowAwait ? `${rowAwait} to confirm` : "";
+    t.classList.toggle("hidden", !(needsMe && other));
+    t.textContent = (needsMe && other) ? `${me === "JL" ? "Ale" : "James"} confirmed — your turn` : "";
+    rowEl.classList.toggle("done", rc.done);
+    const bar = rowEl.querySelector(".rconf");
+    const lab = bar.querySelector(".lab");
+    lab.textContent = rc.done ? "✓ Confirmed" : rc.set ? "Proposal" : "Nothing set";
+    lab.classList.toggle("ok", rc.done);
+    const ca = bar.querySelector(".chip.a"), cj = bar.querySelector(".chip.j");
+    const mark = (all, n) => all ? "✓" : n ? `${n}/${rc.set}` : "○";
+    ca.classList.toggle("on", rc.ABB); ca.textContent = `Alejandra ${mark(rc.ABB, rc.nABB)}`;
+    cj.classList.toggle("on", rc.JL);  cj.textContent = `James ${mark(rc.JL, rc.nJL)}`;
+    const btn = bar.querySelector(".cbtn");
+    btn.className = "cbtn" + (mine ? " undo" : " me-" + me);
+    btn.disabled = rc.set === 0;
+    btn.textContent = rc.set === 0 ? "Confirm" : mine ? "Undo my ✓" : "Confirm";
   });
   const set = (id, v) => { $(id).textContent = v; };
   for (const [g, o] of Object.entries(c)) { set(`#c${g}a`, o.ale); set(`#c${g}b`, o.both); set(`#c${g}o`, o.open); set(`#c${g}j`, o.james); }
-  set("#cSplit", c.W.split ? `${c.W.split} split wknd${c.W.split > 1 ? "s" : ""}` : "");
-  set("#cAwait", awaitMe ? `${awaitMe} awaiting you` : "");
+  set("#cSplit", `${confirmedWknds} confirmed` + (c.W.split ? ` · ${c.W.split} split` : ""));
+  set("#cAwait", awaitMe ? `${awaitMe} need your ✓` : "");
   $("#meLine").innerHTML = `Signed in as <b>${me === "JL" ? "James" : "Alejandra"}</b>`;
 }
 
@@ -496,13 +548,7 @@ function zone(el, clientX){
   return x < 1/3 ? "ale" : x > 2/3 ? "james" : "mid";
 }
 // Middle tap: Undetermined → Both → Undetermined. From Ale/James it goes back to Undetermined.
-// If the other parent proposed Both, a middle tap agrees to it.
-function midTarget(k){
-  const e = eff(k);
-  if (e.who === "") return "both";
-  if (e.who === "both" && e.status === "proposed" && e.by !== S.me) return "both";
-  return "";
-}
+function midTarget(k){ return eff(k).who === "" ? "both" : ""; }
 const NAME = { ale:"Alejandra", james:"James", both:"Both", "":"Undetermined" };
 const SHORT = { ale:"Ale", james:"James", both:"Both", "":"" };
 function changed(keys){
@@ -510,15 +556,19 @@ function changed(keys){
   keys.forEach(k => { const el = document.querySelector(`.cell[data-k="${k}"]`); if (el){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); } });
 }
 list.addEventListener("click", ev => {
+  const cbtn = ev.target.closest(".cbtn");
+  if (cbtn) {
+    const r = ROWS.find(x => x.fri === cbtn.closest(".rconf").dataset.row);
+    const on = !rowConf(r)[S.me];
+    const did = confirmRow(r, on);
+    if (did.length) { changed(did); const rc = rowConf(r); toast(on ? (rc.done ? "Confirmed by both ✓" : "Your ✓ added — waiting on the other parent") : "Your ✓ removed"); }
+    return;
+  }
   const rowTg = ev.target.closest(".rall .tg");
   if (rowTg) {
     const r = ROWS.find(x => x.fri === rowTg.dataset.row), z = zone(rowTg, ev.clientX);
     let v = z;
-    if (z === "mid") {
-      const whos = r.all.map(k => eff(k).who);
-      const awaitingBoth = r.all.some(k => { const e = eff(k); return e.who === "both" && e.status === "proposed" && e.by !== S.me; });
-      v = whos.every(w => w === "") ? "both" : (whos.every(w => w === "both") && awaitingBoth) ? "both" : "";
-    }
+    if (z === "mid") v = r.all.every(k => eff(k).who === "") ? "both" : "";
     const did = r.all.filter(k => setDay(k, v));
     if (did.length) { changed(did); toast(`${r.all.length > 3 ? `All ${r.all.length} days` : "Weekend"} → ${NAME[v]}`); }
     return;
@@ -533,7 +583,6 @@ list.addEventListener("keydown", ev => {
   if (ev.key === "b" || ev.key === "B") { if (setDay(k, midTarget(k))) changed([k]); ev.preventDefault(); return; }
   if (ev.key === "ArrowLeft") i = Math.max(0, i - 1);
   else if (ev.key === "ArrowRight") i = Math.min(2, i + 1);
-  else if (ev.key === "Enter" || ev.key === " ") { if (cur && setDay(k, cur)) changed([k]); ev.preventDefault(); return; }
   else return;
   ev.preventDefault();
   if (setDay(k, order[i])) changed([k]);
@@ -546,15 +595,21 @@ function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add
 const CODE = { ale:"ABB", james:"JL", both:"BOTH" }, UNCODE = { ABB:"ale", JL:"james", BOTH:"both" };
 function toRow(k){
   const p = S.plan[k], d = sheetDate(k);
-  return { PlanID:`${d}|AllDay`, Date:d, Segment:"AllDay", Status:p.status, Who:CODE[p.who] || "",
-           ProposedBy:p.by || "", ProposedAt:p.at || "", ConfirmedBy:p.confirmedBy || "", ConfirmedAt:p.confirmedAt || "", LastUpdated:p.updated || "" };
+  const by = [p.cABB && "ABB", p.cJL && "JL"].filter(Boolean);
+  const at = [p.cABB && `ABB ${p.cABB}`, p.cJL && `JL ${p.cJL}`].filter(Boolean);
+  const status = p.status === "cleared" ? "cleared" : (p.cJL && p.cABB) ? "confirmed" : "proposed";
+  return { PlanID:`${d}|AllDay`, Date:d, Segment:"AllDay", Status:status, Who:CODE[p.who] || "",
+           ProposedBy:p.by || "", ProposedAt:p.at || "", ConfirmedBy:by.join("+"), ConfirmedAt:at.join("; "), LastUpdated:p.updated || "" };
 }
 function fromPlanRow(r){
   const k = parseDate(r.Date); if (!k || (r.Segment && r.Segment !== "AllDay")) return null;
   let status = String(r.Status || "").toLowerCase(); if (status === "suggested") status = "proposed";
   if (!["proposed","confirmed","cleared"].includes(status)) status = "proposed";
+  const who = String(r.ConfirmedBy || ""), at = String(r.ConfirmedAt || "");
+  const when = code => { const m = at.match(new RegExp(code + "\\s+([0-9-]+ [0-9:]+)")); return m ? m[1] : (at || "yes"); };
+  const cABB = /ABB/.test(who) ? when("ABB") : "", cJL = /\bJL\b/.test(who) ? when("JL") : "";
   return [k, { who:UNCODE[r.Who] || "", status, by:r.ProposedBy || "", at:r.ProposedAt || "",
-               confirmedBy:r.ConfirmedBy || "", confirmedAt:r.ConfirmedAt || "", updated:r.LastUpdated || r.ProposedAt || "" }];
+               cJL, cABB, updated:r.LastUpdated || r.ProposedAt || "" }];
 }
 function compasWho(r){
   const segs = [r["AM With"], r["Day With"], r["PM With"]].map(s => String(s || "").trim());
