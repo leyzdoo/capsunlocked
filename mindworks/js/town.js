@@ -379,6 +379,7 @@ export function buildTower(T) {
   else if (T.crown === 'helipad') { const hp = new THREE.Mesh(new THREE.CylinderGeometry(Math.min(top.w, top.d) * .42, Math.min(top.w, top.d) * .42, .3, 32), std(0x3a3d42, .7)); hp.position.y = y + .5; g.add(hp); const hc = document.createElement('canvas'); hc.width = hc.height = 128; const hx = hc.getContext('2d'); hx.strokeStyle = '#ffd34d'; hx.lineWidth = 8; hx.beginPath(); hx.arc(64, 64, 54, 0, 7); hx.stroke(); hx.fillStyle = '#fff'; hx.font = 'bold 80px Arial'; hx.textAlign = 'center'; hx.fillText('H', 64, 92); const ht = new THREE.CanvasTexture(hc); const hm = new THREE.Mesh(new THREE.CircleGeometry(Math.min(top.w, top.d) * .4, 32), new THREE.MeshBasicMaterial({ map: ht, transparent: true })); hm.rotation.x = -Math.PI / 2; hm.position.y = y + .66; g.add(hm); }
   else if (T.crown === 'crown') { for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2, sp = new THREE.Mesh(new THREE.ConeGeometry(.5, 3, 6), gold); sp.position.set(Math.cos(a) * top.w * .38, y + 1.5, Math.sin(a) * top.d * .38); g.add(sp); } }
   else { g.add(box(top.w * .5, 2.2, top.d * .4, std(0x9aa0a6, .5, .5), 0, y + 1.1, 0)); const ant = new THREE.Mesh(new THREE.CylinderGeometry(.06, .1, 6, 6), S.metal); ant.position.set(top.w * .3, y + 3, 0); g.add(ant); }
+  g.userData.roof = { y: y + (T.crown === 'helipad' ? .66 : 0), w: top.w, d: top.d, dome: T.crown === 'dome' ? Math.min(top.w, top.d) * .4 : 0 }; // helicopters land here
   // canopy + revolving-door entrance at the front, a plain door at the back
   g.add(box(6, .3, 3, glass ? S.metal : S.stone, 0, 3.4, fz + 1));
   [-1, 1].forEach(s => g.add(box(.15, 3.4, .15, S.metal, s * 2.8, 1.7, fz + 2.3)));
@@ -628,10 +629,12 @@ export function createTown(renderer) {
       const toWorld = v => { const o = v.clone().applyAxisAngle(V(0, 1, 0), g.rotation.y).add(g.position); o.y = 0; return o; };
       doors.find(d => d.id === 'home').pos.copy(toWorld(g.userData.door));
       doors.find(d => d.id === 'homeBack').pos.copy(toWorld(g.userData.backDoor));
+      const R = g.userData.roof; town.roofs = [];
+      if (R) { town.roofs.push({ x1: g.position.x - R.w / 2, x2: g.position.x + R.w / 2, z1: g.position.z - R.d / 2, z2: g.position.z + R.d / 2, y: R.y, dome: R.dome }); cols.forEach(c => { c.top = R.y; }); }
       town.colliders = base.concat(cols, lot.cols); town.camBlockers = buildingBoxes.concat(cols);
       town._house = g; town._lot = lot.group; town.homeKey = key; town.homeSpec = spec;
     },
-    followShadow(p) { dir.position.copy(p).add(sun.clone().multiplyScalar(60)); dir.target.position.copy(p); sky.position.set(p.x, 0, p.z); }
+    followShadow(p) { dir.position.copy(p).add(sun.clone().multiplyScalar(60)); dir.target.position.copy(p); sky.position.set(p.x, Math.max(0, p.y - 30), p.z); }
   };
   town.setHome(0);
   return town;

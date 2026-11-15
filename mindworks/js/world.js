@@ -65,6 +65,8 @@ export function heightAt(x, z) {
   return amp * n * road - lake * road - 7 * sstep(.15, .8, sea) * road;
 }
 export const WATER_Y = -.45;
+/* height of a skyscraper roof at a point (a dome curves up in the middle) */
+export function roofY(r, x, z) { if (!r.dome) return r.y; const d = Math.hypot(x - (r.x1 + r.x2) / 2, z - (r.z1 + r.z2) / 2); return d < r.dome ? r.y + Math.sqrt(r.dome * r.dome - d * d) : r.y; }
 
 /* ---------------- shared bits ---------------- */
 let groundTex = null;
@@ -150,6 +152,7 @@ export function createWorld(town) {
     c.group.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && o.userData.own !== false) o.geometry.dispose(); });
   }
   W.near = p => { const [ci, cj] = chunkAt(p.x, p.z), out = []; for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) { const c = chunks.get(i + ',' + j); if (c) out.push(c); } return out; };
+  W.roofAt = (x, z) => { let y = -1e9; for (const c of W.near({ x, z })) for (const r of c.roofs || []) if (x > r.x1 && x < r.x2 && z > r.z1 && z < r.z2) y = Math.max(y, roofY(r, x, z)); return y; }; // top of a skyscraper, if you're over one
   W.collidersAt = p => { const out = []; for (const c of W.near(p)) out.push(...c.cols); return out; };
   W.camBlockers = p => { const out = []; for (const c of W.near(p)) out.push(...c.blockers); return out; };
   W.interact = p => { const out = []; for (const c of W.near(p)) { for (const d of c.doors) if (Math.abs(d.pos.x - p.x) < 4 && Math.abs(d.pos.z - p.z) < 4) out.push(d); for (const b of c.bots) if (b.root.visible && Math.abs(b.act.pos.x - p.x) < 2.2 && Math.abs(b.act.pos.z - p.z) < 2.2) out.push(b.act); } return out; };
@@ -178,7 +181,7 @@ export function createWorld(town) {
   function buildChunk(i, j, lite) {
     const biome = biomeOf(i, j), r = rng(Math.floor(hash2(i, j, 3) * 1e9)), m = mats();
     const g = new THREE.Group(); g.position.set(i * CH, 0, j * CH);
-    const C = { i, j, biome, lite: !!lite, items: [], group: g, cols: [], blockers: [], doors: [], bots: [], live: new THREE.Group() };
+    const C = { i, j, biome, lite: !!lite, items: [], group: g, cols: [], blockers: [], doors: [], bots: [], roofs: [], live: new THREE.Group() };
     const ox = i * CH, oz = j * CH;
     const hAt = (x, z) => heightAt(ox + x, oz + z);
     const col = (x1, x2, z1, z2, blocker) => { const b = { x1: ox + Math.min(x1, x2), x2: ox + Math.max(x1, x2), z1: oz + Math.min(z1, z2), z2: oz + Math.max(z1, z2) }; C.cols.push(b); if (blocker) C.blockers.push(b); };
@@ -349,6 +352,7 @@ export function createWorld(town) {
       const T = randomSpec('tower', Math.floor(r() * 1e6)); T.w = Math.min(T.w, 14); T.d = Math.min(T.d, 12); if (home) T.floors = Math.min(T.floors, 18);
       const t = buildHouse(T); t.position.set(x, 0, z); t.rotation.y = z > 0 ? Math.PI : 0; g.add(t);
       col(x - T.w / 2 - .2, x + T.w / 2 + .2, z - T.d / 2 - .2, z + T.d / 2 + .2, true);
+      const R = t.userData.roof; if (R) { C.cols[C.cols.length - 1].top = R.y; C.roofs.push({ x1: P.ox + x - R.w / 2, x2: P.ox + x + R.w / 2, z1: P.oz + z - R.d / 2, z2: P.oz + z + R.d / 2, y: R.y, dome: R.dome }); }
     });
     if (parkAt) park(P, parkAt[0], parkAt[1]);
     // people (robots) out walking on the sidewalks

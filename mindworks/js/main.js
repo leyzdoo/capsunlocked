@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
-import { createWorld, WATER_Y, blockName } from './world.js';
+import { createWorld, WATER_Y, blockName, roofY } from './world.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { SEATS, drawMap } from './jumbo.js';
@@ -97,10 +97,10 @@ async function boot() {
   townPlace = {
     id: 'town', scene: town.scene, walks: true, cam: { dist: 6.5, pitch: .38 },
     get colliders() { return town.colliders; },
-    collidersAt: p => town.colliders.concat(world.collidersAt(p)),
-    get camBlockers() { if (ride && ride.type === 'plane' && ride.alt > 3) return []; return town.camBlockers.concat(world.camBlockers(player.root.position)); },
-    heightAt: p => ride && ride.type === 'plane' ? p.y : ride && ride.type === 'boat' ? WATER_Y + .05 : world.heightAt(p.x, p.z),
-    blocked: p => ride && ride.type === 'plane' ? false : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
+    collidersAt: p => town.colliders.concat(world.collidersAt(p)).filter(c => !(c.top != null && p.y > c.top - 1)), // up on a roof, the building isn't in your way
+    get camBlockers() { const pp = player.root.position; if ((ride && ride.type === 'plane' && ride.alt > 3) || pp.y > world.heightAt(pp.x, pp.z) + 3) return []; return town.camBlockers.concat(world.camBlockers(player.root.position)); },
+    heightAt: p => { if (ride && ride.type === 'plane') return p.y; if (ride && ride.type === 'boat') return WATER_Y + .05; const r = roofAt(p.x, p.z); return r > p.y - 1.5 && r < p.y + 1.5 ? r : world.heightAt(p.x, p.z); },
+    blocked: p => ride && ride.type === 'plane' ? false : onRoofEdge(p) ? true : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
     interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs()); },
     update(dt) { town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
@@ -112,6 +112,10 @@ async function boot() {
   $('loading').classList.add('hide'); $('login').classList.remove('hide');
   requestAnimationFrame(loop);
 }
+/* skyscraper roofs: helicopters land on them and you can walk around up there */
+function roofAt(x, z) { let y = world ? world.roofAt(x, z) : -1e9; for (const r of town.roofs || []) if (x > r.x1 && x < r.x2 && z > r.z1 && z < r.z2) y = Math.max(y, roofY(r, x, z)); return y; }
+const floorAt = (x, z) => Math.max(world.heightAt(x, z), roofAt(x, z));
+function onRoofEdge(p) { return !ride && p.y > world.heightAt(p.x, p.z) + 2.5 && roofAt(p.x, p.z) < p.y - 1.5; } // don't walk off the roof
 function placeInTown(pos, faceYaw) {
   camera.fov = 55; camera.updateProjectionMatrix();
   if (world) world.ensure(pos, true);
@@ -290,7 +294,7 @@ function stopRide(silent, at) {
   player.root.remove(ride.mesh); player.model.visible = true; player.model.position.y = 0; player.model.rotation.set(0, 0, 0);
   ride.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
   const wasPlane = ride.type === 'plane'; ride = null; if (camera.fov !== 55) { camera.fov = 55; camera.updateProjectionMatrix(); } camera.up.set(0, 1, 0);
-  if (wasPlane) { const p = player.root.position; p.y = world.heightAt(p.x, p.z); }
+  if (wasPlane) { const p = player.root.position; p.y = floorAt(p.x, p.z); }
   if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
   showJoy(); refreshRideBtn(); if (!silent) toast('🚶 You got out.');
 }
@@ -329,7 +333,7 @@ const clamp = THREE.MathUtils.clamp, flight = { wheel: 0, lever: 0, held: false,
 const topAlt = () => ride && ride.type === 'plane' ? PLANES[ride.kind].top : 60;
 function setLever(v) {
   flight.lever = clamp(v, 0, 1); $('leverKnob').style.bottom = (flight.lever * 100) + '%';
-  $('leverLab').textContent = flight.lever < .02 ? 'Ground' : Math.round(flight.lever * topAlt()) + ' m';
+  $('leverLab').textContent = flight.lever < .02 ? 'Land' : Math.round(flight.lever * topAlt()) + ' m';
 }
 (function cockpit() {
   const w = $('wheel'), rot = $('wheelRot'); let id = null, x0 = 0;
@@ -356,29 +360,32 @@ function flyStep(dt) {
   const kLev = (k.w || k.arrowup ? 1 : 0) - (k.s || k.arrowdown ? 1 : 0);
   if (kLev) setLever(flight.lever + kLev * dt * .5);
   G._wheelRot.setAttribute('transform', 'rotate(' + (flight.wheel * 90) + ' 50 50)');
-  const PL = PLANES[ride.kind], ground = world.heightAt(p.x, p.z), wet = ground < WATER_Y, floor = Math.max(ground, WATER_Y);
+  const PL = PLANES[ride.kind], ground = world.heightAt(p.x, p.z), wet = ground < WATER_Y, roof = roofAt(p.x, p.z), floor = Math.max(ground, WATER_Y, roof < p.y + .5 ? roof : -1e9);
+  ride.onRoof = roof > ground + 2 && Math.abs(p.y - roof) < .4;
   let target = floor + flight.lever * PL.top;
   ride.onWater = wet && PL.water && ride.alt < .3;
   if (wet && !PL.water && flight.lever < .05) { target = WATER_Y + 3; if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast('🌊 Can’t land on water — fly to land first!'); } }
   const air = ride.alt > .3;
   // speed: rolls on the runway, flies at full speed in the air, stops when it lands with the lever down
-  const wantV = flight.lever > .02 || air || (wet && !PL.water) ? PL.speed : wet ? 5 : 0; // the seaplane taxis slowly on water so you can steer to shore
-  ride.v += (wantV - ride.v) * Math.min(1, dt * (wantV ? 1.1 : 1.6));
+  const wantV = PL.heli ? (air ? PL.speed * clamp((flight.lever * PL.top - 2) / 8, 0, 1) : 0) : flight.lever > .02 || air || (wet && !PL.water) ? PL.speed : wet ? 5 : 0; // a helicopter only goes forward with the lever up; lever down = stop and sink straight down // the seaplane taxis slowly on water so you can steer to shore
+  ride.v += (wantV - ride.v) * Math.min(1, dt * (PL.heli ? 2.5 : wantV ? 1.1 : 1.6));
   // steering turns the plane (less while it is rolling slowly on the ground)
-  player.root.rotation.y -= flight.wheel * dt * (air ? 1.1 : .9) * Math.min(1, ride.v / 6);
+  player.root.rotation.y -= flight.wheel * dt * (air ? 1.1 : .9) * (PL.heli ? (air ? 1 : 0) : Math.min(1, ride.v / 6));
   const yaw = player.root.rotation.y;
   p.x += Math.sin(yaw) * ride.v * dt; p.z += Math.cos(yaw) * ride.v * dt;
   // climb only once it is going fast enough to lift off
-  const lift = ride.v > PL.speed * .45 || air ? 1 : 0;
-  const ny = lift ? p.y + clamp(target - p.y, -9 * dt, 7 * dt) : floor;
+  const lift = PL.heli || ride.v > PL.speed * .45 || air ? 1 : 0;
+  const ny = lift ? p.y + clamp(target - p.y, (PL.heli ? -6 : -9) * dt, (PL.heli ? 5 : 7) * dt) : floor;
   const climb = (ny - p.y) / Math.max(dt, 1e-4); p.y = Math.max(ny, floor);
   ride.alt = p.y - floor;
   // tilt the plane: bank into turns, nose up when climbing
   ride.mesh.rotation.z += ((air ? flight.wheel * (PL.big ? .22 : .55) : 0) - ride.mesh.rotation.z) * Math.min(1, dt * 4);
-  ride.mesh.rotation.x += (clamp(-climb * .05, PL.big ? -.1 : -.35, PL.big ? .1 : .35) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
+  ride.mesh.rotation.x += ((PL.heli ? ride.v / PL.speed * .18 : clamp(-climb * .05, PL.big ? -.1 : -.35, PL.big ? .1 : .35)) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
   ride.mesh.position.y = ride.onWater ? Math.sin(ride.t * 1.8) * .07 - .15 : 0; // bob on the waves
   if (ride.onWater && performance.now() - flight.warned > 6000) { flight.warned = performance.now(); toast('🌊 Splashdown! Steer to the shore to get out.'); }
   ride.mesh.userData.prop.rotation.z += dt * (6 + ride.v * 2);
+  if (ride.mesh.userData.rotor) { ride.mesh.userData.prop.rotation.x += dt * 30; ride.mesh.userData.rotor.rotation.y += dt * (air || flight.lever > .02 ? 22 : 9); }
+  if (ride.onRoof && !ride.wasOnRoof) toast('🏢 You landed on the roof! Tap 🚶 Get out to look around.'); ride.wasOnRoof = ride.onRoof;
   if (ride.mesh.userData.flame) ride.mesh.userData.flame.scale.setScalar(.4 + ride.v / PL.speed * (.8 + Math.random() * .3));
   // keep the camera behind the plane
   if (!cam.drag && ride.relax == null) { let dy = yaw + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.6); }
