@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Camilo · 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ale:#2E9E5B; --ale-soft:#EAF6EF; --ale-line:#BFE3CC;
+    --james:#2F6FDE; --james-soft:#EAF1FD; --james-line:#C3D6F7;
+    --open:#B4BBC4; --ink:#1C2330; --muted:#6B7380; --faint:#9AA1AB;
+    --line:#E6E8EC; --track:#F2F3F5;
+    --hol:#B7791F; --hol-soft:#FFF5E3; --sum:#0F8A8A; --sum-soft:#E6F6F6;
+    --cw:84px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit}
+  .hidden{display:none!important}
+
+  /* ---------- gate ---------- */
+  #gate{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:50;padding:24px}
+  .gatebox{width:100%;max-width:320px;text-align:center}
+  .gatebox h1{font-family:"Special Elite",monospace;font-weight:400;font-size:28px;margin:0 0 6px}
+  .gatebox p{color:var(--muted);font-size:14px;margin:0 0 20px}
+  .gatebox input{width:100%;font:inherit;font-size:17px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;text-align:center;outline:none}
+  .gatebox input:focus{border-color:var(--ink)}
+  .gatebox .err{color:#C2410C;font-size:13px;height:18px;margin-top:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;font-size:14px;font-weight:500;cursor:pointer}
+  .btn:hover{border-color:#cfd3d9}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+  .who{display:flex;gap:10px;margin-top:6px}
+  .who .btn{flex:1;padding:14px}
+  .who .a{border-color:var(--ale-line);background:var(--ale-soft);color:#1E6B3E}
+  .who .j{border-color:var(--james-line);background:var(--james-soft);color:#1F4FA8}
+
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  .hwrap{max-width:860px;margin:0 auto;padding:12px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .brand h1{font-family:"Special Elite",monospace;font-weight:400;font-size:24px;margin:0;line-height:1.1}
+  .brand .sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .legend{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:4px}
+  .dot.a{background:var(--ale)} .dot.j{background:var(--james)} .dot.o{background:#fff;border:2px solid var(--open)}
+  .dot.ring{background:#fff;border:3px solid var(--ink)}
+  .me{font-size:11px;color:var(--faint);margin-top:6px}
+  .me b{color:var(--ink);font-weight:600}
+
+  .counter{flex:none;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:12px;min-width:196px;background:#fff}
+  .counter table{border-collapse:collapse;width:100%}
+  .counter th{font-weight:600;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:0 4px 4px;text-align:center}
+  .counter th:first-child{text-align:left;padding-left:0}
+  .counter td{padding:2px 4px;text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+  .counter td:first-child{text-align:left;padding-left:0;font-weight:500;color:var(--muted)}
+  .counter .ca{color:var(--ale)} .counter .cj{color:var(--james)} .counter .co{color:var(--faint)}
+  .counter .foot{font-size:10.5px;color:var(--faint);margin-top:4px;display:flex;justify-content:space-between;gap:8px}
+  .counter .await{color:#C2410C;font-weight:600}
+
+  /* ---------- list ---------- */
+  main{max-width:860px;margin:0 auto;padding:6px 16px 80px}
+  .month{font-family:"Special Elite",monospace;font-size:18px;margin:26px 0 8px;text-align:center;color:var(--ink)}
+  .month small{font-family:Inter,sans-serif;font-size:11px;color:var(--faint);display:block;margin-top:2px}
+  .row{border:1px solid var(--line);border-left:5px solid #E3E6EA;border-radius:14px;padding:10px 12px 12px;margin:10px 0;background:#fff;transition:border-color .25s}
+  .row.w-ale{border-left-color:var(--ale)}
+  .row.w-james{border-left-color:var(--james)}
+  .row.w-split{border-left-color:#8E7CC3}
+  .rhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+  .rtitle{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .tag{font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--hol-soft);color:var(--hol);white-space:nowrap}
+  .tag.sum{background:var(--sum-soft);color:var(--sum)}
+  .tag.est{background:#F3F4F6;color:var(--muted)}
+  .tag.await{background:#FFF1E8;color:#C2410C}
+  .rall{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--faint);flex:none}
+  .rall .tg{width:86px;max-width:none;margin:0;height:24px;cursor:pointer}
+  .rall .ball{width:18px;height:18px}
+
+  .line{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}
+  .side{display:flex;gap:6px}
+  .side.l{justify-content:flex-end} .side.r{justify-content:flex-start}
+  .core{display:flex;gap:6px}
+  .strip{display:flex;flex-direction:column;align-items:center;margin:0 0 8px}
+  .strip.below{margin:8px 0 0}
+  .strip .lbl{font-size:10.5px;color:var(--muted);margin-bottom:4px;font-weight:500}
+  .strip .cells{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+
+  .cell{position:relative;width:var(--cw);min-width:0;border:1px solid var(--line);border-radius:11px;padding:7px 4px 6px;text-align:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;background:#fff;transition:background .2s,border-color .2s;outline:none}
+  .cell:focus-visible{box-shadow:0 0 0 2px var(--ink)}
+  .cell .dow{font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .cell .dt{font-size:15px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums}
+  .cell .hn{font-size:9.5px;font-weight:600;color:var(--hol);margin-top:4px;line-height:1.15;min-height:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell.summer .hn{color:var(--sum)}
+  .cell .meta{font-size:9.5px;color:var(--faint);height:12px;margin-top:3px;line-height:12px}
+  .cell.hol{border-color:#F1D7A6;border-style:dashed}
+  .cell.s-ale{background:var(--ale-soft);border-color:var(--ale-line)}
+  .cell.s-james{background:var(--james-soft);border-color:var(--james-line)}
+  .cell.hol.s-ale,.cell.hol.s-james{border-style:dashed}
+  .cell.extra{--cw:76px}
+
+  .tg{position:relative;height:22px;border-radius:12px;background:var(--track);border:1px solid #E1E4E8;width:100%;max-width:64px;margin:6px auto 0;transition:background .2s,border-color .2s}
+  .tg::before,.tg::after{content:"";position:absolute;top:50%;width:3px;height:3px;border-radius:50%;background:#D5D9DF;transform:translateY(-50%)}
+  .tg::before{left:25%} .tg::after{right:25%}
+  .ball{position:absolute;top:50%;left:50%;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--open);transform:translate(-50%,-50%);transition:left .24s cubic-bezier(.3,1.35,.55,1),background .2s,border-color .2s,border-width .2s}
+  .s-ale .tg{background:#D7EFE0;border-color:var(--ale-line)}
+  .s-james .tg{background:#D6E4FB;border-color:var(--james-line)}
+  .s-ale .ball{left:calc(0% + 10px);background:var(--ale);border-color:var(--ale)}
+  .s-james .ball{left:calc(100% - 10px);background:var(--james);border-color:var(--james)}
+  .rall .s-ale .ball,.rall.s-ale .ball{left:12px}
+  .rall.s-james .ball{left:calc(100% - 12px)}
+  .rall.s-ale .tg{background:#D7EFE0;border-color:var(--ale-line)}
+  .rall.s-james .tg{background:#D6E4FB;border-color:var(--james-line)}
+  .rall.s-ale .ball{background:var(--ale);border-color:var(--ale)}
+  .rall.s-james .ball{background:var(--james);border-color:var(--james)}
+  .rall.s-mixed .ball{background:linear-gradient(90deg,var(--ale) 50%,var(--james) 50%);border-color:#fff}
+  /* proposed = hollow ring, agreed / Compás = solid */
+  .st-proposed .ball{background:#fff!important;border-width:5px}
+  .cell.st-proposed.mine .meta{color:var(--muted)}
+  .cell.st-proposed.theirs .meta{color:#C2410C;font-weight:600}
+  .cell.st-confirmed .meta{color:var(--ink)}
+  .cell.flash{animation:fl .6s}
+  @keyframes fl{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
+
+  /* ---------- data drawer ---------- */
+  details.data{max-width:860px;margin:30px auto 0;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px}
+  details.data summary{cursor:pointer;font-weight:600}
+  .drow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .drow input[type=url]{flex:1;min-width:200px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+  .sync{font-size:12px;color:var(--muted)}
+  .sync.ok{color:var(--ale)} .sync.bad{color:#C2410C}
+  .note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13px;padding:9px 14px;border-radius:10px;opacity:0;transition:all .25s;pointer-events:none;z-index:60;max-width:90vw;text-align:center}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:640px){
+    :root{--cw:62px}
+    .cell.extra{--cw:58px}
+    .hwrap{padding:10px 12px 8px}
+    main{padding:4px 10px 80px}
+    .brand h1{font-size:20px}
+    .brand .sub,.legend .hint{display:none}
+    .legend{gap:8px;font-size:11px;margin-top:6px}
+    .me{margin-top:4px}
+    .counter{min-width:0;padding:6px 8px;font-size:11px}
+    .counter th{font-size:9px;padding:0 3px 3px}
+    .counter td{padding:1px 3px}
+    .row{padding:9px 8px 10px}
+    .cell .dt{font-size:14px}
+    .tg{max-width:54px}
+  }
+  @media (max-width:380px){ :root{--cw:56px} .cell.extra{--cw:52px} }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gatebox">
+    <div id="step1">
+      <h1>Camilo</h1>
+      <p>Private page</p>
+      <form id="pwForm" autocomplete="off">
+        <input id="pw" type="password" placeholder="Password" autocapitalize="off" autocorrect="off" spellcheck="false" autofocus>
+        <div class="err" id="pwErr"></div>
+        <button class="btn primary" style="width:100%" type="submit">Open</button>
+      </form>
+    </div>
+    <div id="step2" class="hidden">
+      <h1>Who's this?</h1>
+      <p>So the other parent can see who set each day.</p>
+      <div class="who">
+        <button class="btn a" data-me="ABB">Alejandra</button>
+        <button class="btn j" data-me="JL">James</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="hwrap">
+      <div class="brand">
+        <h1>Camilo · 2027</h1>
+        <div class="sub">Weekends &amp; weeks off — tap a day to move the ball</div>
+        <div class="legend">
+          <span><span class="dot a"></span>Ale ←</span>
+          <span><span class="dot o"></span>Open</span>
+          <span>→ James<span class="dot j" style="margin:0 0 0 4px"></span></span>
+          <span class="hint" style="color:var(--faint)">· solid = agreed · ring = proposed</span>
+        </div>
+        <div class="me" id="meLine"></div>
+      </div>
+      <div class="counter" aria-live="polite">
+        <table>
+          <thead><tr><th></th><th class="ca">Ale</th><th>Open</th><th class="cj">James</th></tr></thead>
+          <tbody>
+            <tr><td>Weekends</td><td class="ca" id="cWa">0</td><td class="co" id="cWo">0</td><td class="cj" id="cWj">0</td></tr>
+            <tr><td>Days</td><td class="ca" id="cDa">0</td><td class="co" id="cDo">0</td><td class="cj" id="cDj">0</td></tr>
+            <tr><td>Holidays</td><td class="ca" id="cHa">0</td><td class="co" id="cHo">0</td><td class="cj" id="cHj">0</td></tr>
+          </tbody>
+        </table>
+        <div class="foot"><span id="cSplit"></span><span id="cAwait" class="await"></span></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="list"></main>
+
+  <div style="padding:0 16px 40px">
+    <details class="data">
+      <summary>Compás sync &amp; data</summary>
+      <div class="drow"><span class="sync" id="syncState">Not connected — changes save on this device only.</span></div>
+      <div class="drow">
+        <input id="endpoint" type="url" placeholder="Compás weekend sync URL (Apps Script /exec)">
+        <button class="btn" id="saveEp">Connect</button>
+        <button class="btn" id="pullNow">Refresh</button>
+      </div>
+      <div class="drow">
+        <button class="btn" id="exportCsv">Export for Compás (CSV)</button>
+        <label class="btn" for="importFile">Import CSV</label>
+        <input id="importFile" type="file" accept=".csv,text/csv" class="hidden">
+        <button class="btn" id="switchMe">Switch person</button>
+        <button class="btn" id="lock">Lock</button>
+      </div>
+      <div class="note">
+        Export uses the same columns as the <b>WeekendPlan</b> tab in Compas_Master (PlanID, Date, Segment, Status, Who…), so it can be pasted straight in.
+        Import accepts that format, or a Compás full-year export (Date + AM/Day/PM/ON With) — days are filled from whoever has Camilo most of the day.
+        School days off for Jan–Jun come from the Beaverton 2026–27 calendar. Fall 2027 days marked <i>est.</i> are placeholders until the 2027–28 calendar is out.
+      </div>
+    </details>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ================= config ================= */
+const PASS = "camilo";                 // compared case-insensitively
+const DEFAULT_ENDPOINT = "";           // paste the Apps Script /exec URL here once deployed
+const LS = "camiloWeekends.v1";
+const YEAR_START = new Date(2027, 0, 1);   // Fri Jan 1 2027
+const LAST_FRI   = new Date(2027, 11, 31); // Fri Dec 31 2027
+
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTH = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+/* ================= dates ================= */
+const pad = n => String(n).padStart(2, "0");
+const key = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fromKey = k => { const [y,m,d] = k.split("-").map(Number); return new Date(y, m-1, d); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const md = k => { const d = fromKey(k); return `${d.getMonth()+1}/${d.getDate()}`; };
+const sheetDate = k => { const d = fromKey(k); return `${MON[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`; };
+const stamp = () => { const d = new Date(); return `${key(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+function parseDate(s){
+  s = String(s || "").trim(); let m;
+  if ((m = s.match(/^([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/))) {
+    const i = MON.findIndex(x => x.toLowerCase() === m[1].toLowerCase());
+    if (i >= 0) return key(new Date(+m[3], i, +m[2]));
+  }
+  if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) return key(new Date(+m[3], m[1]-1, +m[2]));
+  if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return `${m[1]}-${m[2]}-${m[3]}`;
+  return null;
+}
+
+/* ================= days off =================
+   kind: "hol" counts as a holiday; "summer" is a summer weekday (counted in Days, not Holidays)
+   Jan–Jun 2027 from Beaverton SD 2026-27 rotation calendar; Sep–Dec are estimates. */
+const OFF = {};
+function mark(a, b, name, short, kind = "hol", est = false, weekdaysOnly = false){
+  for (let d = fromKey(a); key(d) <= b; d = addDays(d, 1)){
+    const w = d.getDay();
+    if (weekdaysOnly && (w === 0 || w === 5 || w === 6)) continue;
+    OFF[key(d)] = { name, short, kind, est };
+  }
+}
+mark("2027-06-14","2027-08-26","Summer break","Summer","summer",false,true);   // Mon–Thu of summer weeks
+mark("2027-01-01","2027-01-01","New Year's Day · Winter break","New Year's");
+mark("2027-01-04","2027-01-04","Staff development day","Staff day");
+mark("2027-01-18","2027-01-18","MLK Jr. Day","MLK Day");
+mark("2027-01-25","2027-01-25","Grading day","Grading");
+mark("2027-01-26","2027-01-26","Staff development day","Staff day");
+mark("2027-02-12","2027-02-12","Staff development day","Staff day");
+mark("2027-02-15","2027-02-15","Presidents' Day","Presidents'");
+mark("2027-03-22","2027-03-26","Spring break","Spring brk");
+mark("2027-04-09","2027-04-09","Grading day","Grading");
+mark("2027-04-23","2027-04-23","Staff development day","Staff day");
+mark("2027-05-31","2027-05-31","Memorial Day","Memorial");
+mark("2027-06-11","2027-06-11","Summer break begins","Summer","summer");
+mark("2027-06-18","2027-06-18","Juneteenth","Juneteenth");
+mark("2027-07-05","2027-07-05","Independence Day (observed)","July 4th");
+mark("2027-09-06","2027-09-06","Labor Day","Labor Day");
+mark("2027-11-11","2027-11-11","Veterans Day","Veterans");
+mark("2027-11-22","2027-11-26","Fall break · Thanksgiving","Fall brk","hol",true);
+mark("2027-12-20","2027-12-31","Winter break","Winter brk","hol",true);
+mark("2028-01-01","2028-01-01","New Year's Day","New Year's");
+
+/* ================= Compás seed =================
+   Live Compás sheet ends Dec 31 2026; its winter-break note reads
+   "Coparenting James (through Jan 3)". */
+const SEED_COMPAS = { "2027-01-01":"james", "2027-01-02":"james", "2027-01-03":"james" };
+
+/* ================= state ================= */
+let S = load();
+function load(){
+  try { const s = JSON.parse(localStorage.getItem(LS)); if (s && s.plan) return s; } catch(e){}
+  return { plan:{}, compas:{ ...SEED_COMPAS }, pending:{}, me:"", unlocked:false, endpoint:"" };
+}
+function save(){ try { localStorage.setItem(LS, JSON.stringify(S)); } catch(e){} }
+const endpoint = () => (S.endpoint || DEFAULT_ENDPOINT || "").trim();
+
+function eff(k){
+  const p = S.plan[k];
+  if (p) {
+    if (p.status === "cleared" || !p.who) return { who:"", status:"open" };
+    return { who:p.who, status:p.status, by:p.by, cby:p.confirmedBy };
+  }
+  if (S.compas[k]) return { who:S.compas[k], status:"compas" };
+  return { who:"", status:"open" };
+}
+
+function setDay(k, v){
+  const cur = eff(k), now = stamp(), me = S.me;
+  if (v === "") {
+    if (cur.who === "") return false;
+    S.plan[k] = { who:"", status:"cleared", by:me, at:now, updated:now };
+  } else if (cur.who === v) {
+    if ((cur.status === "proposed" && cur.by !== me) || cur.status === "compas") {
+      const p = S.plan[k] || { who:v, by:"compas", at:now };
+      S.plan[k] = { ...p, who:v, status:"confirmed", confirmedBy:me, confirmedAt:now, updated:now };
+    } else return false;
+  } else {
+    S.plan[k] = { who:v, status:"proposed", by:me, at:now, updated:now };
+  }
+  S.pending[k] = true;
+  return true;
+}
+
+/* ================= rows ================= */
+let ROWS = [];
+function buildRows(){
+  const rows = [], byFri = {};
+  for (let f = new Date(YEAR_START); f <= LAST_FRI; f = addDays(f, 7)){
+    const r = { fri:key(f), core:[0,1,2].map(i => key(addDays(f,i))), left:[], right:[] };
+    rows.push(r); byFri[r.fri] = r;
+  }
+  Object.keys(OFF).sort().forEach(k => {
+    const d = fromKey(k), w = d.getDay();
+    if (w < 1 || w > 4) return;                       // only Mon–Thu attach as extras
+    let fwd = true;  for (let x = addDays(d,1);  x.getDay() !== 5; x = addDays(x,1))  if (!OFF[key(x)]) { fwd = false; break; }
+    let back = true; for (let x = addDays(d,-1); x.getDay() !== 0; x = addDays(x,-1)) if (!OFF[key(x)]) { back = false; break; }
+    const next = byFri[key(addDays(d, 5 - w))], prev = byFri[key(addDays(d, -(w + 2)))];
+    let side = fwd ? "left" : back ? "right" : (w <= 2 ? "right" : "left");
+    let row = side === "left" ? next : prev;
+    if (!row) { side = side === "left" ? "right" : "left"; row = side === "left" ? next : prev; }
+    if (row) row[side].push(k);
+  });
+  rows.forEach(r => { r.left.sort(); r.right.sort(); r.all = [...r.left, ...r.core, ...r.right]; });
+  ROWS = rows;
+}
+
+/* ================= render ================= */
+const $ = s => document.querySelector(s);
+const list = $("#list");
+
+function cellHTML(k, extra){
+  const d = fromKey(k), o = OFF[k];
+  const cls = ["cell"]; if (extra) cls.push("extra");
+  if (o) cls.push(o.kind === "summer" ? "summer" : "hol");
+  const hn = o ? o.short + (o.est ? "*" : "") : "";
+  return `<div class="${cls.join(" ")}" data-k="${k}" tabindex="0" role="slider"
+            aria-label="${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}" title="${o ? o.name + (o.est ? " (estimated)" : "") : ""}">
+    <div class="dow">${DOW[d.getDay()]}</div>
+    <div class="dt">${md(k)}</div>
+    <div class="tg"><span class="ball"></span></div>
+    <div class="meta"></div>
+    <div class="hn">${hn}</div>
+  </div>`;
+}
+
+function rangeLabel(a, b){
+  const A = fromKey(a), B = fromKey(b);
+  return A.getMonth() === B.getMonth()
+    ? `${MON[A.getMonth()]} ${A.getDate()} – ${B.getDate()}`
+    : `${MON[A.getMonth()]} ${A.getDate()} – ${MON[B.getMonth()]} ${B.getDate()}`;
+}
+
+function renderAll(){
+  let html = "", lastMonth = -1;
+  ROWS.forEach(r => {
+    const m = fromKey(r.fri).getMonth(), y = fromKey(r.fri).getFullYear();
+    if (m !== lastMonth) { html += `<div class="month">${MONTH[m]} ${y}</div>`; lastMonth = m; }
+    const names = [...new Set(r.all.map(k => OFF[k]).filter(o => o && !(o.kind === "summer" && o.name === "Summer break")).map(o => o.name + (o.est ? " (est.)" : "")))];
+    const isSummer = r.all.some(k => OFF[k] && OFF[k].kind === "summer");
+    const tags = names.map(n => `<span class="tag">${n}</span>`).join("") + (isSummer && !names.length ? `<span class="tag sum">Summer</span>` : "");
+    const strip = (keys, below) => keys.length < 2 ? "" :
+      `<div class="strip ${below ? "below" : ""}"><div class="lbl">${below ? "Then" : keys.every(k => OFF[k] && OFF[k].kind === "summer") ? "Summer week" : "Week off"} ·${DOW[fromKey(keys[0]).getDay()]} ${md(keys[0])} – ${DOW[fromKey(keys[keys.length-1]).getDay()]} ${md(keys[keys.length-1])}</div>
+        <div class="cells">${keys.map(k => cellHTML(k, true)).join("")}</div></div>`;
+    html += `<section class="row" id="r-${r.fri}" data-fri="${r.fri}">
+      <div class="rhead">
+        <div class="rtitle">${rangeLabel(r.core[0], r.core[2])}${tags}<span class="tag await hidden"></span></div>
+        <div class="rall"><span>${r.all.length > 3 ? `All ${r.all.length}` : "Weekend"}</span><div class="tg" data-row="${r.fri}"><span class="ball"></span></div></div>
+      </div>
+      ${strip(r.left, false)}
+      <div class="line">
+        <div class="side l">${r.left.length === 1 ? cellHTML(r.left[0], true) : ""}</div>
+        <div class="core">${r.core.map(k => cellHTML(k, false)).join("")}</div>
+        <div class="side r">${r.right.length === 1 ? cellHTML(r.right[0], true) : ""}</div>
+      </div>
+      ${strip(r.right, true)}
+    </section>`;
+  });
+  list.innerHTML = html;
+  paint();
+}
+
+const initial = c => c === "JL" ? "J" : c === "ABB" ? "A" : "";
+function paint(){
+  const me = S.me;
+  document.querySelectorAll(".cell").forEach(el => {
+    const k = el.dataset.k, e = eff(k);
+    el.classList.remove("s-ale","s-james","st-proposed","st-confirmed","st-compas","mine","theirs");
+    if (e.who) el.classList.add("s-" + e.who);
+    if (e.status !== "open") el.classList.add("st-" + e.status);
+    let meta = "";
+    if (e.status === "proposed") { const mine = e.by === me; el.classList.add(mine ? "mine" : "theirs"); meta = mine ? "sent" : `${initial(e.by)} · tap ✓`; }
+    else if (e.status === "confirmed") meta = "✓ agreed";
+    else if (e.status === "compas") meta = "Compás";
+    el.querySelector(".meta").textContent = meta;
+  });
+
+  const c = { W:{ale:0,james:0,open:0,split:0}, D:{ale:0,james:0,open:0}, H:{ale:0,james:0,open:0} };
+  let awaitMe = 0;
+  ROWS.forEach(r => {
+    const rowEl = document.getElementById("r-" + r.fri); if (!rowEl) return;
+    const core = r.core.map(k => eff(k).who);
+    let w = core.includes("") ? (core.every(x => x === "") ? "open" : (new Set(core.filter(Boolean)).size > 1 ? "split" : "open"))
+                              : (new Set(core).size === 1 ? core[0] : "split");
+    c.W[w]++;
+    rowEl.classList.remove("w-ale","w-james","w-split");
+    if (w !== "open") rowEl.classList.add("w-" + w);
+
+    const all = r.all.map(k => eff(k).who), uniq = new Set(all);
+    const rall = rowEl.querySelector(".rall");
+    rall.classList.remove("s-ale","s-james","s-mixed");
+    if (uniq.size === 1 && all[0]) rall.classList.add("s-" + all[0]);
+    else if (uniq.has("ale") && uniq.has("james")) rall.classList.add("s-mixed");
+
+    let rowAwait = 0;
+    r.all.forEach(k => {
+      const e = eff(k), bucket = e.who || "open";
+      c.D[bucket]++;
+      if (OFF[k] && OFF[k].kind === "hol") c.H[bucket]++;
+      if (e.status === "proposed" && e.by && e.by !== me) { awaitMe++; rowAwait++; }
+    });
+    const t = rowEl.querySelector(".tag.await");
+    t.classList.toggle("hidden", !rowAwait);
+    t.textContent = rowAwait ? `${rowAwait} to confirm` : "";
+  });
+  const set = (id, v) => { $(id).textContent = v; };
+  set("#cWa", c.W.ale); set("#cWo", c.W.open); set("#cWj", c.W.james);
+  set("#cDa", c.D.ale); set("#cDo", c.D.open); set("#cDj", c.D.james);
+  set("#cHa", c.H.ale); set("#cHo", c.H.open); set("#cHj", c.H.james);
+  set("#cSplit", c.W.split ? `${c.W.split} split wknd${c.W.split > 1 ? "s" : ""}` : "");
+  set("#cAwait", awaitMe ? `${awaitMe} awaiting you` : "");
+  $("#meLine").innerHTML = `Signed in as <b>${me === "JL" ? "James" : "Alejandra"}</b>`;
+}
+
+/* ================= interaction ================= */
+function zone(el, clientX){
+  const tg = el.classList.contains("tg") ? el : el;
+  const r = tg.getBoundingClientRect(), x = (clientX - r.left) / r.width;
+  return x < 1/3 ? "ale" : x > 2/3 ? "james" : "";
+}
+function changed(keys){
+  save(); paint(); schedulePush();
+  keys.forEach(k => { const el = document.querySelector(`.cell[data-k="${k}"]`); if (el){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); } });
+}
+list.addEventListener("click", ev => {
+  const rowTg = ev.target.closest(".rall .tg");
+  if (rowTg) {
+    const r = ROWS.find(x => x.fri === rowTg.dataset.row), v = zone(rowTg, ev.clientX);
+    const did = r.all.filter(k => setDay(k, v));
+    if (did.length) { changed(did); toast(v ? `${r.all.length > 3 ? "All days" : "Weekend"} → ${v === "ale" ? "Ale" : "James"}` : "Cleared"); }
+    return;
+  }
+  const cell = ev.target.closest(".cell");
+  if (cell) { const k = cell.dataset.k; if (setDay(k, zone(cell, ev.clientX))) changed([k]); }
+});
+list.addEventListener("keydown", ev => {
+  const cell = ev.target.closest(".cell"); if (!cell) return;
+  const k = cell.dataset.k, cur = eff(k).who;
+  const order = ["ale","","james"]; let i = order.indexOf(cur);
+  if (ev.key === "ArrowLeft") i = Math.max(0, i - 1);
+  else if (ev.key === "ArrowRight") i = Math.min(2, i + 1);
+  else if (ev.key === "Enter" || ev.key === " ") { if (cur && setDay(k, cur)) changed([k]); ev.preventDefault(); return; }
+  else return;
+  ev.preventDefault();
+  if (setDay(k, order[i])) changed([k]);
+});
+
+let tt;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 1600); }
+
+/* ================= sync (Compás WeekendPlan via Apps Script) ================= */
+const CODE = { ale:"ABB", james:"JL" }, UNCODE = { ABB:"ale", JL:"james" };
+function toRow(k){
+  const p = S.plan[k], d = sheetDate(k);
+  return { PlanID:`${d}|AllDay`, Date:d, Segment:"AllDay", Status:p.status, Who:CODE[p.who] || "",
+           ProposedBy:p.by || "", ProposedAt:p.at || "", ConfirmedBy:p.confirmedBy || "", ConfirmedAt:p.confirmedAt || "", LastUpdated:p.updated || "" };
+}
+function fromPlanRow(r){
+  const k = parseDate(r.Date); if (!k || (r.Segment && r.Segment !== "AllDay")) return null;
+  let status = String(r.Status || "").toLowerCase(); if (status === "suggested") status = "proposed";
+  if (!["proposed","confirmed","cleared"].includes(status)) status = "proposed";
+  return [k, { who:UNCODE[r.Who] || "", status, by:r.ProposedBy || "", at:r.ProposedAt || "",
+               confirmedBy:r.ConfirmedBy || "", confirmedAt:r.ConfirmedAt || "", updated:r.LastUpdated || r.ProposedAt || "" }];
+}
+function compasWho(r){
+  const segs = [r["AM With"], r["Day With"], r["PM With"]].map(s => String(s || "").trim());
+  const j = segs.filter(s => s === "JL").length, a = segs.filter(s => s === "ABB").length;
+  if (j > a) return "james"; if (a > j) return "ale";
+  return UNCODE[String(r["ON With"] || "").trim()] || "";
+}
+function mergeCompas(rows){
+  let n = 0, structural = false;
+  rows.forEach(r => {
+    const k = parseDate(r.Date); if (!k) return;
+    const who = compasWho(r);
+    if (who) { S.compas[k] = who; n++; }
+    const h = String(r["Holiday/DayOff"] || "").trim();
+    if (h && !OFF[k]) { OFF[k] = { name:h, short:h.split(/[ (—-]/)[0].slice(0, 11), kind:"hol", est:false }; structural = true; }
+  });
+  return { n, structural };
+}
+function mergePlan(rows){
+  let n = 0;
+  rows.forEach(r => {
+    const x = fromPlanRow(r); if (!x) return; const [k, p] = x;
+    const local = S.plan[k];
+    if (S.pending[k] && local && (local.updated || "") >= (p.updated || "")) return;  // keep newer local edit
+    S.plan[k] = p; delete S.pending[k]; n++;
+  });
+  return n;
+}
+
+function syncState(msg, cls){ const el = $("#syncState"); el.textContent = msg; el.className = "sync " + (cls || ""); }
+async function pull(quiet){
+  const ep = endpoint(); if (!ep) return;
+  try {
+    const res = await fetch(`${ep}?action=load&key=${encodeURIComponent(PASS)}`, { cache:"no-store" });
+    const j = await res.json(); if (!j.ok) throw new Error(j.error || "load failed");
+    const c = mergeCompas(j.compas || []); mergePlan(j.plan || []);
+    save(); if (c.structural) { buildRows(); renderAll(); } else paint();
+    syncState(`Synced with Compás · ${new Date().toLocaleTimeString([], { hour:"numeric", minute:"2-digit" })}`, "ok");
+    if (Object.keys(S.pending).length) schedulePush();
+  } catch(e){ syncState("Couldn't reach Compás — working offline. " + e.message, "bad"); if (!quiet) toast("Sync failed"); }
+}
+let pt;
+function schedulePush(){ if (!endpoint()) return; clearTimeout(pt); pt = setTimeout(push, 700); }
+async function push(){
+  const keys = Object.keys(S.pending).filter(k => S.plan[k]); if (!keys.length) return;
+  try {
+    const res = await fetch(endpoint(), { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body:JSON.stringify({ key:PASS, action:"upsert", rows:keys.map(toRow) }) });
+    const j = await res.json(); if (!j.ok) throw new Error(j.error || "save failed");
+    keys.forEach(k => delete S.pending[k]); save();
+    syncState(`Saved to Compás · ${new Date().toLocaleTimeString([], { hour:"numeric", minute:"2-digit" })}`, "ok");
+  } catch(e){ syncState("Not saved to Compás yet — will retry. " + e.message, "bad"); }
+}
+
+/* ================= CSV import / export ================= */
+function csvEsc(v){ v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; }
+function parseCSV(text){
+  const out = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i+1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(f); f = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i+1] === "\n") i++; row.push(f); out.push(row); row = []; f = ""; }
+    else f += ch;
+  }
+  if (f || row.length) { row.push(f); out.push(row); }
+  const head = (out.shift() || []).map(h => h.trim());
+  return out.filter(r => r.some(Boolean)).map(r => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ""])));
+}
+$("#exportCsv").onclick = () => {
+  const H = ["PlanID","Date","Segment","Status","Who","ProposedBy","ProposedAt","ConfirmedBy","ConfirmedAt","LastUpdated"];
+  const keys = Object.keys(S.plan).sort();
+  const lines = [H.join(",")].concat(keys.map(k => { const r = toRow(k); return H.map(h => csvEsc(r[h])).join(","); }));
+  const blob = new Blob([lines.join("\n")], { type:"text/csv" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `WeekendPlan_2027_${key(new Date())}.csv`; a.click();
+  toast(`Exported ${keys.length} day${keys.length === 1 ? "" : "s"}`);
+};
+$("#importFile").onchange = async ev => {
+  const file = ev.target.files[0]; if (!file) return;
+  const rows = parseCSV(await file.text()); ev.target.value = "";
+  if (!rows.length) return toast("Nothing to import");
+  const cols = Object.keys(rows[0]);
+  if (cols.includes("Segment")) { const n = mergePlan(rows); save(); paint(); toast(`Imported ${n} planned days`); }
+  else if (cols.includes("ON With") || cols.includes("AM With")) {
+    const c = mergeCompas(rows); save(); if (c.structural) { buildRows(); renderAll(); } else paint();
+    toast(`Imported ${c.n} days from Compás`);
+  } else toast("Unrecognized CSV columns");
+};
+
+/* ================= gate & boot ================= */
+$("#endpoint").value = endpoint();
+$("#saveEp").onclick = () => { S.endpoint = $("#endpoint").value.trim(); save(); if (S.endpoint) pull(); else syncState("Not connected — changes save on this device only."); };
+$("#pullNow").onclick = () => endpoint() ? pull() : toast("Add the sync URL first");
+$("#switchMe").onclick = () => { S.me = ""; save(); showGate(2); };
+$("#lock").onclick = () => { S.unlocked = false; save(); showGate(1); };
+
+function showGate(step){
+  $("#app").classList.add("hidden"); $("#gate").classList.remove("hidden");
+  $("#step1").classList.toggle("hidden", step !== 1); $("#step2").classList.toggle("hidden", step !== 2);
+  if (step === 1) setTimeout(() => $("#pw").focus(), 50);
+}
+function openApp(){
+  $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden");
+  buildRows(); renderAll();
+  if (endpoint()) pull(true);
+}
+$("#pwForm").onsubmit = ev => {
+  ev.preventDefault();
+  if ($("#pw").value.trim().toLowerCase() === PASS) { S.unlocked = true; save(); $("#pwErr").textContent = ""; S.me ? openApp() : showGate(2); }
+  else { $("#pwErr").textContent = "That's not it."; $("#pw").select(); }
+};
+document.querySelectorAll("[data-me]").forEach(b => b.onclick = () => { S.me = b.dataset.me; save(); openApp(); });
+
+setInterval(() => { if (!document.hidden && S.unlocked) pull(true); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.unlocked) pull(true); });
+
+if (S.unlocked && S.me) openApp(); else showGate(S.unlocked ? 2 : 1);
+})();
+</script>
+</body>
+</html>
