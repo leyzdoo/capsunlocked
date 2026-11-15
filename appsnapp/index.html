@@ -35,8 +35,8 @@
   #knob { position: absolute; left: 40px; top: 40px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.7); }
   #tbtns { position: absolute; right: 20px; bottom: 80px; display: flex; flex-direction: column; gap: 12px; }
   #tbtns button { width: 78px; height: 58px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.3); color: #fff; font-size: 15px; font-family: inherit; }
-  #hotbar { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; gap: 4px; background: rgba(0,0,0,0.35); padding: 4px; border-radius: 10px; }
-  .slot { width: 62px; height: 54px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.15); color: #fff; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-shadow: 0 1px 2px #000; }
+  #hotbar { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: calc(100vw - 16px); overflow-x: auto; display: flex; gap: 4px; background: rgba(0,0,0,0.35); padding: 4px; border-radius: 10px; }
+  .slot { flex: 0 0 auto; width: 54px; height: 54px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.35); background: rgba(255,255,255,0.15); color: #fff; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-shadow: 0 1px 2px #000; }
   .slot.on { border-color: #fff; background: rgba(255,255,255,0.35); }
   .slot .sw { width: 22px; height: 16px; border-radius: 3px; margin-bottom: 2px; border: 1px solid rgba(0,0,0,0.4); }
   #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -89,7 +89,7 @@
 <div id="hotbar"></div>
 <div id="touch">
   <div id="joy"><div id="knob"></div></div>
-  <div id="tbtns"><button id="placeBtn">Place</button><button id="breakBtn">Break</button><button id="jumpBtn">Jump</button></div>
+  <div id="tbtns"><button id="placeBtn">Place</button><button id="breakBtn">Break</button><button id="driveBtn">Drive</button><button id="jumpBtn">Jump</button></div>
 </div>
 
 <div id="overlay"><div id="modal"></div></div>
@@ -138,6 +138,21 @@ var MATS = {
 };
 var MAT_ORDER = ['wood', 'stone', 'glass', 'roof', 'door'];
 var MAX_BUILD_HEIGHT = 40;
+// Furniture you can buy and place like blocks
+var FURN = {
+  table: { t: 10, name: 'Table', price: 200 }, chair: { t: 11, name: 'Chair', price: 100 },
+  couch: { t: 12, name: 'Couch', price: 400 }, lamp: { t: 13, name: 'Lamp', price: 150 },
+  shelf: { t: 14, name: 'Bookshelf', price: 300 }, tv: { t: 15, name: 'TV', price: 600 },
+  plant: { t: 16, name: 'Plant', price: 50 }, rug: { t: 17, name: 'Rug', price: 80 }
+};
+var FURN_ORDER = ['table', 'chair', 'couch', 'lamp', 'shelf', 'tv', 'plant', 'rug'];
+// Cars and boats go faster and let you carry more
+var VEHICLES = {
+  car: { name: 'Car', price: 3000, speed: 16, carry: 40, about: 'Drives on land. Fast!' },
+  boat: { name: 'Boat', price: 2000, speed: 12, carry: 40, about: 'Sails on lakes and the ocean.' }
+};
+var CARRY_ON_FOOT = 10;   // how much meat you can carry without a vehicle
+var SWIM_Y = -1.2;
 var REACH = 6;
 var HOUSE_NAMES = { 1: 'Small house', 2: 'Big house', 3: 'Mansion' };
 var COLORS = { Blue: '#378ADD', Green: '#639922', Purple: '#7F77DD', Orange: '#D85A30', Pink: '#D4537E', Black: '#2C2C2A' };
@@ -149,6 +164,7 @@ var ROBOT_NAMES = ['Bolt', 'Gizmo', 'Sprocket', 'Beep', 'Widget', 'Cog', 'Zip', 
 function freshState() {
   return { v: 2, tokens: 0, hunger: 100, lives: MAX_LIVES, land: [], houses: {},
     mat: { wood: 0, stone: 0, glass: 0, roof: 0, door: 0 }, bow: true, meat: 0,
+    furn: { table: 0, chair: 0, couch: 0, lamp: 0, shelf: 0, tv: 0, plant: 0, rug: 0 }, car: false, boat: false,
     apps: [], robotLots: [], clock: 15, day: 1, x: 0, z: -1.5, yaw: 0, started: false };
 }
 var state = freshState();
@@ -467,8 +483,14 @@ function lotOwner(key) {
 function hashKey(key) { var h = 0; for (var i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0; return Math.abs(h); }
 
 function buildPlot(c, key, cx, cz) {
-  addBox(c, PLOT, 0.12, PLOT, cx, 0, cz, M.grass, false);
+  var desert = townFeature(key) === 'desert';
+  addBox(c, PLOT, 0.12, PLOT, cx, 0, cz, desert ? M.sand : M.grass, false);
   var owner = lotOwner(key);
+  if (desert && !owner) {
+    addBox(c, 0.8, 2.4, 0.8, cx - 3, 0, cz - 2, col('#3E8E3A'), false);
+    addBox(c, 0.5, 0.9, 0.5, cx - 2.35, 1, cz - 2, col('#3E8E3A'), false);
+    addBox(c, 0.8, 1.6, 0.8, cx + 3, 0, cz - 4, col('#3E8E3A'), false);
+  }
   var front = cz + PLOT / 2;
   if (!owner) {
     addSign(c, 'FOR SALE\n20,000 tokens', cx + 4.5, front - 1, 3.2, '#E1F5EE', '#085041');
@@ -494,30 +516,63 @@ function buildForest(c, i, j, cx, cz) {
   var r = rng(i * 131 + 7, j * 977 + 3);
   var n = 6 + Math.floor(r() * 4);
   for (var k = 0; k < n; k++) {
-    var x = cx + (r() - 0.5) * (CELL - 2), z = cz + (r() - 0.5) * (CELL - 2), h = 3 + Math.floor(r() * 3);
+    var x = Math.floor(cx + (r() - 0.5) * (CELL - 2)) + 0.5, z = Math.floor(cz + (r() - 0.5) * (CELL - 2)) + 0.5, h = 3 + Math.floor(r() * 3);
     var big = r() < 0.25;
     if (z < EDGE + 4) continue;
-    c.trees.push([x, z, h, big]);
-    c.cols.push({ minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5, top: h });
+    var L = landInfo(x, z);
+    if (L.h < 0 || L.b === 'beach' || L.h >= 14) continue;
+    if (L.b === 'desert') { if (k % 3) continue; h = 2 + (k % 2); big = 2; }      // cactus
+    c.trees.push([x, z, h, big, L.h]);
+    c.cols.push({ minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5, top: L.h + h, base: L.h });
   }
   // Rocks and berry bushes
   for (var q = 0; q < 2; q++) {
-    var rx = cx + (r() - 0.5) * CELL, rz = cz + (r() - 0.5) * CELL;
+    var rx = Math.floor(cx + (r() - 0.5) * CELL), rz = Math.floor(cz + (r() - 0.5) * CELL);
     if (rz < EDGE + 4) continue;
-    if (r() < 0.5) addBox(c, 1, 1, 1, Math.round(rx), 0, Math.round(rz), M.stone, true);
-    else addBox(c, 1, 0.8, 1, Math.round(rx), 0, Math.round(rz), M.leaves, false);
+    var L2 = landInfo(rx, rz);
+    if (L2.h < 0) continue;
+    if (r() < 0.5 || L2.b === 'desert') addBox(c, 1, 1, 1, rx + 0.5, L2.h, rz + 0.5, M.stone, false);
+    else addBox(c, 1, 0.8, 1, rx + 0.5, L2.h, rz + 0.5, M.leaves, false);
   }
+}
+
+// Town lots: every now and then a desert lot or a park with a pond
+function townFeature(key) {
+  if (SPECIAL[key]) return null;
+  var p = key.split(','), i = +p[0], j = +p[1];
+  if (Math.abs(i) < 2 && j < 3) return null;
+  var h = hashKey(key + 'x') % 9;
+  if (h === 0) return lotOwner(key) ? null : 'pond';
+  if (h === 1 || h === 2) return 'desert';
+  return null;
+}
+function buildPond(c, cx, cz) {
+  addBox(c, PLOT, 0.12, PLOT, cx, 0, cz, M.grass, false);
+  addBox(c, 11, 0.5, 11, cx, 0, cz, M.sand, false);
+  addBox(c, 9.6, 0.52, 9.6, cx, 0, cz, M.water, false);
+  // a low wall all the way around the pond
+  addBox(c, 12, 1.4, 0.4, cx, 0, cz - 6, M.stone, true);
+  addBox(c, 12, 1.4, 0.4, cx, 0, cz + 6, M.stone, true);
+  addBox(c, 0.4, 1.4, 12, cx - 6, 0, cz, M.stone, true);
+  addBox(c, 0.4, 1.4, 12, cx + 6, 0, cz, M.stone, true);
+  addBox(c, 2, 0.5, 1, cx - 2, 0.5, cz + 1, col('#C24F36'), false); // a little red rowboat
+  [[-7, -7], [7, 7], [7, -7]].forEach(function (p) {
+    addBox(c, 1, 3, 1, cx + p[0], 0, cz + p[1], M.log, true);
+    addBox(c, 3, 2, 3, cx + p[0], 3, cz + p[1], M.leaves, false);
+  });
+  addSign(c, 'TOWN PARK', cx + 4.5, cz + PLOT / 2 - 1, 3, '#E1F5EE', '#085041');
 }
 
 function buildChunk(i, j) {
   var key = i + ',' + j;
-  var c = { key: key, group: new THREE.Group(), cols: [], zones: [], trees: [] };
+  var c = { key: key, group: new THREE.Group(), cols: [], zones: [], trees: [], geos: [] };
   var cx = i * CELL, cz = -(j * CELL + CELL / 2);
-  if (j < 0) buildForest(c, i, j, cx, cz);
+  if (j < 0) { buildTerrain(c, cx, cz); buildForest(c, i, j, cx, cz); }
   else {
     var sp = SPECIAL[key];
     if (sp === 'plaza') buildPlaza(c, cx, cz);
     else if (sp) buildShop(c, sp, cx, cz);
+    else if (townFeature(key) === 'pond') buildPond(c, cx, cz);
     else buildPlot(c, key, cx, cz);
     // Street lamp at the corner
     addBox(c, 0.25, 4, 0.25, cx + 9.2, 0, cz + 9.2, M.log, true);
@@ -531,6 +586,7 @@ function removeChunk(key) {
   var c = chunks[key];
   if (!c) return;
   scene.remove(c.group);
+  (c.geos || []).forEach(function (g) { g.dispose(); });
   delete chunks[key];
 }
 
@@ -547,25 +603,28 @@ var MAX_TREES = 1600;
 var trunkInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), M.log, MAX_TREES);
 var leafInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), M.leaves, MAX_TREES);
 var topInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), M.leaves, MAX_TREES);
-[trunkInst, leafInst, topInst].forEach(function (m) { m.count = 0; m.frustumCulled = false; scene.add(m); });
+var cactusInst = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), lam({ color: 0x3E8E3A }), 600);
+[trunkInst, leafInst, topInst, cactusInst].forEach(function (m) { m.count = 0; m.frustumCulled = false; scene.add(m); });
 var tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3();
 function setInst(mesh, n, x, y, z, sx, sy, sz) {
   tmpP.set(x, y, z); tmpS.set(sx, sy, sz); tmpM.compose(tmpP, tmpQ, tmpS); mesh.setMatrixAt(n, tmpM);
 }
 function rebuildTrees() {
-  var n = 0;
+  var n = 0, nc = 0;
   for (var k in chunks) {
     var t = chunks[k].trees;
     for (var q = 0; q < t.length && n < MAX_TREES; q++) {
-      var x = t[q][0], z = t[q][1], h = t[q][2], s = t[q][3] ? 1.4 : 1;
-      setInst(trunkInst, n, x, h / 2, z, 1, h, 1);
-      setInst(leafInst, n, x, h + 0.6, z, 4.2 * s, 2.6 * s, 4.2 * s);
-      setInst(topInst, n, x, h + 2.2 * s, z, 2.4 * s, 1.4 * s, 2.4 * s);
+      var x = t[q][0], z = t[q][1], h = t[q][2], b0 = t[q][4] || 0;
+      if (t[q][3] === 2) { if (nc < 600) setInst(cactusInst, nc++, x, b0 + h / 2, z, 0.8, h, 0.8); continue; }
+      var s = t[q][3] ? 1.4 : 1;
+      setInst(trunkInst, n, x, b0 + h / 2, z, 1, h, 1);
+      setInst(leafInst, n, x, b0 + h + 0.6, z, 4.2 * s, 2.6 * s, 4.2 * s);
+      setInst(topInst, n, x, b0 + h + 2.2 * s, z, 2.4 * s, 1.4 * s, 2.4 * s);
       n++;
     }
   }
-  trunkInst.count = leafInst.count = topInst.count = n;
-  trunkInst.instanceMatrix.needsUpdate = leafInst.instanceMatrix.needsUpdate = topInst.instanceMatrix.needsUpdate = true;
+  trunkInst.count = leafInst.count = topInst.count = n; cactusInst.count = nc;
+  trunkInst.instanceMatrix.needsUpdate = leafInst.instanceMatrix.needsUpdate = topInst.instanceMatrix.needsUpdate = cactusInst.instanceMatrix.needsUpdate = true;
 }
 
 // Ground: gravel streets in town, dark grass in the forest
@@ -583,7 +642,7 @@ var forestGround = groundPlane(T.fgrass, M.fgrass);
 function placeGround() {
   var sx = Math.round(player.x), sz = Math.round(player.z);
   townGround.position.set(sx, -0.01, Math.min(EDGE - 300, sz));
-  forestGround.position.set(sx, -0.01, Math.max(EDGE + 300, sz));
+  forestGround.position.set(sx, -5.05, Math.max(EDGE + 300, sz));
 }
 
 var lastCell = '';
@@ -602,6 +661,99 @@ function updateChunks(force) {
   rebuildTrees();
 }
 
+// =====================================================================
+// Wild lands: forest, mountains, deserts, lakes and oceans
+// =====================================================================
+T.sand = makeTex(function (x) { noise(x, '#D9C27E', 26); });
+T.snow = makeTex(function (x) { noise(x, '#F2F5F8', 12); });
+T.dirt = makeTex(function (x) { noise(x, '#7A5634', 30); });
+function terrMat(tex) { return lam({ map: tex, side: THREE.DoubleSide }); }
+var TM = { grass: terrMat(T.fgrass), sand: terrMat(T.sand), snow: terrMat(T.snow), stone: terrMat(T.stone), dirt: terrMat(T.dirt) };
+M.sand = lam({ map: T.sand });
+M.waterSurf = lam({ color: 0x2F7FD0, transparent: true, opacity: 0.72, depthWrite: false, side: THREE.DoubleSide });
+
+function hash2(x, z, s) {
+  var h = Math.imul(x | 0, 374761393) ^ Math.imul(z | 0, 668265263) ^ Math.imul(s + 1, 1442695041);
+  h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+function vnoise(x, z, size, seed) {
+  var fx0 = x / size, fz0 = z / size, gx = Math.floor(fx0), gz = Math.floor(fz0);
+  var fx = fx0 - gx, fz = fz0 - gz;
+  fx = fx * fx * (3 - 2 * fx); fz = fz * fz * (3 - 2 * fz);
+  var a = hash2(gx, gz, seed), b = hash2(gx + 1, gz, seed), c = hash2(gx, gz + 1, seed), d = hash2(gx + 1, gz + 1, seed);
+  return a + (b - a) * fx + (c - a) * fz + (a - b - c + d) * fx * fz;
+}
+// What the land is like at one column: its height (below 0 means water) and its biome
+var landCache = new Map();
+function landInfo(x, z) {
+  x = Math.floor(x); z = Math.floor(z);
+  if (z < EDGE) return { h: 0, b: 'town' };
+  var key = x * 100003 + z;
+  var hit = landCache.get(key);
+  if (hit) return hit;
+  if (landCache.size > 250000) landCache.clear();
+  var fade = Math.min(1, (z - EDGE) / 35);          // stays flat and safe right behind town
+  var ocean = vnoise(x, z, 230, 1) + (1 - fade);
+  var lake = vnoise(x, z, 38, 2) + (1 - fade);
+  var dry = vnoise(x, z, 140, 3);
+  var mt = vnoise(x, z, 75, 4) + vnoise(x, z, 16, 5) * 0.3 - 0.68;
+  var r;
+  if (ocean < 0.26) r = { h: ocean < 0.22 ? -5 : -2, b: 'ocean' };
+  else if (ocean < 0.30) r = { h: 0, b: 'beach' };
+  else if (lake < 0.17) r = { h: lake < 0.13 ? -3 : -1, b: 'lake' };
+  else {
+    var mfade = Math.max(0, Math.min(1, (z - EDGE - 25) / 60));   // mountains start a bit further out
+    var h = mt > 0 ? Math.min(30, Math.round(mt * 70 * mfade)) : 0;
+    var b = dry > 0.64 ? 'desert' : (h >= 3 ? 'mountains' : 'forest');
+    if (b === 'desert') h = Math.min(h, 6);
+    r = { h: h, b: b };
+  }
+  landCache.set(key, r);
+  return r;
+}
+function isWaterAt(x, z) { return landInfo(x, z).h < 0; }
+var BIOME_NAMES = { forest: 'the forest', mountains: 'the mountains', desert: 'the desert', lake: 'a lake', ocean: 'the ocean', beach: 'the beach' };
+
+// Build the blocky ground for one piece of the wild lands
+function buildTerrain(c, cx, cz) {
+  var x0 = cx - CELL / 2, z0 = cz - CELL / 2;
+  var bufs = {};
+  function buf(m) { return bufs[m] || (bufs[m] = { p: [], n: [], u: [] }); }
+  function quad(m, a, b, c2, d, nx, ny, nz, uw, vh) {
+    var B = buf(m);
+    [a, c2, b, a, d, c2].forEach(function (v) { B.p.push(v[0], v[1], v[2]); B.n.push(nx, ny, nz); });
+    B.u.push(0, 0, uw, vh, uw, 0, 0, 0, 0, vh, uw, vh);
+  }
+  for (var x = x0; x < x0 + CELL; x++) for (var z = Math.max(z0, EDGE); z < z0 + CELL; z++) {
+    var L = landInfo(x, z), h = L.h;
+    var top = h < 0 ? 'sand' : (L.b === 'desert' || L.b === 'beach') ? 'sand' : h >= 17 ? 'snow' : h >= 8 ? 'stone' : 'grass';
+    quad(top, [x, h, z], [x + 1, h, z], [x + 1, h, z + 1], [x, h, z + 1], 0, 1, 0, 1, 1);
+    if (h < 0) quad('water', [x, -0.15, z], [x + 1, -0.15, z], [x + 1, -0.15, z + 1], [x, -0.15, z + 1], 0, 1, 0, 1, 1);
+    var side = (L.b === 'desert' || L.b === 'beach' || h < 0) ? 'sand' : h >= 8 ? 'stone' : 'dirt';
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+      var hn = landInfo(x + d[0], z + d[1]).h;
+      if (z + d[1] < EDGE) hn = Math.min(hn, 0);
+      if (hn >= h) return;
+      var lo = hn, hi = h, ht = hi - lo;
+      if (d[0] === 1) quad(side, [x + 1, lo, z], [x + 1, lo, z + 1], [x + 1, hi, z + 1], [x + 1, hi, z], 1, 0, 0, 1, ht);
+      if (d[0] === -1) quad(side, [x, lo, z + 1], [x, lo, z], [x, hi, z], [x, hi, z + 1], -1, 0, 0, 1, ht);
+      if (d[1] === 1) quad(side, [x + 1, lo, z + 1], [x, lo, z + 1], [x, hi, z + 1], [x + 1, hi, z + 1], 0, 0, 1, 1, ht);
+      if (d[1] === -1) quad(side, [x, lo, z], [x + 1, lo, z], [x + 1, hi, z], [x, hi, z], 0, 0, -1, 1, ht);
+    });
+  }
+  for (var m in bufs) {
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(bufs[m].p, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(bufs[m].n, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(bufs[m].u, 2));
+    var mesh = new THREE.Mesh(g, m === 'water' ? M.waterSurf : TM[m]);
+    if (m === 'water') mesh.renderOrder = 2;
+    c.group.add(mesh);
+    c.geos.push(g);
+  }
+}
+
 // Square sun and moon
 var sunBox = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshBasicMaterial({ color: 0xFFE680, fog: false }));
 var moonBox = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.MeshBasicMaterial({ color: 0xEEF2FF, fog: false }));
@@ -613,7 +765,8 @@ scene.add(sunBox); scene.add(moonBox);
 // Block types: 1 wood, 2 stone, 3 glass, 4 roof, 5 door (facing one way), 7 door (other way), 6 bed
 // 8 and 9 are the top halves of doors.
 var BT = { WOOD: 1, STONE: 2, GLASS: 3, ROOF: 4, DOORX: 5, BED: 6, DOORZ: 7, DOORXT: 8, DOORZT: 9 };
-var SOLID = { 1: true, 2: true, 3: true, 4: true };
+var SOLID = { 1: true, 2: true, 3: true, 4: true, 10: true, 12: true, 14: true };
+var SOLID_FURN;
 var MAT_OF = { 1: 'wood', 2: 'stone', 3: 'glass', 4: 'roof', 5: 'door', 7: 'door' };
 T.door = makeTex(function (x) {
   noise(x, '#8A5A2B', 16); x.fillStyle = '#5A3A1A'; x.fillRect(0, 0, 16, 1); x.fillRect(0, 15, 16, 1); x.fillRect(0, 0, 1, 16); x.fillRect(15, 0, 1, 16);
@@ -628,6 +781,37 @@ var BLOCK_GEO = {
   5: geo(1, 1, 0.18), 8: geo(1, 1, 0.18), 7: geo(0.18, 1, 1), 9: geo(0.18, 1, 1), 6: geo(1, 0.55, 1)
 };
 var BLOCK_MAT = { 1: M.planks, 2: M.stone, 3: M.glassBlock, 4: M.roof, 5: M.door, 8: M.door, 7: M.door, 9: M.door, 6: M.bed };
+// Furniture is made of little colored boxes merged into one shape
+function furnGeo(boxes) {
+  var pos = [], nor = [], colr = [], c = new THREE.Color();
+  boxes.forEach(function (b) {
+    var g = new THREE.BoxGeometry(b[0], b[1], b[2]).toNonIndexed();
+    g.translate(b[3], b[4] + b[1] / 2, b[5]);
+    c.set(b[6]);
+    var p = g.attributes.position.array, n = g.attributes.normal.array;
+    for (var i = 0; i < p.length; i++) { pos.push(p[i]); nor.push(n[i]); }
+    for (var k = 0; k < p.length / 3; k++) colr.push(c.r, c.g, c.b);
+  });
+  var geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geom.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  geom.setAttribute('color', new THREE.Float32BufferAttribute(colr, 3));
+  return geom;
+}
+var WOODC = '#8B5A2B', DARKW = '#5A3A1A';
+var FURN_GEO = {
+  10: furnGeo([[0.95, 0.1, 0.95, 0, 0.72, 0, WOODC], [0.1, 0.72, 0.1, -0.4, 0, -0.4, DARKW], [0.1, 0.72, 0.1, 0.4, 0, -0.4, DARKW], [0.1, 0.72, 0.1, -0.4, 0, 0.4, DARKW], [0.1, 0.72, 0.1, 0.4, 0, 0.4, DARKW]]),
+  11: furnGeo([[0.55, 0.08, 0.55, 0, 0.42, 0, WOODC], [0.55, 0.55, 0.08, 0, 0.5, -0.24, WOODC], [0.07, 0.42, 0.07, -0.22, 0, -0.22, DARKW], [0.07, 0.42, 0.07, 0.22, 0, -0.22, DARKW], [0.07, 0.42, 0.07, -0.22, 0, 0.22, DARKW], [0.07, 0.42, 0.07, 0.22, 0, 0.22, DARKW]]),
+  12: furnGeo([[1, 0.4, 0.9, 0, 0.05, 0, '#378ADD'], [1, 0.5, 0.25, 0, 0.45, -0.33, '#185FA5'], [0.15, 0.3, 0.9, -0.43, 0.45, 0, '#185FA5'], [0.15, 0.3, 0.9, 0.43, 0.45, 0, '#185FA5']]),
+  13: furnGeo([[0.4, 0.06, 0.4, 0, 0, 0, '#444441'], [0.07, 0.7, 0.07, 0, 0.06, 0, '#444441'], [0.45, 0.3, 0.45, 0, 0.72, 0, '#FFE9A8']]),
+  14: furnGeo([[0.95, 1, 0.4, 0, 0, -0.28, DARKW], [0.12, 0.25, 0.25, -0.3, 0.12, -0.2, '#C24F36'], [0.1, 0.25, 0.25, -0.15, 0.12, -0.2, '#378ADD'], [0.12, 0.25, 0.25, 0.05, 0.12, -0.2, '#639922'], [0.1, 0.25, 0.25, -0.25, 0.55, -0.2, '#EF9F27'], [0.14, 0.25, 0.25, 0.2, 0.55, -0.2, '#7F77DD'], [0.9, 0.05, 0.42, 0, 0.45, -0.27, WOODC]]),
+  15: furnGeo([[0.9, 0.55, 0.08, 0, 0.3, 0, '#1a1a1a'], [0.8, 0.45, 0.02, 0, 0.35, 0.05, '#2F7FD0'], [0.08, 0.3, 0.08, 0, 0, 0, '#1a1a1a'], [0.35, 0.04, 0.25, 0, 0, 0, '#1a1a1a']]),
+  16: furnGeo([[0.4, 0.4, 0.4, 0, 0, 0, '#A8432D'], [0.55, 0.5, 0.55, 0, 0.4, 0, '#3E8E3A'], [0.3, 0.3, 0.3, 0, 0.85, 0, '#58A83A']]),
+  17: furnGeo([[0.98, 0.04, 0.98, 0, 0, 0, '#C24F36'], [0.7, 0.045, 0.7, 0, 0, 0, '#EF9F27']])
+};
+var FURN_MAT = lam({ vertexColors: true });
+var FURN_OF = {}; for (var fk0 in FURN) FURN_OF[FURN[fk0].t] = fk0;
+SOLID_FURN = { 10: true, 12: true, 14: true };
 
 var voxels = new Map();     // "x,y,z" -> block type, for all of your land
 var plotVox = {};           // land key -> Map(local index -> type)
@@ -663,14 +847,14 @@ function solidAt(x, y, z) { return !!SOLID[getVox(x, y, z)]; }
 function encodePlot(key) {
   var out = [], m = plotVox[key];
   if (!m) return '';
-  m.forEach(function (t, idx) { out.push(('00' + idx.toString(36)).slice(-3) + t); });
+  m.forEach(function (t, idx) { out.push(('00' + idx.toString(36)).slice(-3) + t.toString(36)); });
   return out.join('');
 }
 function decodePlot(key, s) {
   var b = plotBounds(key);
   plotVox[key] = new Map();
   for (var i = 0; i + 4 <= (s || '').length; i += 4) {
-    var idx = parseInt(s.substr(i, 3), 36), t = +s.charAt(i + 3);
+    var idx = parseInt(s.substr(i, 3), 36), t = parseInt(s.charAt(i + 3), 36);
     if (!t) continue;
     var lx = idx % PLOT, lz = Math.floor(idx / PLOT) % PLOT, y = Math.floor(idx / (PLOT * PLOT));
     setVox(key, b.x0 + lx, y, b.z0 + lz, t);
@@ -686,8 +870,9 @@ function refreshBlocks(key) {
   });
   for (var t in byType) {
     var list = byType[t];
-    var inst = new THREE.InstancedMesh(BLOCK_GEO[t], BLOCK_MAT[t], list.length);
-    var h = t == BT.BED ? 0.275 : 0.5;
+    var isF = FURN_GEO[t];
+    var inst = new THREE.InstancedMesh(isF || BLOCK_GEO[t], isF ? FURN_MAT : BLOCK_MAT[t], list.length);
+    var h = isF ? 0 : t == BT.BED ? 0.275 : 0.5;
     for (var i = 0; i < list.length; i++) {
       tmpP.set(list[i][0] + 0.5, list[i][1] + h, list[i][2] + 0.5); tmpS.set(1, 1, 1);
       tmpM.compose(tmpP, tmpQ, tmpS); inst.setMatrixAt(i, tmpM);
@@ -764,7 +949,10 @@ function placeBlock() {
   var tall = t === BT.DOORX || t === BT.DOORZ;
   if (tall && (getVox(p[0], p[1] + 1, p[2]) || !canBuildAt(p[0], p[1] + 1, p[2]))) { buildWarn("There's no room for a door there."); return; }
   if (SOLID[t] && overlapsPlayer(p[0], p[1], p[2])) { buildWarn("You're standing there! Step back a little."); return; }
-  if (slot.id !== 'bed') {
+  if (slot.furn) {
+    if (state.furn[slot.id] <= 0) { buildWarn("You don't have a " + FURN[slot.id].name.toLowerCase() + '. Buy one at the Supply Shop!'); return; }
+    state.furn[slot.id]--;
+  } else if (slot.id !== 'bed') {
     if (state.mat[slot.id] <= 0) { buildWarn("You're out of " + MATS[slot.id].name.toLowerCase() + '. Buy a box at the Supply Shop!'); return; }
     state.mat[slot.id]--;
   }
@@ -783,6 +971,7 @@ function breakBlock() {
   setVox(key, b[0], b[1], b[2], 0);
   if (t === BT.DOORX || t === BT.DOORZ) setVox(key, b[0], b[1] + 1, b[2], 0);
   if (MAT_OF[t]) state.mat[MAT_OF[t]]++;
+  if (FURN_OF[t]) state.furn[FURN_OF[t]]++;
   blockChanged(key);
 }
 
@@ -829,13 +1018,27 @@ function voxelGround(x, z) {
     for (var iy = top - 1; iy >= 0; iy--) if (solidAt(ix, iy, iz)) { best = Math.max(best, iy + 1); break; }
   return best;
 }
+function terrainTop(x, z) {
+  // Highest land under your feet that you can reach (you can step up 1 block)
+  if (z + RADIUS < EDGE) return null;
+  var best = -99;
+  for (var ix = Math.floor(x - 0.3); ix <= Math.floor(x + 0.3); ix++)
+    for (var iz = Math.floor(z - 0.3); iz <= Math.floor(z + 0.3); iz++) best = Math.max(best, landInfo(ix, iz).h);
+  return best;
+}
 function blocked(x, z) {
   if (voxels.size && blockedByVoxels(x, z)) return true;
+  var tt = terrainTop(x, z);
+  if (tt !== null) {
+    if (tt > player.y + (player.y < -0.5 ? 1.3 : 1.05)) return true;
+    if (ride === 'car' && isWaterAt(x, z)) return true;
+    if (ride === 'boat' && !isWaterAt(x, z)) return true;
+  }
   for (var k in chunks) {
     var cs = chunks[k].cols;
     for (var i = 0; i < cs.length; i++) {
       var b = cs[i];
-      if (player.y >= b.top - 0.05) continue;
+      if (player.y >= b.top - 0.05 || (b.base !== undefined && player.y + 1.7 < b.base)) continue;
       if (x + RADIUS > b.minX && x - RADIUS < b.maxX && z + RADIUS > b.minZ && z - RADIUS < b.maxZ) return true;
     }
   }
@@ -843,6 +1046,9 @@ function blocked(x, z) {
 }
 function groundAt(x, z) {
   var best = voxels.size ? voxelGround(x, z) : 0;
+  var tt = terrainTop(x, z);
+  if (tt !== null) best = tt;
+  if (tt !== null && tt < 0) best = Math.max(tt, ride === 'boat' ? -0.75 : SWIM_Y);
   for (var k in chunks) {
     var cs = chunks[k].cols;
     for (var i = 0; i < cs.length; i++) {
@@ -873,7 +1079,10 @@ window.addEventListener('keydown', function (e) {
   if (k === 'f') shoot();
   if (k === 'r') placeBlock();
   if (k === 'x') breakBlock();
-  if (k >= '1' && k <= String(SLOTS.length)) selectSlot(+k - 1);
+  if (k.length === 1 && k >= '0' && k <= '9') selectSlot(k === '0' ? 9 : +k - 1);
+  if (k === ']') selectSlot((sel + 1) % SLOTS.length);
+  if (k === '[') selectSlot((sel + SLOTS.length - 1) % SLOTS.length);
+  if (k === 'v') toggleRide();
   if (k === 'q') eatMeat();
   if (k === 'h') goHome();
 });
@@ -948,11 +1157,12 @@ window.addEventListener('touchend', function (e) {
   }
 });
 document.getElementById('jumpBtn').addEventListener('touchstart', function (e) { e.preventDefault(); jump(); }, { passive: false });
+document.getElementById('driveBtn').addEventListener('touchstart', function (e) { e.preventDefault(); toggleRide(); }, { passive: false });
 document.getElementById('placeBtn').addEventListener('touchstart', function (e) { e.preventDefault(); placeBlock(); }, { passive: false });
 document.getElementById('breakBtn').addEventListener('touchstart', function (e) { e.preventDefault(); breakBlock(); }, { passive: false });
 if (isTouch) document.getElementById('touch').style.display = 'block';
 
-function jump() { if (player.onGround && !modalOpen) { player.vy = 6.2; player.onGround = false; } }
+function jump() { if (player.onGround && !modalOpen && !ride) { player.vy = 6.2; player.onGround = false; } }
 
 // =====================================================================
 // Animals, shadow wolves, robots and arrows
@@ -1000,7 +1210,7 @@ function spawnAround(minR, maxR, minZ) {
   for (var tries = 0; tries < 10; tries++) {
     var a = Math.random() * Math.PI * 2, r = minR + Math.random() * (maxR - minR);
     var x = player.x + Math.cos(a) * r, z = player.z + Math.sin(a) * r;
-    if (z > minZ) return { x: x, z: z };
+    if (z > minZ && landInfo(x, z).h >= 0) return { x: x, z: z, y: landInfo(x, z).h };
   }
   return null;
 }
@@ -1020,7 +1230,7 @@ function updateSpawns(dt) {
     var p = spawnAround(14, 38, EDGE + 6);
     if (p) {
       var type = Math.random() < 0.55 ? 'pig' : 'deer';
-      var m = makeAnimal(type); m.position.set(p.x, 0, p.z); scene.add(m);
+      var m = makeAnimal(type); m.position.set(p.x, p.y, p.z); scene.add(m);
       animals.push({ mesh: m, type: type, dir: Math.random() * 6.28, timer: 2, speed: type === 'deer' ? 2.2 : 1.4 });
     }
   }
@@ -1029,7 +1239,7 @@ function updateSpawns(dt) {
   if (player.z > EDGE + 8 && wolves.length < maxWolves && Math.random() < (isNight() ? 0.5 : 0.15)) {
     var q = spawnAround(24, 40, EDGE + 18);
     if (q) {
-      var wm = makeWolf(); wm.position.set(q.x, 0, q.z); scene.add(wm);
+      var wm = makeWolf(); wm.position.set(q.x, q.y, q.z); scene.add(wm);
       wolves.push({ mesh: wm, hp: 2, dir: Math.random() * 6.28, timer: 2 });
     }
   }
@@ -1048,7 +1258,9 @@ function moveCritter(o, dt, speed, minZ) {
   var p = o.mesh.position;
   var nx = p.x + Math.sin(o.dir) * speed * dt, nz = p.z + Math.cos(o.dir) * speed * dt;
   if (nz < minZ) { nz = minZ; o.dir = Math.random() * 3 - 1.5; }
-  p.x = nx; p.z = nz;
+  var L = landInfo(nx, nz);
+  if (L.h < 0 || L.h > p.y + 1.1) { o.dir += Math.PI * (0.6 + Math.random() * 0.8); animateLegs(o.mesh, 0, dt); return; }
+  p.x = nx; p.z = nz; p.y = Math.max(0, L.h);
   o.mesh.rotation.y = o.dir;
   animateLegs(o.mesh, speed, dt);
 }
@@ -1069,7 +1281,7 @@ function updateCritters(dt) {
     if (playerInForest && d2 < chase * chase) {
       w.dir = Math.atan2(player.x - p.x, player.z - p.z);
       moveCritter(w, dt, night ? 4.4 : 3.6, EDGE + 1.5);
-      if (d2 < 1.3 * 1.3 && player.hurtTimer <= 0 && !modalOpen) loseLife('A shadow wolf got you!');
+      if (d2 < 1.3 * 1.3 && player.hurtTimer <= 0 && !modalOpen && !ride) loseLife('A shadow wolf got you!');
     } else {
       w.timer -= dt;
       if (w.timer <= 0) { w.timer = 2 + Math.random() * 2; w.dir = Math.random() * 6.28; }
@@ -1129,13 +1341,15 @@ function updateArrows(dt) {
     ar.mesh.position.addScaledVector(ar.vel, dt);
     tmpV.copy(ar.mesh.position).add(ar.vel);
     ar.mesh.lookAt(tmpV);
-    if (ar.mesh.position.y <= 0.05) { ar.stuck = true; ar.life = 2; return true; }
+    var gy = ar.mesh.position.z > EDGE ? Math.max(-0.15, landInfo(ar.mesh.position.x, ar.mesh.position.z).h) : 0;
+    if (ar.mesh.position.y <= gy + 0.05) { ar.stuck = true; ar.life = 2; return true; }
     var p = ar.mesh.position;
     for (var i = 0; i < animals.length; i++) {
       var a = animals[i].mesh;
       if (hitTest(p, a)) {
         scene.remove(a); animals.splice(i, 1); scene.remove(ar.mesh);
-        state.meat++; saveSoon(); toast('You got meat! Press Q or tap "Eat meat" to eat it.');
+        if (state.meat >= carryLimit()) toast("Your bag is full! A car or boat lets you carry more.");
+        else { state.meat++; saveSoon(); toast('You got meat! (' + state.meat + '/' + carryLimit() + ') Press Q or tap "Eat meat" to eat it.'); }
         return false;
       }
     }
@@ -1156,7 +1370,7 @@ function updateArrows(dt) {
   });
 }
 function hitTest(p, m) {
-  var dx = p.x - m.position.x, dz = p.z - m.position.z, dy = p.y - m.userData.hitY;
+  var dx = p.x - m.position.x, dz = p.z - m.position.z, dy = p.y - (m.position.y + m.userData.hitY);
   return dx * dx + dz * dz < 0.85 && Math.abs(dy) < 0.75;
 }
 
@@ -1224,7 +1438,7 @@ function newDay() {
   for (var tries = 0; tries < 30; tries++) {
     var i = ci + Math.floor(Math.random() * 13) - 6, j = Math.floor(Math.random() * 8);
     var key = i + ',' + j;
-    if (SPECIAL[key] || lotOwner(key)) continue;
+    if (SPECIAL[key] || lotOwner(key) || townFeature(key) === 'pond') continue;
     state.robotLots.push(key);
     if (state.robotLots.length > 60) state.robotLots.shift();
     rebuildChunk(key);
@@ -1248,6 +1462,7 @@ function homeSpot() {
 function goHome() {
   if (modalOpen) return;
   var h = homeSpot();
+  ride = null;
   player.x = h.x; player.z = h.z; player.y = 0; player.vy = 0; player.yaw = h.yaw; player.pitch = 0;
   updateChunks(true);
   toast(state.land.length ? "You're home!" : "You don't own land yet, so you're back in the town square.");
@@ -1290,10 +1505,11 @@ function getSpot() {
       if (player.x > z.minX && player.x < z.maxX && player.z > z.minZ && player.z < z.maxZ) return z;
     }
   }
-  if (player.z > EDGE) return { type: 'forest' };
+  if (player.z > EDGE) { var LI = landInfo(player.x, player.z); return { type: 'forest', biome: LI.b, water: LI.h < 0 }; }
   var ci = Math.round(player.x / CELL), cj = Math.floor(-player.z / CELL);
   var key = ci + ',' + cj, cx = ci * CELL, cz = -(cj * CELL + CELL / 2);
   if (SPECIAL[key]) return null;
+  if (townFeature(key) === 'pond') return { type: 'pond' };
   if (Math.abs(player.x - cx) < PLOT / 2 && Math.abs(player.z - cz) < PLOT / 2)
     return { type: 'lot', key: key, owner: lotOwner(key), level: state.houses[key] || 0 };
   return null;
@@ -1306,18 +1522,24 @@ function updatePrompt() {
   if (s) {
     if (s.type === 'workshop') { text = 'The workshop. Talk to the builder to make an app.'; label = 'Build an app'; act = openWorkshop; }
     else if (s.type === 'grocery') { text = 'The grocery store.'; label = 'Buy food'; act = openGrocery; }
-    else if (s.type === 'supply') { text = 'The supply shop: building materials and bows.'; label = 'Buy supplies'; act = openSupply; }
+    else if (s.type === 'supply') { text = 'The supply shop: blocks, furniture, cars and boats.'; label = 'Buy supplies'; act = openSupply; }
     else if (s.type === 'house' && s.owner === 'me') { text = 'Your ' + HOUSE_NAMES[s.level].toLowerCase() + '.'; label = 'Relax'; act = openRelax; }
     else if (s.type === 'house') { text = "A robot lives here. It's not your house!"; }
     else if (s.type === 'lot' && !s.owner) { text = 'This land is for sale.'; label = 'Buy land (20,000)'; act = function () { openBuyLand(s.key); }; }
     else if (s.type === 'lot' && s.owner === 'robot') { text = 'A robot owns this land.'; }
-    else if (s.type === 'lot') { text = isTouch ? 'Your land! Pick a block below, aim, and tap Place or Break.' : 'Your land! Pick a block (1-7). Right-click places, left-click breaks.'; }
+    else if (s.type === 'lot') { text = isTouch ? 'Your land! Pick a block or furniture below, aim, and tap Place or Break.' : 'Your land! Pick a block or furniture (number keys or [ ]). R or right-click places, X or left-click breaks.'; }
+    else if (s.type === 'pond') { text = 'The town park. Pretty pond!'; }
     else if (s.type === 'forest') {
       var far = Math.round(player.z - EDGE);
-      text = 'The forest. Town is ' + far + ' steps back.' + (isNight() ? ' Watch out, it\'s night!' : '') + ' Lost? Press Home.';
+      var where = BIOME_NAMES[s.biome] || 'the wild';
+      if (ride === 'boat') text = 'Sailing on ' + where + '. Press V near land to hop out.';
+      else if (ride === 'car') text = 'Driving through ' + where + '. Town is ' + far + ' steps back.';
+      else if (s.water) text = "You're swimming in " + where + '!' + (state.boat ? ' Press V to get in your boat.' : ' A boat would be faster.');
+      else text = 'You\'re in ' + where + '. Town is ' + far + ' steps back.' + (isNight() ? ' Watch out, it\'s night!' : '') + ' Lost? Press Home.';
     }
   } else if (player.hunger <= 0) text = "You're starving! Go eat something.";
   if (target && target.block && (target.type === BT.BED)) { text = 'Your bed.'; label = 'Sleep or relax'; act = openRelax; }
+  if (ride === 'car' && !(s && s.type === 'forest')) text = 'Driving! Press V to get out.';
   if (state.hunger <= 0) text = "You're starving and slow! Eat something. " + text;
   currentAction = act;
   var key = text + '|' + label;
@@ -1331,13 +1553,84 @@ useBtn.addEventListener('click', function () { doAction(); });
 function doAction() { if (!modalOpen && currentAction) currentAction(); }
 
 // =====================================================================
+// Cars and boats
+// =====================================================================
+var ride = null;   // 'car', 'boat' or null
+function makeCar() {
+  var g = new THREE.Group();
+  var body = col('#C24F36'), dark = col('#2C2C2A');
+  var add = function (w, h, d, x, y, z, m) { var b = new THREE.Mesh(geo(w, h, d), m); b.position.set(x, y + h / 2, z); g.add(b); };
+  add(2.0, 0.5, 3.8, 0, 0.3, -0.3, body);            // body
+  add(2.0, 0.12, 1.4, 0, 0.8, -1.5, body);           // hood
+  add(1.9, 0.35, 0.06, 0, 0.92, -0.8, M.glass);      // windshield
+  add(0.15, 0.35, 2.2, -0.95, 0.8, 0.2, body); add(0.15, 0.35, 2.2, 0.95, 0.8, 0.2, body); // doors
+  add(2.0, 0.3, 0.9, 0, 0.8, 1.1, body);             // trunk
+  [[-1.0, -1.6], [1.0, -1.6], [-1.0, 1.0], [1.0, 1.0]].forEach(function (p) { add(0.3, 0.7, 0.7, p[0], 0, p[1], dark); });
+  add(0.3, 0.2, 0.05, -0.65, 0.7, -2.22, M.lamp); add(0.3, 0.2, 0.05, 0.65, 0.7, -2.22, M.lamp);
+  g.visible = false; scene.add(g); return g;
+}
+function makeBoat() {
+  var g = new THREE.Group();
+  var hull = col('#F1EFE8'), trim = col('#185FA5');
+  var add = function (w, h, d, x, y, z, m) { var b = new THREE.Mesh(geo(w, h, d), m); b.position.set(x, y + h / 2, z); g.add(b); };
+  add(1.8, 0.35, 3.6, 0, -0.2, 0, hull);
+  add(0.25, 0.5, 3.6, -0.9, 0.15, 0, trim); add(0.25, 0.5, 3.6, 0.9, 0.15, 0, trim);
+  add(1.8, 0.5, 0.25, 0, 0.15, 1.75, trim); add(1.2, 0.5, 0.6, 0, 0.15, -1.95, trim);
+  add(0.12, 3, 0.12, 0, 0.15, -0.6, M.log); add(0.05, 2, 1.4, 0.06, 1, -0.05, col('#FFFFFF'));
+  g.visible = false; scene.add(g); return g;
+}
+var carModel = makeCar(), boatModel = makeBoat();
+function carryLimit() { return CARRY_ON_FOOT + (state.car ? VEHICLES.car.carry : 0) + (state.boat ? VEHICLES.boat.carry : 0); }
+function toggleRide() {
+  if (modalOpen) return;
+  if (ride) {
+    if (ride === 'boat') {
+      // Hop out onto the nearest land
+      var best = null;
+      for (var r = 1; r <= 4 && !best; r++) for (var a = 0; a < 16; a++) {
+        var x = player.x + Math.sin(a / 16 * 6.283) * r, z = player.z + Math.cos(a / 16 * 6.283) * r;
+        if (!isWaterAt(x, z) && landInfo(x, z).h <= 1) { best = { x: x, z: z }; break; }
+      }
+      if (!best) { toast('Sail closer to land to hop out.'); return; }
+      player.x = best.x; player.z = best.z; player.y = Math.max(0, landInfo(best.x, best.z).h);
+    }
+    ride = null; carModel.visible = boatModel.visible = false;
+    toast('You hopped out.');
+    return;
+  }
+  var water = player.z >= EDGE && isWaterAt(player.x, player.z);
+  if (water) {
+    if (!state.boat) { toast('You need a boat to sail. Buy one at the Supply Shop!'); return; }
+    ride = 'boat'; toast('Sailing! Press V (or Drive) to hop out near land.');
+  } else {
+    if (!state.car) { toast(state.boat ? 'Boats only work on water. Buy a car to drive on land!' : 'You need a car to drive. Buy one at the Supply Shop!'); return; }
+    for (var k in chunks) for (var i = 0; i < chunks[k].zones.length; i++) {
+      var zn = chunks[k].zones[i];
+      if (player.x > zn.minX && player.x < zn.maxX && player.z > zn.minZ && player.z < zn.maxZ) { toast("You can't drive inside a building!"); return; }
+    }
+    ride = 'car'; toast('Vroom! Press V (or Drive) to get out.');
+  }
+}
+function updateRideModels() {
+  carModel.visible = ride === 'car'; boatModel.visible = ride === 'boat';
+  var m = ride === 'car' ? carModel : ride === 'boat' ? boatModel : null;
+  if (!m) return;
+  m.position.set(player.x, ride === 'boat' ? -0.2 : player.y, player.z);
+  m.rotation.y = player.yaw;
+}
+
+// =====================================================================
 // Hotbar (pick what's in your hand)
 // =====================================================================
 var SLOTS = [
   { id: 'wood', t: 1, label: 'Wood', sw: '#B5884E' }, { id: 'stone', t: 2, label: 'Stone', sw: '#8A8A8A' },
   { id: 'glass', t: 3, label: 'Glass', sw: '#CFEFFF' }, { id: 'roof', t: 4, label: 'Roof', sw: '#7A3B2E' },
   { id: 'door', t: 5, label: 'Door', sw: '#8A5A2B' }, { id: 'bed', t: 6, label: 'Bed', sw: '#C0392B' },
-  { id: 'bow', label: 'Bow', sw: '#7A4A22' }
+  { id: 'bow', label: 'Bow', sw: '#7A4A22' },
+  { id: 'table', t: 10, label: 'Table', sw: '#8B5A2B', furn: true }, { id: 'chair', t: 11, label: 'Chair', sw: '#A9773F', furn: true },
+  { id: 'couch', t: 12, label: 'Couch', sw: '#378ADD', furn: true }, { id: 'lamp', t: 13, label: 'Lamp', sw: '#FFE9A8', furn: true },
+  { id: 'shelf', t: 14, label: 'Books', sw: '#5A3A1A', furn: true }, { id: 'tv', t: 15, label: 'TV', sw: '#1a1a1a', furn: true },
+  { id: 'plant', t: 16, label: 'Plant', sw: '#3E8E3A', furn: true }, { id: 'rug', t: 17, label: 'Rug', sw: '#C24F36', furn: true }
 ];
 var sel = 0;
 function shortNum(n) { return n >= 1000000 ? Math.floor(n / 100000) / 10 + 'M' : n >= 10000 ? Math.floor(n / 1000) + 'k' : String(n); }
@@ -1345,13 +1638,14 @@ function selectSlot(i) { sel = i; updateHotbar(); toast(SLOTS[i].label + (SLOTS[
 function updateHotbar() {
   var h = '';
   SLOTS.forEach(function (s, i) {
-    var cnt = s.id === 'bow' || s.id === 'bed' ? 'free' : shortNum(state.mat[s.id]);
+    var cnt = s.id === 'bow' || s.id === 'bed' ? 'free' : s.furn ? String(state.furn[s.id]) : shortNum(state.mat[s.id]);
     h += '<div class="slot' + (i === sel ? ' on' : '') + '" data-s="' + i + '"><div class="sw" style="background:' + s.sw + '"></div>' +
-      (isTouch ? '' : (i + 1) + ' ') + s.label + '<br>' + cnt + '</div>';
+      (isTouch || i > 9 ? '' : ((i + 1) % 10) + ' ') + s.label + '<br>' + cnt + '</div>';
   });
   var hb = document.getElementById('hotbar');
   hb.innerHTML = h;
   hb.querySelectorAll('.slot').forEach(function (el) { el.onclick = function () { selectSlot(+el.getAttribute('data-s')); }; });
+  var on = hb.querySelector('.slot.on'); if (on && on.scrollIntoView) try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
 }
 
 // =====================================================================
@@ -1511,12 +1805,23 @@ function openGrocery() {
 
 // ---------- Supply shop ----------
 function openSupply(msg) {
-  var html = '<h2>Supply shop</h2><p>"Need building stuff? I\'ve got boxes of it!" · Tokens: <b>' + fmt(state.tokens) + '</b></p>';
+  var html = '<h2>Supply shop</h2><p>"Building stuff, furniture, cars and boats. I\'ve got it all!" · Tokens: <b>' + fmt(state.tokens) + '</b></p><h3>Building blocks</h3>';
   MAT_ORDER.forEach(function (m) {
     var M2 = MATS[m];
     html += '<div class="item"><div><b>' + M2.name + '</b><div class="small">Box of ' + fmt(M2.box) + ' for ' + fmt(M2.price) + (M2.price === 1 ? ' token' : ' tokens') +
       ' · You have ' + fmt(state.mat[m]) + '</div></div><button class="btn" data-m="' + m + '">Buy a box</button></div>';
   });
+  html += '<h3>Furniture</h3>';
+  FURN_ORDER.forEach(function (k) {
+    html += '<div class="item"><div><b>' + FURN[k].name + '</b><div class="small">' + fmt(FURN[k].price) + ' tokens · You have ' + state.furn[k] + '</div></div><button class="btn" data-f="' + k + '">Buy 1</button></div>';
+  });
+  html += '<h3>Cars and boats</h3>';
+  ['car', 'boat'].forEach(function (k) {
+    var V = VEHICLES[k];
+    html += '<div class="item"><div><b>' + V.name + '</b><div class="small">' + V.about + ' Lets you carry ' + V.carry + ' more. ' + (state[k] ? 'You have one! Press V' + (isTouch ? ' or tap Drive' : '') + ' to use it.' : fmt(V.price) + ' tokens') + '</div></div>' +
+      (state[k] ? '' : '<button class="btn" data-v="' + k + '">Buy</button>') + '</div>';
+  });
+  html += '<h3>Free stuff</h3>';
   html += '<div class="item"><div><b>Bow and arrows</b><div class="small">Free! Arrows never run out. It\'s in your hotbar (slot 7).</div></div></div>';
   html += '<div class="item"><div><b>Beds</b><div class="small">Free! Place one in your house to sleep (slot 6).</div></div></div>';
   html += '<div class="err" id="err">' + (msg ? esc(msg) : '') + '</div><div class="row"><button class="btn main" id="leave">Leave</button></div>';
@@ -1528,6 +1833,22 @@ function openSupply(msg) {
       if (state.tokens < M2.price) { err.textContent = 'Not enough tokens. Build an app at the Workshop!'; return; }
       state.tokens -= M2.price; state.mat[m] += M2.box; saveNow(); updateHotbar(); openSupply();
       toast('You got ' + fmt(M2.box) + ' ' + M2.name.toLowerCase() + '!');
+    };
+  });
+  modal.querySelectorAll('[data-f]').forEach(function (b) {
+    b.onclick = function () {
+      var k = b.getAttribute('data-f'), F = FURN[k];
+      if (state.tokens < F.price) { err.textContent = 'Not enough tokens. Build an app at the Workshop!'; return; }
+      state.tokens -= F.price; state.furn[k]++; saveNow(); updateHotbar(); openSupply();
+      toast('You bought a ' + F.name.toLowerCase() + '! Pick it in your hotbar to place it.');
+    };
+  });
+  modal.querySelectorAll('[data-v]').forEach(function (b) {
+    b.onclick = function () {
+      var k = b.getAttribute('data-v'), V = VEHICLES[k];
+      if (state.tokens < V.price) { err.textContent = 'Not enough tokens. Build an app at the Workshop!'; return; }
+      state.tokens -= V.price; state[k] = true; saveNow(); openSupply();
+      toast(k === 'car' ? 'You got a car! Go outside and press V' + (isTouch ? ' (or tap Drive)' : '') + ' to drive.' : 'You got a boat! Swim into a lake or the ocean and press V' + (isTouch ? ' (or tap Drive)' : '') + ' to sail.');
     };
   });
   bind('leave', closeModal);
@@ -1564,7 +1885,9 @@ function openBag() {
   var apps = state.apps.length ? state.apps.slice().reverse().map(appCard).join('') : '<p class="small">No apps yet. Go to the Workshop!</p>';
   openModal('<h2>My stuff</h2><p>Day ' + state.day + ' · Tokens: <b>' + fmt(state.tokens) + '</b> · Lives: <b>' + state.lives + '</b></p>' +
     '<h3>Supplies</h3><p class="small">' + mats + '</p>' +
-    '<h3>Food</h3><p class="small">Meat: <b>' + state.meat + '</b></p>' +
+    '<h3>Furniture</h3><p class="small">' + FURN_ORDER.map(function (k) { return FURN[k].name + ': <b>' + state.furn[k] + '</b>'; }).join(' · ') + '</p>' +
+    '<h3>Rides</h3><p class="small">Car: <b>' + (state.car ? 'Yes' : 'No') + '</b> · Boat: <b>' + (state.boat ? 'Yes' : 'No') + '</b></p>' +
+    '<h3>Food</h3><p class="small">Meat: <b>' + state.meat + ' / ' + carryLimit() + '</b> (how much you can carry)</p>' +
     '<h3>My properties</h3><ul class="small">' + props + '</ul>' +
     (extra ? '<p class="small">Rent: ' + fmt(extra * RENT) + ' tokens every morning</p>' : '') +
     '<h3>My apps (' + (state.appsMade || state.apps.length) + ' built)</h3>' + apps +
@@ -1573,9 +1896,9 @@ function openBag() {
   bind('leave', closeModal);
 }
 function controlsText() {
-  return isTouch ? 'Move with the joystick and drag the screen to look around. Pick a block at the bottom, aim at your land, and tap Place or Break. The purple button uses things.' :
+  return isTouch ? 'Move with the joystick and drag the screen to look around. Pick a block or furniture at the bottom, aim at your land, and tap Place or Break. Tap Drive to use your car or boat. The purple button uses things.' :
     '<b>No mouse needed:</b> <kbd>W</kbd><kbd>S</kbd> or up/down arrows walk, left/right arrows turn, <kbd>A</kbd><kbd>D</kbd> step sideways, <kbd>I</kbd> looks up, <kbd>K</kbd> looks down. <kbd>R</kbd> places a block, <kbd>X</kbd> breaks one. Hold <kbd>Shift</kbd> to run, <kbd>Space</kbd> to jump. ' +
-    'Drag with the mouse (or click once to lock it) to look around. Pick a block with <kbd>1</kbd>-<kbd>7</kbd> or the mouse wheel. ' +
+    'Drag with the mouse (or click once to lock it) to look around. Pick a block or furniture with <kbd>1</kbd>-<kbd>0</kbd>, <kbd>[</kbd> <kbd>]</kbd> or the mouse wheel. <kbd>V</kbd> gets in or out of your car or boat. ' +
     '<b>Right-click</b> places a block, <b>left-click</b> breaks one (or <kbd>R</kbd> and <kbd>X</kbd>). <kbd>E</kbd> uses things, <kbd>F</kbd> shoots your bow, <kbd>Q</kbd> eats meat, <kbd>H</kbd> goes home. <kbd>Esc</kbd> frees the mouse.';
 }
 
@@ -1613,6 +1936,7 @@ function applySave(json) {
     for (var k in s) if (k in d) s[k] = d[k];
     s.appsMade = d.appsMade; s.bow = true;
     for (var m in freshState().mat) if (typeof s.mat[m] !== 'number') s.mat[m] = 0;
+    var ff = freshState().furn; for (var fk in ff) if (typeof s.furn[fk] !== 'number') s.furn[fk] = 0;
     state = s;
   } catch (e) {}
 }
@@ -1660,6 +1984,8 @@ function loop(now) {
     if (len > 0) {
       if (len > 1) { mx /= len; mz /= len; }
       var speed = (keys['shift'] || (joyId !== null && len > 0.95)) ? RUN : WALK;
+      if (ride) speed = VEHICLES[ride].speed * (keys['shift'] ? 1.4 : 1);
+      else if (player.z > EDGE && isWaterAt(player.x, player.z) && player.y < -0.5) speed = 2.6;   // swimming
       if (state.hunger <= 0) speed *= 0.5;
       var sy = Math.sin(player.yaw), cy = Math.cos(player.yaw);
       var vx = (-sy * mz + cy * mx) * speed * dt, vz = (-cy * mz - sy * mx) * speed * dt;
@@ -1677,6 +2003,7 @@ function loop(now) {
     }
     var g = groundAt(player.x, player.z);
     if (player.y <= g) { player.y = g; player.vy = 0; player.onGround = true; }
+    if (ride === 'boat') { player.y = -0.75; player.vy = 0; }
     player.hurtTimer -= dt;
     state.hunger = Math.max(0, state.hunger - dt / HUNGER_DROP_SECONDS);
 
@@ -1685,6 +2012,7 @@ function loop(now) {
     updateRobots(dt);
     updateArrows(dt);
   }
+  updateRideModels();
   updateSky(dt);
   updateChunks(false);
   placeGround();
@@ -1712,7 +2040,7 @@ function start() {
     state.started = true;
     openModal('<h2>Welcome to Appsnapp 1.0!</h2>' +
       '<p>Build apps at the <b>Workshop</b> to earn tokens. Buy food at the <b>Grocery</b>, and land, building supplies and a bow at the <b>Supply Shop</b>.</p>' +
-      '<p>Buy land, then build your house yourself, block by block, like Minecraft creative. The town is always safe. The forest behind you has animals to hunt, but shadow wolves hunt <i>you</i>, especially at night. You have 4 lives.</p>' +
+      '<p>Buy land, then build your house yourself, block by block, and fill it with furniture. Explore mountains, deserts, lakes and the ocean. A car or boat gets you there faster. The town is always safe. The forest behind you has animals to hunt, but shadow wolves hunt <i>you</i>, especially at night. You have 4 lives.</p>' +
       '<p class="small">' + controlsText() + '</p>' +
       '<div class="row"><button class="btn main" id="go">Let\'s go!</button></div>');
     bind('go', closeModal);
@@ -1723,7 +2051,7 @@ function start() {
 }
 
 // For testing in a browser console
-window.__game = { place: placeBlock, brk: breakBlock, sel: selectSlot, target: function () { return target; }, voxels: voxels, state: function () { return state; }, player: player, chunks: chunks, getSpot: getSpot, newDay: newDay, wolves: function () { return wolves; }, animals: function () { return animals; } };
+window.__game = { ride: function () { return ride; }, toggleRide: function () { toggleRide(); }, landInfo: landInfo, place: placeBlock, brk: breakBlock, sel: selectSlot, target: function () { return target; }, voxels: voxels, state: function () { return state; }, player: player, chunks: chunks, getSpot: getSpot, newDay: newDay, wolves: function () { return wolves; }, animals: function () { return animals; } };
 
 loadThenStart();
 })();
