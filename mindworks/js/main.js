@@ -569,3 +569,17 @@ if (Store.local) window.__mw = { G, cam, camera, get parked() { return parked; }
 initLogin();
 boot().catch(err => { console.error(err); setProgress(1, 'Something went wrong loading Mindworks: ' + err.message); });
 addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+/* when a new Mindworks update goes live, offer a button to load it (so an iPad left open never gets stuck on an old version) */
+(function watchForUpdates() {
+  let mine = null;
+  const check = () => fetch('/mindworks/version.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : null).then(v => {
+    if (!v) return; v = v.trim();
+    if (mine == null) { mine = v; return; }
+    if (v !== mine && !document.getElementById('updBtn')) {
+      const b = el('button', { id: 'updBtn', class: 'btn go', style: 'position:fixed;left:50%;top:max(70px,calc(env(safe-area-inset-top) + 58px));transform:translateX(-50%);z-index:40;font-size:18px;box-shadow:0 8px 24px #0007' }, '🎉 New update! Tap to get it');
+      b.onclick = () => { flush(); setTimeout(() => location.reload(), 300); }; document.body.appendChild(b);
+    }
+  }).catch(() => {});
+  check(); setInterval(check, 60000);
+  addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+})();

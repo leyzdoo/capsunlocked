@@ -35,19 +35,20 @@ export function makeJumbo() {
   const nose = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2), white); nose.rotation.x = Math.PI / 2; nose.scale.set(1, 1.5, 1); nose.position.set(0, Y, 14); out.add(nose);
   // tail: tapers and sweeps up
   const tail = new THREE.Mesh(new THREE.CylinderGeometry(.45, R, 9, 32), white); tail.rotation.x = -Math.PI / 2 + .09; tail.position.set(0, Y + .45, -18.4); tail.castShadow = true; out.add(tail);
-  // THE HUMP — the 747's famous upper deck, from the nose back about a third of the plane
-  const hump = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.9, 9, 28), white); hump.rotation.x = Math.PI / 2; hump.position.set(0, Y + 1.25, 8.5); hump.castShadow = true; out.add(hump);
-  const hf = new THREE.Mesh(new THREE.SphereGeometry(1.9, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); hf.rotation.x = Math.PI / 2; hf.scale.set(1, 2.1, 1); hf.position.set(0, Y + 1.25, 13); out.add(hf);
-  const hb = new THREE.Mesh(new THREE.SphereGeometry(1.9, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); hb.rotation.x = -Math.PI / 2; hb.scale.set(1, 3.2, 1); hb.position.set(0, Y + 1.25, 4); out.add(hb);
-  // cockpit windows at the front of the hump
-  [-1, 1].forEach(s => { const w = bx(out, .9, .42, .1, glass, s * .55, Y + 2.05, 16.2, false); w.rotation.set(-.75, s * .45, 0); });
-  const wc = bx(out, .75, .42, .1, glass, 0, Y + 2.08, 16.45, false); wc.rotation.x = -.8;
+  // THE HUMP — the 747's famous upper deck: it rises well above the body at the front and slopes down into the nose
+  const HY = Y + 2.0;
+  const hump = new THREE.Mesh(new THREE.CylinderGeometry(1.85, 1.85, 8, 28), white); hump.rotation.x = Math.PI / 2; hump.position.set(0, HY, 8.8); hump.castShadow = true; out.add(hump);
+  const hf = new THREE.Mesh(new THREE.SphereGeometry(1.85, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); hf.rotation.x = Math.PI / 2 + .42; hf.scale.set(1, 2.9, 1); hf.position.set(0, HY, 12.75); hf.castShadow = true; out.add(hf);
+  const hb = new THREE.Mesh(new THREE.SphereGeometry(1.85, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); hb.rotation.x = -Math.PI / 2; hb.scale.set(1, 4.2, 1); hb.position.set(0, HY, 4.85); hb.castShadow = true; out.add(hb);
+  // cockpit windows on the sloping front of the hump
+  [-1, 1].forEach(s => { const w = bx(out, .85, .4, .1, glass, s * .6, HY + .55, 15.0, false); w.rotation.set(-1.0, s * .5, 0); });
+  const wc = bx(out, .7, .4, .1, glass, 0, HY + .68, 15.25, false); wc.rotation.x = -1.05;
   // stripes + windows
   [-1, 1].forEach(s => {
     bx(out, .08, .16, 27.5, navy, s * (R - .02), Y - .55, 0, false); bx(out, .08, .06, 27.5, gold, s * (R - .02), Y - .78, 0, false);
     const wins = new THREE.InstancedMesh(new THREE.BoxGeometry(.08, .36, .26), glass, 60), m4 = new THREE.Matrix4(); let n = 0;
     for (let z = -12.5; z <= 12.6 && n < 46; z += .58) if (Math.abs(z - 8.3) > .6) m4.makeTranslation(s * (R - .03), Y - .2, z), wins.setMatrixAt(n++, m4);
-    for (let z = 4.5; z <= 12.4 && n < 60; z += .6) m4.makeTranslation(s * 1.85, Y + 1.85, z), wins.setMatrixAt(n++, m4);
+    for (let z = 3.5; z <= 12.4 && n < 60; z += .6) m4.makeTranslation(s * 1.84, HY + .35, z), wins.setMatrixAt(n++, m4);
     wins.count = n; out.add(wins);
   });
   [8.3, -2, -11].forEach(z => bx(out, .06, 1.25, .7, belly, 2.48, Y - .15, z, false)); // doors on the left side
