@@ -1,85 +1,86 @@
-// Plane 4: the Royal Jumbo — biggest plane in Mindworks. Double-decker, luxury cabin,
-// a map you tap to choose where to go, and autopilot so you can relax in the back.
+// Plane 4: the 747 Jumbo Jet — the biggest plane in Mindworks. The hump on top holds the
+// upper deck and the cockpit, four engines, and a real cabin inside (see cabins.js).
+// Tap the map to choose where to go, and autopilot so you can relax in the back.
 import * as THREE from 'three';
 import { CH, WATER_Y, heightAt, biomeOf, blockIcon, blockName } from './world.js';
 import { planeMakers } from './vehicles.js';
+import { build747 } from './cabins.js';
+import { signTexture } from './tex.js';
 
 const std = (c, r = .6, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
 function bx(g, w, h, d, m, x, y, z, shadow = true) { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = shadow; g.add(o); return o; }
-function wheelSet(g, x, z, dark) {
-  bx(g, .25, 1.6, .25, dark, x, 1.1, z);
-  [-.35, .35].forEach(o => { const t = new THREE.Mesh(new THREE.CylinderGeometry(.45, .45, .35, 16), std(0x111111, .9)); t.rotation.z = Math.PI / 2; t.position.set(x + o, .45, z); g.add(t); });
+function gear(g, x, z, dark, n = 2) {
+  bx(g, .28, 1.5, .28, dark, x, 1.05, z);
+  for (let k = 0; k < n; k++) [-.32, .32].forEach(o => { const t = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .3, 16), std(0x111111, .9)); t.rotation.z = Math.PI / 2; t.position.set(x + o, .42, z + (n > 1 ? (k - .5) * 1 : 0)); g.add(t); });
 }
 
-/* seats you can sit in, in the plane's own coordinates (the plane faces +z) */
+/* the real cabin (cabins.js) shrunk to fit inside the plane: cabin coords → plane coords */
+const CS = .62, CY = 2.6;
+const toPlane = (x, y, z) => [-CS * x, CY + CS * y, -CS * z];
+/* seats you can sit in while flying, in the plane's own coordinates (the plane faces +z) */
 export const SEATS = [
-  { name: 'Upper deck lounge', pos: [1.25, 5.15, -5.6], yaw: -Math.PI / 2 + 1.0 },
-  { name: 'Lower deck window seat', pos: [-.45, 2.75, -5.2], yaw: -.45 },
-  { name: 'Cockpit', pos: [0, 5.3, 9.9], yaw: 0 }
+  { name: 'Upper deck lounge', pos: toPlane(-1.4, 3 + 1.5, -8.9), yaw: .08 },
+  { name: 'Seat 32A, by the window', pos: toPlane(-2.2, 1.4, 8.3), yaw: .12 },
+  { name: 'Cockpit jump seat', pos: toPlane(0, 3 + 1.75, -19.7), yaw: 0, down: .5 }
 ];
 
 export function makeJumbo() {
   const g = new THREE.Group(), out = new THREE.Group(), cabin = new THREE.Group();
   g.add(out); g.add(cabin); cabin.visible = false; g.userData.outside = out; g.userData.cabin = cabin;
-  const white = std(0xf7f7fa, .3, .2), navy = std(0x14204a, .4, .3), gold = std(0xd8b04a, .25, .9), dark = std(0x1e1e1e, .6), glass = std(0x0f1a2a, .05, .8);
-  // body: tall oval tube, two decks of windows
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 20, 28), white); body.rotation.x = Math.PI / 2; body.scale.set(1, 1, 1.32); body.position.set(0, 3.5, 0); body.castShadow = true; out.add(body);
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(2.2, 28, 18, 0, Math.PI * 2, 0, Math.PI / 2), white); nose.rotation.x = Math.PI / 2; nose.scale.set(1, 1.32 * 1.1, 1.32); nose.position.set(0, 3.5, 10); out.add(nose);
-  const tail = new THREE.Mesh(new THREE.ConeGeometry(2.2, 6, 28), white); tail.rotation.x = -Math.PI / 2; tail.scale.set(1, 1, 1.32); tail.position.set(0, 3.9, -13); out.add(tail);
-  const belly = new THREE.Mesh(new THREE.CylinderGeometry(2.22, 2.22, 20, 28, 1, true, Math.PI * 1.62, Math.PI * .76), navy); belly.rotation.x = Math.PI / 2; belly.scale.set(1, 1, 1.32); belly.position.set(0, 3.5, 0); out.add(belly);
+  const white = std(0xf7f7fa, .3, .2), belly = std(0xc9ced8, .35, .3), navy = std(0x14204a, .4, .3), gold = std(0xd8b04a, .25, .9), dark = std(0x1e1e1e, .6), glass = std(0x0f1a2a, .05, .8), metal = std(0xaab1bd, .3, .9);
+  const R = 2.5, Y = 3.8;
+  // round body
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(R, R, 28, 32), white); body.rotation.x = Math.PI / 2; body.position.set(0, Y, 0); body.castShadow = true; out.add(body);
+  const bl = new THREE.Mesh(new THREE.CylinderGeometry(R + .02, R + .02, 28, 32, 1, true, Math.PI * .62, Math.PI * .76), belly); bl.rotation.x = Math.PI / 2; bl.position.set(0, Y, 0); out.add(bl);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2), white); nose.rotation.x = Math.PI / 2; nose.scale.set(1, 1.5, 1); nose.position.set(0, Y, 14); out.add(nose);
+  // tail: tapers and sweeps up
+  const tail = new THREE.Mesh(new THREE.CylinderGeometry(.45, R, 9, 32), white); tail.rotation.x = -Math.PI / 2 + .09; tail.position.set(0, Y + .45, -18.4); tail.castShadow = true; out.add(tail);
+  // THE HUMP — the 747's famous upper deck, from the nose back about a third of the plane
+  const hump = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.9, 9, 28), white); hump.rotation.x = Math.PI / 2; hump.position.set(0, Y + 1.25, 8.5); hump.castShadow = true; out.add(hump);
+  const hf = new THREE.Mesh(new THREE.SphereGeometry(1.9, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); hf.rotation.x = Math.PI / 2; hf.scale.set(1, 2.1, 1); hf.position.set(0, Y + 1.25, 13); out.add(hf);
+  const hb = new THREE.Mesh(new THREE.SphereGeometry(1.9, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); hb.rotation.x = -Math.PI / 2; hb.scale.set(1, 3.2, 1); hb.position.set(0, Y + 1.25, 4); out.add(hb);
+  // cockpit windows at the front of the hump
+  [-1, 1].forEach(s => { const w = bx(out, .9, .42, .1, glass, s * .55, Y + 2.05, 16.2, false); w.rotation.set(-.75, s * .45, 0); });
+  const wc = bx(out, .75, .42, .1, glass, 0, Y + 2.08, 16.45, false); wc.rotation.x = -.8;
+  // stripes + windows
   [-1, 1].forEach(s => {
-    bx(out, .06, .12, 19.6, gold, s * 2.2, 3.1, 0, false); // gold stripe
-    for (const y of [2.55, 4.85]) for (let z = -8.8; z <= 8.8; z += 1.1) bx(out, .06, .42, .5, glass, s * 2.19, y, z, false);
+    bx(out, .08, .16, 27.5, navy, s * (R - .02), Y - .55, 0, false); bx(out, .08, .06, 27.5, gold, s * (R - .02), Y - .78, 0, false);
+    const wins = new THREE.InstancedMesh(new THREE.BoxGeometry(.08, .36, .26), glass, 60), m4 = new THREE.Matrix4(); let n = 0;
+    for (let z = -12.5; z <= 12.6 && n < 46; z += .58) if (Math.abs(z - 8.3) > .6) m4.makeTranslation(s * (R - .03), Y - .2, z), wins.setMatrixAt(n++, m4);
+    for (let z = 4.5; z <= 12.4 && n < 60; z += .6) m4.makeTranslation(s * 1.85, Y + 1.85, z), wins.setMatrixAt(n++, m4);
+    wins.count = n; out.add(wins);
   });
-  const shield = bx(out, 2.2, .7, .1, glass, 0, 5.1, 11.4, false); shield.rotation.x = -.6;
-  // wings, engines, tail
+  [8.3, -2, -11].forEach(z => bx(out, .06, 1.25, .7, belly, 2.48, Y - .15, z, false)); // doors on the left side
+  // wings + four engines
   [-1, 1].forEach(s => {
-    const w = new THREE.Shape(); w.moveTo(0, 3); w.lineTo(s * 13, -3.4); w.lineTo(s * 13, -5); w.lineTo(0, -3.2);
-    const wing = new THREE.Mesh(new THREE.ExtrudeGeometry(w, { depth: .3, bevelEnabled: false }), white); wing.rotation.x = Math.PI / 2; wing.position.set(0, 2.2, 0); wing.castShadow = true; out.add(wing);
-    bx(out, .2, 1.6, 1.2, gold, s * 13, 2.9, -4.3); // winglets
-    [4.5, 9].forEach(x => {
-      const e = new THREE.Mesh(new THREE.CylinderGeometry(.75, .65, 3.2, 18), navy); e.rotation.x = Math.PI / 2; e.position.set(s * x, 1.2, 1.4 - x * .5); e.castShadow = true; out.add(e);
-      const fan = new THREE.Mesh(new THREE.CircleGeometry(.62, 18), std(0x9aa3b5, .3, .9)); fan.position.set(s * x, 1.2, 3.02 - x * .5); out.add(fan);
+    const w = new THREE.Shape(); w.moveTo(0, 3); w.lineTo(s * 16, -7); w.lineTo(s * 16, -8.4); w.lineTo(0, -4);
+    const wing = new THREE.Mesh(new THREE.ExtrudeGeometry(w, { depth: .35, bevelEnabled: false }), white); wing.rotation.x = Math.PI / 2; wing.position.set(0, 2.5, 0); wing.castShadow = true; out.add(wing);
+    bx(out, .15, 1.4, 1.2, navy, s * 16, 2.9, -7.8);
+    [5.8, 10.6].forEach(x => {
+      const lead = 3 - .625 * x, z = lead - .4;
+      const e = new THREE.Mesh(new THREE.CylinderGeometry(.85, .7, 3.6, 20), white); e.rotation.x = Math.PI / 2; e.position.set(s * x, 1.35, z); e.castShadow = true; out.add(e);
+      const lip = new THREE.Mesh(new THREE.TorusGeometry(.8, .1, 8, 20), metal); lip.position.set(s * x, 1.35, z + 1.8); out.add(lip);
+      const fan = new THREE.Mesh(new THREE.CircleGeometry(.75, 20), std(0x3a3f4a, .4, .8)); fan.position.set(s * x, 1.35, z + 1.78); out.add(fan);
+      bx(out, .25, .8, 2.2, white, s * x, 2.0, z - .4);
     });
-    const ts = new THREE.Shape(); ts.moveTo(0, -11); ts.lineTo(s * 5.5, -15.5); ts.lineTo(s * 5.5, -16.5); ts.lineTo(0, -15);
-    const tw = new THREE.Mesh(new THREE.ExtrudeGeometry(ts, { depth: .2, bevelEnabled: false }), white); tw.rotation.x = Math.PI / 2; tw.position.set(0, 5.2, 0); out.add(tw);
+    // tailplane
+    const ts = new THREE.Shape(); ts.moveTo(0, -13); ts.lineTo(s * 7.5, -18.5); ts.lineTo(s * 7.5, -19.6); ts.lineTo(0, -17.5);
+    const tw = new THREE.Mesh(new THREE.ExtrudeGeometry(ts, { depth: .22, bevelEnabled: false }), white); tw.rotation.x = Math.PI / 2; tw.position.set(0, Y + .9, 0); out.add(tw);
   });
-  const fin = new THREE.Shape(); fin.moveTo(0, 0); fin.lineTo(-5.5, 0); fin.lineTo(-7.5, 6.5); fin.lineTo(-5, 6.5);
-  const tf = new THREE.Mesh(new THREE.ExtrudeGeometry(fin, { depth: .25, bevelEnabled: false }), navy); tf.rotation.y = -Math.PI / 2; tf.position.set(-.12, 5.8, -9.5); tf.castShadow = true; out.add(tf);
-  bx(out, .3, .9, .9, gold, 0, 10.6, -16.2, false); // crown on the tail
-  wheelSet(out, 0, 8.5, dark); [-1.4, 1.4].forEach(x => { wheelSet(out, x, -1, dark); wheelSet(out, x, -2.6, dark); });
+  // tall tail fin with "747" on it
+  const fin = new THREE.Shape(); fin.moveTo(0, 0); fin.lineTo(-6.5, 0); fin.lineTo(-9.5, 7.8); fin.lineTo(-6.8, 7.8);
+  const tf = new THREE.Mesh(new THREE.ExtrudeGeometry(fin, { depth: .3, bevelEnabled: false }), navy); tf.rotation.y = -Math.PI / 2; tf.position.set(.15, Y + 1.6, -12.2); tf.castShadow = true; out.add(tf);
+  const tt = signTexture('747', { bg: null, fg: '#d8b04a', font: '700 170px Fredoka, Arial', w: 512, h: 256 });
+  [-1, 1].forEach(s => { const lab = new THREE.Mesh(new THREE.PlaneGeometry(3, 1.5), new THREE.MeshBasicMaterial({ map: tt, transparent: true })); lab.position.set(s * .17, Y + 5.2, -17.7); lab.rotation.y = s * Math.PI / 2; out.add(lab); });
+  // landing gear
+  gear(out, 0, 12, dark, 1); [-1.4, 1.4].forEach(x => { gear(out, x, -1.2, dark); gear(out, x, -3.4, dark); }); [-3.6, 3.6].forEach(x => gear(out, x, -1.6, dark));
   g.userData.prop = new THREE.Group(); out.add(g.userData.prop);
 
-  // ---------- the cabin you see from the inside ----------
-  const wall = std(0xf3ead8, .7), carpet = std(0x4a1f2e, .9), leather = std(0xe8d5b0, .45), wood = std(0x6b3f22, .5), trim = std(0xd8b04a, .3, .9);
-  const L = 18, z0 = -9;
-  bx(cabin, 3.8, .1, L, carpet, 0, 1.55, 0, false); bx(cabin, 3.8, .2, L, wood, 0, 3.95, 0, false); bx(cabin, 3.8, .1, L, carpet, 0, 4.1, 0, false); bx(cabin, 3.8, .1, L, wall, 0, 6.25, 0, false);
-  bx(cabin, 3.8, 4.8, .1, wall, 0, 3.9, z0, false); bx(cabin, 3.8, 4.8, .1, wall, 0, 3.9, -z0, false);
-  [-1, 1].forEach(s => {
-    // walls with a band of windows on each deck
-    for (const [y0, y1, wy] of [[1.6, 3.95, 2.55], [4.15, 6.25, 4.85]]) {
-      bx(cabin, .1, wy - .25 - y0, L, wall, s * 1.9, (y0 + wy - .25) / 2, 0, false);
-      bx(cabin, .1, y1 - wy - .25, L, wall, s * 1.9, (wy + .25 + y1) / 2, 0, false);
-      for (let z = z0; z < -z0; z += 1.1) bx(cabin, .1, .5, .6, wall, s * 1.9, wy, z + .27 + .55, false);
-      bx(cabin, .12, .06, L, trim, s * 1.88, wy - .28, 0, false);
-    }
-    // lower deck: big leather recliners by the windows
-    for (let z = -6.5; z <= 7; z += 2.2) {
-      const x = s * 1.1;
-      bx(cabin, .9, .45, .9, leather, x, 1.85, z, false); bx(cabin, .9, 1, .2, leather, x, 2.45, z - .4, false);
-      bx(cabin, .15, .3, .9, wood, x - .52, 2.1, z, false); bx(cabin, .15, .3, .9, wood, x + .52, 2.1, z, false);
-    }
-  });
-  // upper deck lounge: sofas, a little bar, gold lamps
-  [-1, 1].forEach(s => { bx(cabin, .8, .5, 4, leather, s * 1.3, 4.4, -3.2, false); bx(cabin, .2, .8, 4, leather, s * 1.75, 4.75, -3.2, false); });
-  bx(cabin, 1, .55, .8, wood, 0, 4.42, -3.2, false); bx(cabin, 2.6, 1.1, .5, wood, 0, 4.7, 2.5, false); bx(cabin, 2.7, .08, .6, trim, 0, 5.28, 2.5, false);
-  [[-.6, 5.45, 2.5], [.4, 5.45, 2.5]].forEach(([x, y, z]) => { const gl = new THREE.Mesh(new THREE.CylinderGeometry(.07, .05, .25, 10), std(0xbfe7ff, .05, .2)); gl.position.set(x, y, z); cabin.add(gl); });
-  for (let z = -7; z <= 7; z += 3.5) { const lamp = new THREE.Mesh(new THREE.SphereGeometry(.15, 10, 8), new THREE.MeshBasicMaterial({ color: 0xfff1c9 })); lamp.position.set(0, 6.1, z); cabin.add(lamp); }
-  // cockpit seats
-  [-.55, .55].forEach(x => { bx(cabin, .6, .4, .6, std(0x2a2a33, .6), x, 4.35, 10.1, false); bx(cabin, .6, .9, .15, std(0x2a2a33, .6), x, 4.85, 9.75, false); });
-  bx(cabin, 2.2, .35, .5, std(0x1a1a22, .5), 0, 4.4, 10.9, false);
-  const light = new THREE.PointLight(0xfff1d6, 7, 26, 1.6); light.position.set(0, 5.6, 0); cabin.add(light);
-  const light2 = new THREE.PointLight(0xfff1d6, 5, 22, 1.6); light2.position.set(0, 3.4, 2); cabin.add(light2);
+  // ---------- the cabin you see from your seat while flying: the real one, shrunk ----------
+  const inner = new THREE.Group(); build747(inner, { lights: false });
+  inner.rotation.y = Math.PI; inner.scale.setScalar(CS); inner.position.set(0, CY, 0); cabin.add(inner);
+  const l1 = new THREE.PointLight(0xfff1d6, 6, 26, 1.6); l1.position.set(0, CY + 1.4, 0); cabin.add(l1);
+  const l2 = new THREE.PointLight(0xfff1d6, 4, 14, 1.6); l2.position.set(0, CY + 3.3, 9); cabin.add(l2);
   return g;
 }
 

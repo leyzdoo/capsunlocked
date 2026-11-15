@@ -163,9 +163,9 @@ function renderShopInto(body) {
   Object.entries(PLANES).forEach(([k, c]) => {
     const owned = u.planes.includes(k), on = u.planeKind === k, it = el('div', { class: 'item' });
     it.appendChild(vehiclePic(makePlane, k)); it.appendChild(el('div', { class: 't' }, c.name)); it.appendChild(el('div', { class: 'd' }, c.blurb));
-    if (on) it.appendChild(el('div', { class: 'own' }, 'Your plane — tap ✈️ Fly outside'));
+    if (on) it.appendChild(el('div', { class: 'own' }, 'Your plane — tap ✈️ Board outside'));
     const b = el('button', { class: 'btn ' + (owned && on ? '' : 'go') }, owned ? (on ? 'Flying this one' : 'Use this one') : '🎁 Get it free'); b.disabled = on;
-    b.onclick = () => { if (!owned) u.planes.push(k); u.planeKind = k; u.plane = true; save(true); G.refreshBag(); renderShop(); if (!owned) toast('✈️ The ' + c.name + ' is yours! Tap ✈️ Fly when you are outside.'); };
+    b.onclick = () => { if (!owned) u.planes.push(k); u.planeKind = k; u.plane = true; save(true); G.refreshBag(); renderShop(); if (!owned) toast('✈️ The ' + c.name + ' is yours! Tap ✈️ Board when you are outside, walk to the cockpit, and fly!'); };
     it.appendChild(b); pl.appendChild(it);
   });
   // ---- ping pong ----

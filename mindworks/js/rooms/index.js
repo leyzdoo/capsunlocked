@@ -8,4 +8,5 @@ import * as chess from './chess.js';
 import * as pong from './pong.js';
 import * as jigsaw from './jigsaw.js';
 import * as apartment from './apartment.js';
-export const ROOMS = { home, store, maze, picture, pattern, chess, pong, jigsaw, apartment };
+import * as cabin from './cabin.js';
+export const ROOMS = { home, store, maze, picture, pattern, chess, pong, jigsaw, apartment, cabin };

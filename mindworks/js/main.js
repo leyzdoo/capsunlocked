@@ -7,6 +7,7 @@ import { createWorld, WATER_Y, blockName, roofY } from './world.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { SEATS, drawMap } from './jumbo.js';
+import { DOOR_OUT } from './cabins.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
 
@@ -102,7 +103,7 @@ async function boot() {
     heightAt: p => { if (ride && ride.type === 'plane') return p.y; if (ride && ride.type === 'boat') return WATER_Y + .05; const r = roofAt(p.x, p.z); return r > p.y - 1.5 && r < p.y + 1.5 ? r : world.heightAt(p.x, p.z); },
     blocked: p => ride && ride.type === 'plane' ? false : onRoofEdge(p) ? true : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
-    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs()); },
+    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs(), parkedActs()); },
     update(dt) { const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
       town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
   };
@@ -177,6 +178,7 @@ function leaveBuilding() { G.backToTown(); }
 G.backToTown = async (doorId) => {
   if (switching) return;
   if (typeof doorId === 'string') lastDoor = town.doors.find(d => d.id === doorId) || lastDoor;
+  else if (doorId && doorId.pos) lastDoor = doorId; // a spot that isn't a building door (like outside a plane)
   switching = true;
   closeModal(); closePanel(); fade.style.opacity = 1; await wait(260);
   if (active && active !== townPlace && active.exit) active.exit();
@@ -261,7 +263,7 @@ function walk(dt) {
 /* sitting inside the Royal Jumbo: the camera is your eyes in the seat; drag to look around */
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3();
 function seatCam() {
-  const s = SEATS[ride.relax], look = s.yaw + (cam.yaw - ride.yaw0), up = (cam.pitch - .38) * -1.2;
+  const s = SEATS[ride.relax], look = s.yaw + (cam.yaw - ride.yaw0), up = (cam.pitch - .38) * -1.2 - (s.down || 0);
   ride.mesh.updateWorldMatrix(true, false);
   _v1.set(s.pos[0], s.pos[1], s.pos[2]); ride.mesh.localToWorld(_v1);
   _v2.set(s.pos[0] + Math.sin(look) * 3, s.pos[1] + up, s.pos[2] + Math.cos(look) * 3); ride.mesh.localToWorld(_v2);
@@ -295,6 +297,7 @@ function startRide(type, kind, at) {
 }
 function stopRide(silent, at) {
   if (!ride) return;
+  if (!silent && ride.type === 'plane') park(ride.kind, player.root.position, player.root.rotation.y);
   player.root.remove(ride.mesh); player.model.visible = true; player.model.position.y = 0; player.model.rotation.set(0, 0, 0);
   ride.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
   const wasPlane = ride.type === 'plane'; ride = null; if (camera.fov !== 55) { camera.fov = 55; camera.updateProjectionMatrix(); } camera.up.set(0, 1, 0);
@@ -326,7 +329,7 @@ function refreshRideBtn() {
   const show = !!(u && out && (landed || (u.car && !(ride && (ride.type === 'boat' || flying)))));
   b.classList.toggle('hide', !show);
   if (show) b.textContent = landed ? '🚶 Get out' : ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
-  $('flyBtn').classList.toggle('hide', !(u && u.planeKind && out && !ride)); if (u && u.planeKind) $('flyBtn').textContent = '✈️ Fly ' + PLANES[u.planeKind].name;
+  $('flyBtn').classList.toggle('hide', !(u && u.planeKind && out && !ride)); if (u && u.planeKind) $('flyBtn').textContent = '✈️ Board the ' + PLANES[u.planeKind].name;
   const relax = flying && ride.relax != null, big = flying && PLANES[ride.kind].big;
   $('wheel').classList.toggle('hide', !flying || relax); $('lever').classList.toggle('hide', !flying || relax);
   $('jumboBtns').classList.toggle('hide', !big); $('autoChip').classList.toggle('hide', !(big && ride.auto));
@@ -425,7 +428,7 @@ function openMap() {
     marks();
     cv.addEventListener('pointerdown', e => {
       const r = cv.getBoundingClientRect(), w = M.toWorld((e.clientX - r.left) / r.width * 540, (e.clientY - r.top) / r.height * 540);
-      if (world.heightAt(w.x, w.z) < WATER_Y + .1) { info.textContent = '🌊 That’s water — pick a spot on land so the Royal Jumbo can land.'; return; }
+      if (world.heightAt(w.x, w.z) < WATER_Y + .1) { info.textContent = '🌊 That’s water — pick a spot on land so the 747 can land.'; return; }
       const bi = Math.round(w.x / 160), bj = Math.round(w.z / 160);
       dest = { x: w.x, z: w.z, name: !bi && !bj ? 'Home' : blockName(bi, bj) };
       info.textContent = '📍 ' + dest.name + ' — ' + Math.round(Math.hypot(w.x - p.x, w.z - p.z)) + ' m away'; go.disabled = false; marks();
@@ -445,10 +448,43 @@ function setSeat(i) {
 $('mapBtn').onclick = () => { if (ride && ride.type === 'plane') openMap(); };
 $('relaxBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(ride.relax == null ? 0 : (ride.relax + 1) % SEATS.length); };
 $('cockpitBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(null); };
-$('flyBtn').onclick = () => { const u = G.S.data.up; if (!ride && u.planeKind && active === townPlace) startRide('plane', u.planeKind); };
-$('rideBtn').onclick = () => { if (ride) stopRide(false); else if (G.S.data.up.car) startRide('car', G.S.data.up.car); };
+$('flyBtn').onclick = () => { const u = G.S.data.up; if (!ride && u.planeKind && active === townPlace) G.boardPlane(u.planeKind); };
+$('rideBtn').onclick = () => {
+  if (ride && ride.type === 'plane') return modal({ big: '✈️', title: 'You landed!', text: 'What do you want to do?', acts: [
+    { label: '🚪 Walk inside the plane', cls: 'go', fn: () => { const k = ride.kind; park(k, player.root.position, player.root.rotation.y); stopRide(true); G.boardPlane(k); } },
+    { label: '🚶 Get out', cls: 'primary', fn: () => stopRide(false) },
+    { label: 'Stay in the cockpit', cls: 'ghost' }] });
+  if (ride) stopRide(false); else if (G.S.data.up.car) startRide('car', G.S.data.up.car);
+};
+/* ---------- a plane parked on the ground: walk aboard it, then fly it from the cockpit ---------- */
+let parked = null;
+function park(kind, pos, yaw) {
+  unpark();
+  const mesh = makePlane(kind); mesh.position.copy(pos); mesh.rotation.y = yaw; town.scene.add(mesh);
+  parked = { kind, pos: pos.clone(), yaw, mesh };
+}
+function unpark() { if (!parked) return; town.scene.remove(parked.mesh); parked.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); }); parked = null; }
+function planeSpot(pk, lx, lz) { const c = Math.cos(pk.yaw), sn = Math.sin(pk.yaw); return new THREE.Vector3(pk.pos.x + c * lx + sn * lz, pk.pos.y, pk.pos.z - sn * lx + c * lz); }
+function doorOut(pk) { const [lx, lz] = DOOR_OUT[pk.kind] || [2, 0], c = Math.cos(pk.yaw), sn = Math.sin(pk.yaw); return { pos: planeSpot(pk, lx, lz), facing: Math.atan2(c, -sn) }; }
+function parkedActs() {
+  if (!parked || ride) return [];
+  const d = doorOut(parked), big = PLANES[parked.kind].big;
+  return [{ pos: d.pos, r: big ? 4 : 2.6, label: '🚪 Walk aboard the ' + PLANES[parked.kind].name, sub: 'Go inside — then sit in the cockpit to fly', fn: () => G.boardPlane(parked.kind) }];
+}
+G.boardPlane = kind => {
+  const p = player.root.position;
+  if (!parked || parked.kind !== kind || Math.hypot(parked.pos.x - p.x, parked.pos.z - p.z) > 40) park(kind, p, player.root.rotation.y);
+  G.enterRoom('cabin', { data: { kind }, doorObj: doorOut(parked) });
+};
+G.takeOff = async () => {
+  const pk = parked; if (!pk) return G.backToTown();
+  await G.backToTown(doorOut(pk));
+  unpark(); player.root.position.copy(pk.pos); player.root.rotation.y = pk.yaw;
+  startRide('plane', pk.kind); cam.yaw = cam.tYaw = pk.yaw + Math.PI; cam.target.copy(pk.pos);
+};
 function goHome() {
   if (ride) stopRide(true);
+  unpark();
   const d = town.doors.find(x => x.id === 'home'); placeInTown(d.pos.clone().add(new THREE.Vector3(0, 0, -1.5)), Math.PI); toast('🏠 Back home!');
 }
 G.refreshBag = () => { if (!G.S.data) return; $('hudBag').textContent = '🎒 ' + bagCount() + '/' + capacity(); refreshRideBtn(); };
@@ -529,7 +565,7 @@ function showProgress(first) {
   });
 }
 
-if (Store.local) window.__mw = { G, cam, camera, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
+if (Store.local) window.__mw = { G, cam, camera, get parked() { return parked; }, get ride() { return ride; }, get world() { return world; }, startRide, stopRide, get player() { return player; }, get town() { return town; }, get active() { return active; }, placeInTown };
 initLogin();
 boot().catch(err => { console.error(err); setProgress(1, 'Something went wrong loading Mindworks: ' + err.message); });
 addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
