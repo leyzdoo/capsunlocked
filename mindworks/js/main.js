@@ -103,7 +103,8 @@ async function boot() {
     blocked: p => ride && ride.type === 'plane' ? false : onRoofEdge(p) ? true : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
     interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs()); },
-    update(dt) { town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
+    update(dt) { const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
+      town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); }
   };
   // warm-up render so the first frame after sign-in is quick
   player = makeCharacter('player', 0x3f7fd9); placeInTown(town.spawn.pos, town.spawn.yaw);
@@ -116,6 +117,9 @@ async function boot() {
 function roofAt(x, z) { let y = world ? world.roofAt(x, z) : -1e9; for (const r of town.roofs || []) if (x > r.x1 && x < r.x2 && z > r.z1 && z < r.z2) y = Math.max(y, roofY(r, x, z)); return y; }
 const floorAt = (x, z) => Math.max(world.heightAt(x, z), roofAt(x, z));
 function onRoofEdge(p) { return !ride && p.y > world.heightAt(p.x, p.z) + 2.5 && roofAt(p.x, p.z) < p.y - 1.5; } // don't walk off the roof
+/* stairways between upper floors in your house */
+G.moveFloor = y => { fade.style.opacity = 1; setTimeout(() => { player.root.position.y = y; cam.target.y = y + cam.height; fade.style.opacity = 0; }, 250); };
+G.chooseFloor = list => modal({ big: '🪜', title: 'Which way?', acts: list.map(x => ({ label: x.label, cls: 'go', fn: x.fn })).concat([{ label: 'Stay here', cls: 'ghost' }]) });
 function placeInTown(pos, faceYaw) {
   camera.fov = 55; camera.updateProjectionMatrix();
   if (world) world.ensure(pos, true);

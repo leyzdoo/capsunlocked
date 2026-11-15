@@ -77,7 +77,7 @@ export async function enter(o) {
   }
   /* ---- stairs you can climb + a real upstairs (Family House and bigger) ---- */
   let upstairs = null;
-  if (twoFloors) upstairs = buildUpstairs(S, { tier, w, d, h, fancy, cols, add });
+  if (twoFloors) upstairs = buildUpstairs(S, { tier, w, d, h, fancy, cols, add, floors: Math.max(2, Math.min(5, T.stories || 2)) });
   if (tier >= 3) { // fireplace
     const fp = new THREE.Group(); fp.add(box(2.2, 1.4, .5, mat('brick', ['#8a4b3a', '#c8bdb0', 85], 1, .6), 0, .7, 0)); fp.add(box(2.5, .12, .65, std(0xece6da, .5), 0, 1.45, 0)); fp.add(box(1.1, .8, .1, std(0x111111, .9), 0, .5, .21));
     const fire = new THREE.Mesh(new THREE.ConeGeometry(.25, .5, 8), new THREE.MeshBasicMaterial({ color: 0xff8a2a })); fire.position.set(0, .4, .15); fp.add(fire);
@@ -120,16 +120,16 @@ export async function enter(o) {
     scene: S, walks: true, colliders: cols, title: G.S.name + '’s ' + T.name, cam: { dist: Math.min(6.5, 4 + tier * .4), pitch: .45 },
     collidersAt: upstairs ? p => upstairs.collidersAt(p) : null,
     heightAt: upstairs ? p => upstairs.heightAt(p) : null,
-    help: (twoFloors ? 'Walk up the stairs on the left. ' : '') + 'Want a different house? Design one at the Game Store.',
+    help: (twoFloors ? 'Walk up the stairs on the left.' + ((T.stories || 1) > 2 ? ' Upstairs, the door by the stairs goes up to floor 3' + ((T.stories || 1) > 3 ? ' and higher' : '') + '. ' : ' ') : '') + 'Want a different house? Design one at the Game Store.',
     start: door === 'back' ? new THREE.Vector3(bx, 0, backZ + 1.4) : new THREE.Vector3(0, 0, d / 2 - 3.2), startYaw: door === 'back' ? 0 : Math.PI, camYaw: door === 'back' ? Math.PI : 0, camBlockers: R.colliders,
     camClamp(p, target) {
-      const up = target.y > h * .75, open = upstairs && upstairs.onStairs(target);
-      p.y = up ? THREE.MathUtils.clamp(p.y, h + .4, 2 * h - .3) : Math.min(p.y, (open ? 2 * h : h) - .3);
+      const lv = Math.round(target.y / h), open = upstairs && upstairs.onStairs(target) && target.y < h * .75;
+      p.y = lv >= 1 ? THREE.MathUtils.clamp(p.y, lv * h + .4, (lv + 1) * h - .3) : Math.min(p.y, (open ? 2 * h : h) - .3);
     },
-    interact: () => [
+    interact: () => (upstairs ? upstairs.acts() : []).concat([
       { pos: R.door, r: 1.5, label: 'Go out the front door', sub: T.name, fn: () => G.backToTown('home') },
       { pos: new THREE.Vector3(bx, 0, backZ + .9), r: 1.4, label: '🚪 Back patio door', sub: 'Go out to the backyard', fn: () => G.backToTown('homeBack') }
-    ],
+    ]),
     update(dt) {
       t += dt;
       if (S.userData.fire) S.userData.fire.scale.y = 1 + Math.sin(t * 13) * .15;
@@ -140,7 +140,7 @@ export async function enter(o) {
 }
 
 /* The second floor: a slab with a stairwell, walls, a bedroom, and railings around the opening. */
-function buildUpstairs(S, { tier, w, d, h, fancy, cols, add }) {
+function buildUpstairs(S, { tier, w, d, h, fancy, cols, add, floors = 2 }) {
   const steps = Math.round(h / .21), rise = h / steps, run = .3, sw = fancy ? 2.6 : 1.5;
   const sx = -w / 2 + sw / 2 + .1, sz = d / 2 - 1.5;               // first step centre
   const zFront = sz + run / 2, zBack = sz - (steps - 1) * run - run / 2;
@@ -216,19 +216,64 @@ function buildUpstairs(S, { tier, w, d, h, fancy, cols, add }) {
   const toy = box(1, .6, .6, std(0xd04a3a, .6), 0, .3, 0); put(toy, w / 2 - .7, d / 2 - .6, 0, 1, .6);
   if (w > 14) put(shelf(2, 2.2), w / 2 - .3, (oz1 + d / 2) / 2 - .5, -Math.PI / 2, .5, 2.1);
   if (tier >= 4) { const bigCh = chandelier(1.1); bigCh.position.set(px, 2 * h - .9, d / 4); S.add(bigCh); }
-  const onStairs = p => p.x > -w / 2 && p.x < sx + sw / 2 + .05 && p.z < zFront + .05 && p.z > zBack - .05;
+  // ---- floors 3, 4, 5…: one for every row of windows outside. A stairway door by the stairs takes you between them. ----
+  const sdZ = Math.min(oz1 - 1.6, -d / 2 + 3.2), sdX = -w / 2 + .9, levelCols = {}, levelThemes = ['games', 'library', 'cinema'];
+  const stairDoor = Y => { S.add(box(.12, 2.4, 1.3, std(0x5a3a24, .5), -w / 2 + .06, Y + 1.2, sdZ)); S.add(box(.06, 2.6, 1.6, std(0xf6f2ea, .6), -w / 2 + .03, Y + 1.3, sdZ)); S.add(box(.1, .1, .1, std(0xd4af37, .3, 1), -w / 2 + .14, Y + 1.15, sdZ + .45)); };
+  if (floors > 2) stairDoor(h);
+  for (let L = 2; L < floors; L++) {
+    const Y = L * h, lc = levelCols[L] = [];
+    const fl = box(w, slabT, d, floorM.clone(), 0, Y - slabT / 2, 0); fl.castShadow = false; S.add(fl);
+    [[w, h, .3, 0, Y + h / 2, -d / 2 - .15], [w, h, .3, 0, Y + h / 2, d / 2 + .15], [.3, h, d, -w / 2 - .15, Y + h / 2, 0], [.3, h, d, w / 2 + .15, Y + h / 2, 0]].forEach(a => { const m = box(a[0], a[1], a[2], wallM, a[3], a[4], a[5]); m.castShadow = false; S.add(m); });
+    const c2 = new THREE.Mesh(new THREE.PlaneGeometry(w, d), std(0xf4f1ea, .95)); c2.rotation.x = Math.PI / 2; c2.position.y = Y + h; S.add(c2);
+    [[-w / 4, 0], [w / 4, 0]].forEach(([x, z]) => { const pnl = new THREE.Mesh(new THREE.BoxGeometry(1, .05, 1), new THREE.MeshBasicMaterial({ color: 0xfffaf0 })); pnl.position.set(x, Y + h - .03, z); S.add(pnl); const pl = new THREE.PointLight(0xfff1dc, 5, Math.max(w, d) * .8, 1.6); pl.position.set(x, Y + h - .4, z); S.add(pl); });
+    [-1, 1].forEach(s => { for (let i = 0; i < Math.floor(d / 5); i++) { const z = -d / 2 + 2.5 + i * 5; if (s < 0 && Math.abs(z - sdZ) < 1.5) continue;
+      const gw = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.6), new THREE.MeshBasicMaterial({ color: 0xcfe6ff })); gw.position.set(s * (w / 2 - .02), Y + 1.7, z); gw.rotation.y = -s * Math.PI / 2; S.add(gw);
+      S.add(box(.08, 1.8, 1.6, trim, s * (w / 2 - .01), Y + 1.7, z)); } });
+    stairDoor(Y);
+    const at = (o, x, z, ry = 0, cw = 0, cd = 0) => { o.position.set(x, Y + (o.position.y || 0), z); o.rotation.y = ry; S.add(o); if (cw) { const sw2 = Math.abs(Math.sin(ry)) > .5; const a = sw2 ? cd : cw, b = sw2 ? cw : cd; lc.push({ x1: x - a / 2, x2: x + a / 2, z1: z - b / 2, z2: z + b / 2 }); } return o; };
+    const theme = levelThemes[(L - 2) % levelThemes.length];
+    if (theme === 'games') { // game room: pool table, arcade machines, beanbags
+      const pt = new THREE.Group(); pt.add(box(2.6, .2, 1.5, std(0x5a3a24, .5), 0, .78, 0)); pt.add(box(2.3, .03, 1.2, std(0x1f7a4a, .9), 0, .9, 0)); [[-1.1, -.6], [1.1, -.6], [-1.1, .6], [1.1, .6]].forEach(([a, b]) => pt.add(box(.16, .78, .16, std(0x3a2416, .5), a, .39, b)));
+      ['#ffffff', '#ffd23f', '#d8352a', '#2f6fd8', '#1a1a1a'].forEach((c, k) => { const ball = new THREE.Mesh(new THREE.SphereGeometry(.05, 10, 8), std(new THREE.Color(c).getHex(), .2)); ball.position.set(-.5 + k * .25, .96, (k % 2) * .2 - .1); pt.add(ball); });
+      at(pt, w / 4, 0, 0, 2.8, 1.7);
+      for (let k = 0; k < 3; k++) { const ar = new THREE.Group(); ar.add(box(.9, 1.8, .7, std([0xd8352a, 0x2f6fd8, 0x7a2fd8][k], .5), 0, .9, 0)); const scr = new THREE.Mesh(new THREE.PlaneGeometry(.7, .5), new THREE.MeshBasicMaterial({ color: [0x40e0ff, 0xffe040, 0x60ff80][k] })); scr.position.set(0, 1.35, .36); ar.add(scr); ar.add(box(.8, .08, .3, std(0x222222), 0, 1, .45)); at(ar, -w / 2 + 3 + k * 1.2 > w / 2 - 1 ? 0 : -w / 2 + 3.2 + k * 1.2, d / 2 - .5, Math.PI, .9, .7); }
+      [-1, 1].forEach(k => { const bb = new THREE.Mesh(new THREE.SphereGeometry(.45, 16, 12), std(k < 0 ? 0x8a3bd8 : 0x2fd8a7, .9)); bb.scale.y = .6; bb.position.y = .27; at(bb, w / 4 + k * 1.8, -d / 2 + 2.5, 0, .8, .8); });
+      at(rug(4.5, 3, '#2f3a5a'), w / 4, 0);
+    } else if (theme === 'library') { // library: walls of books, reading chairs
+      for (let k = 0; k < Math.floor((w - 4) / 2.2); k++) at(shelf(2, 2.4), -w / 2 + 3 + k * 2.2, -d / 2 + .3, 0, 2.1, .5);
+      at(rug(5, 3.5, '#6b2f2f'), 0, 0); at(sofa(0x6b3b2a, 2.2), 0, 1.2, Math.PI, 2.4, 1); at(table(1.2, .7, .45), 0, -.3, 0, 1.2, .7); at(lamp(), 1.8, 1.4, 0, .4, .4); at(plant(1.1), w / 2 - .6, d / 2 - .6, 0, .5, .5);
+    } else { // movie theater: big screen + rows of comfy seats
+      const scr = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(7, w - 4), 3), new THREE.MeshBasicMaterial({ color: 0xdfe8ff })); scr.position.set(0, Y + 1.9, -d / 2 + .1); S.add(scr);
+      for (let row = 0; row < 3; row++) for (let k = -2; k <= 2; k++) { const st2 = new THREE.Group(); st2.add(box(.8, .45, .8, std(0x8a1f2a, .7), 0, .3, 0)); st2.add(box(.8, .8, .2, std(0x8a1f2a, .7), 0, .7, .35)); at(st2, k * 1, -d / 2 + 3.5 + row * 1.6, 0, .85, .85); }
+    }
+  }
+  const lvl = y => Math.round(y / h);
+  const stairActs = () => {
+    if (floors <= 2) return [];
+    const out = [];
+    for (let L = 1; L < floors; L++) {
+      const pos = new THREE.Vector3(sdX, L * h, sdZ), go = to => () => { G.moveFloor(to * h); G.toast && G.toast('🪜 Floor ' + (to + 1)); };
+      const up = L + 1 < floors, down = L >= 2;
+      if (up && down) out.push({ pos, r: 1.6, label: '🪜 Stairs to floor ' + (L + 2) + ' or ' + L, sub: 'Floor ' + (L + 1) + ' — tap to choose', fn: () => G.chooseFloor([{ label: '⬆️ Up to floor ' + (L + 2), fn: go(L + 1) }, { label: '⬇️ Down to floor ' + L, fn: go(L - 1) }]) });
+      else if (up) out.push({ pos, r: 1.6, label: '🪜 Stairs up to floor ' + (L + 2), sub: 'Floor ' + (L + 1), fn: go(L + 1) });
+      else out.push({ pos, r: 1.6, label: '🪜 Stairs down to floor ' + L, sub: 'Floor ' + (L + 1) + ' — top floor', fn: go(L - 1) });
+    }
+    return out;
+  };
+  const onStairs = p => p.x > -w / 2 && p.x < sx + sw / 2 + .05 && p.z < zFront + .05 && p.z > zBack - .05 && p.y < h + .3;
   const lower = cols, upperWalls = [
     { x1: -w / 2 - 1, x2: w / 2 + 1, z1: -d / 2 - 1, z2: -d / 2 }, { x1: -w / 2 - 1, x2: w / 2 + 1, z1: d / 2, z2: d / 2 + 1 },
     { x1: -w / 2 - 1, x2: -w / 2, z1: -d / 2, z2: d / 2 }, { x1: w / 2, x2: w / 2 + 1, z1: -d / 2, z2: d / 2 }];
   return {
-    onStairs, edge: oz1,
+    onStairs, edge: oz1, acts: stairActs,
     collidersAt(p) {
       if (onStairs(p) && p.y > .05 && p.y < h - .05) return stairCols.concat(upperWalls);
-      return p.y > h * .5 ? upperWalls.concat(upCols) : lower.concat(groundCols);
+      const L = lvl(p.y);
+      return L >= 2 ? upperWalls.concat(levelCols[L] || []) : p.y > h * .5 ? upperWalls.concat(upCols) : lower.concat(groundCols);
     },
     heightAt(p) {
       if (onStairs(p)) { const t = THREE.MathUtils.clamp((zFront - p.z) / (zFront - zBack), 0, 1); return t * h; }
-      return p.y > h * .5 ? h : 0;
+      return p.y > h * .5 ? Math.max(1, lvl(p.y)) * h : 0;
     }
   };
 }

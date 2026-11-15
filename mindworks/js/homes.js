@@ -117,6 +117,7 @@ export function renderHome(T, W = 320, H = 220) {
   const dist = Math.max(fitH, fitW) * (tall ? 1.05 : 1.25) + Math.max(size.x, size.z) * .3;
   const dir = new THREE.Vector3(.5, tall ? .25 : .42, 1).normalize();
   cam.position.copy(ctr).addScaledVector(dir, dist); cam.lookAt(ctr.x, ctr.y * (tall ? 1 : .8), ctr.z);
+  sc.fog.near = Math.max(160, dist * 1.2); sc.fog.far = Math.max(400, dist * 3); cam.far = Math.max(900, dist * 3); cam.updateProjectionMatrix(); // very tall towers sit far from the camera
   R.setRenderTarget(rt); R.render(sc, cam);
   const pix = new Uint8Array(W * H * 4); R.readRenderTargetPixels(rt, 0, 0, W, H, pix); R.setRenderTarget(null);
   hse.traverse(o => { if (o.isMesh) o.geometry.dispose(); });

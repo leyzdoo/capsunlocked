@@ -66,13 +66,26 @@ function popCards(grid, specs, instant) {
 function preview(T) {
   const ov = el('div', { style: 'position:fixed;inset:0;z-index:40;background:rgba(8,6,30,.7);display:flex;align-items:center;justify-content:center;padding:16px' });
   const card = el('div', { class: 'modal', style: 'max-width:640px' });
-  const pic = renderHome(T, 640, T.kind === 'tower' ? 640 : 420); pic.style.cssText = 'width:100%;max-height:55vh;object-fit:contain;border-radius:14px;display:block';
+  let pic = renderHome(T, 640, T.kind === 'tower' ? 640 : 420); pic.style.cssText = 'width:100%;max-height:55vh;object-fit:contain;border-radius:14px;display:block';
   card.appendChild(pic);
   card.appendChild(el('h2', { style: 'margin:12px 0 4px' }, escapeHtml(T.name)));
-  card.appendChild(el('p', { style: 'margin:0 0 6px' }, escapeHtml(T.blurb || '')));
+  const blurb = el('p', { style: 'margin:0 0 6px' }, escapeHtml(T.blurb || '')); card.appendChild(blurb);
+  if (T.kind === 'tower') { // choose how tall your skyscraper is
+    T = { ...T };
+    const row = el('div', { style: 'display:flex;align-items:center;gap:12px;margin:8px 0 12px;font-weight:800' });
+    const lab = el('span', { style: 'min-width:120px;font-family:Fredoka;font-size:22px;color:#ffd34d' }, T.floors + ' floors');
+    const sl = el('input', { type: 'range', min: '5', max: '60', step: '1', value: String(T.floors), style: 'flex:1;height:44px;accent-color:#ffd34d' });
+    row.appendChild(el('span', null, '🏢 How many floors?')); row.appendChild(sl); row.appendChild(lab); card.insertBefore(row, blurb.nextSibling);
+    let redraw = 0;
+    sl.oninput = () => {
+      T.floors = +sl.value; lab.textContent = T.floors + ' floors'; blurb.textContent = (T.blurb || '').replace(/^\d+ floors/, T.floors + ' floors');
+      clearTimeout(redraw); redraw = setTimeout(() => { const np = renderHome(T, 640, 640); pic.src = np.src || ''; if (!np.src) { np.style.cssText = pic.style.cssText; pic.replaceWith(np); pic = np; } }, 120);
+    };
+    T.blurb = blurb.textContent;
+  }
   const acts = el('div', { class: 'acts' });
   const yes = el('button', { class: 'btn go' }, '🏠 Make this my house (free)');
-  yes.onclick = () => { G.S.data.up.home = T; save(true); G.refresh(); ov.remove(); renderShop(); toast('🎉 Your new ' + T.name + ' is ready! Go see it.'); };
+  yes.onclick = () => { if (T.kind === 'tower') T.blurb = blurb.textContent; G.S.data.up.home = T; save(true); G.refresh(); ov.remove(); renderShop(); toast('🎉 Your new ' + T.name + ' is ready! Go see it.'); };
   const no = el('button', { class: 'btn ghost' }, 'Keep looking'); no.onclick = () => ov.remove();
   acts.appendChild(yes); acts.appendChild(no); card.appendChild(acts); ov.appendChild(card);
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
