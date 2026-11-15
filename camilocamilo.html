@@ -152,6 +152,10 @@
   .tab{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
   .tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
+  .pdfbtn{margin-left:8px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;vertical-align:top;margin-top:9px}
+  .pdfbtn:hover{border-color:#cfd3d9}
+  .pdfbtn[disabled]{color:var(--faint);cursor:default}
+
   /* ---------- year view ---------- */
   #year{max-width:1080px}
   .ylegend{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 14px;font-size:11.5px;color:var(--muted);margin:16px 0 6px}
@@ -251,6 +255,7 @@
           <button class="tab" data-view="year" role="tab">Year</button>
           <button class="tab" data-view="list" role="tab">Weekends</button>
         </div>
+        <button class="pdfbtn" id="pdfBtn" type="button">Export PDF</button>
         <div class="me" id="meLine"></div>
       </div>
       <div class="counter" aria-live="polite">
@@ -280,6 +285,7 @@
         <button class="btn" id="pullNow">Refresh</button>
       </div>
       <div class="drow">
+        <button class="btn" id="exportPdf2">Export PDF</button>
         <button class="btn" id="exportCsv">Export for Compás (CSV)</button>
         <label class="btn" for="importFile">Import CSV</label>
         <input id="importFile" type="file" accept=".csv,text/csv" class="hidden">
@@ -823,6 +829,187 @@ $("#importFile").onchange = async ev => {
     toast(`Imported ${c.n} days from Compás`);
   } else toast("Unrecognized CSV columns");
 };
+
+/* ================= PDF export (jsPDF, built in the browser) ================= */
+function loadJsPDF(){
+  if (window.jspdf) return Promise.resolve(window.jspdf.jsPDF);
+  return new Promise((ok, fail) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+    sc.onload = () => ok(window.jspdf.jsPDF); sc.onerror = () => fail(new Error("Couldn't load the PDF tool — check your connection."));
+    document.head.appendChild(sc);
+  });
+}
+const C = { ale:"#2E9E5B", aleSoft:"#EAF6EF", james:"#2F6FDE", jamesSoft:"#EAF1FD", both:"#7C5CC4", school:"#EEF7F1", schoolTx:"#5E8F72",
+            ink:"#1C2330", muted:"#6B7380", faint:"#9AA1AB", line:"#D5D9DF", hol:"#B7791F" };
+function dayStyle(k){
+  const e = eff(k), conf = e.status === "confirmed";
+  if (e.src === "school") return { fill:C.school, tx:C.schoolTx };
+  if (e.who === "ale")   return conf ? { fill:C.ale, tx:"#FFFFFF" } : { fill:C.aleSoft, stroke:C.ale, tx:"#1E6B3E" };
+  if (e.who === "james") return conf ? { fill:C.james, tx:"#FFFFFF" } : { fill:C.jamesSoft, stroke:C.james, tx:"#1F4FA8" };
+  if (e.who === "both")  return { split: conf ? [C.ale, C.james] : [C.aleSoft, C.jamesSoft], stroke:C.both, tx: conf ? "#FFFFFF" : "#5B3FA0" };
+  return { fill:"#FFFFFF", dashed:true, tx:C.muted };
+}
+function drawDay(doc, x, y, w, h, st){
+  if (st.split) {
+    doc.setFillColor(st.split[0]); doc.triangle(x, y, x + w, y, x, y + h, "F");
+    doc.setFillColor(st.split[1]); doc.triangle(x + w, y, x + w, y + h, x, y + h, "F");
+    doc.setDrawColor(st.stroke); doc.setLineWidth(1); doc.roundedRect(x, y, w, h, 2.5, 2.5, "S");
+    return;
+  }
+  doc.setFillColor(st.fill);
+  if (st.dashed) { doc.setDrawColor("#C9CED6"); doc.setLineWidth(.6); doc.setLineDashPattern([1.6, 1.2], 0); doc.roundedRect(x, y, w, h, 2.5, 2.5, "FD"); doc.setLineDashPattern([], 0); }
+  else if (st.stroke) { doc.setDrawColor(st.stroke); doc.setLineWidth(1); doc.roundedRect(x, y, w, h, 2.5, 2.5, "FD"); }
+  else doc.roundedRect(x, y, w, h, 2.5, 2.5, "F");
+}
+const fmtLong = d => `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`;
+function statusText(e){
+  if (!e.who) return "Undetermined";
+  if (e.src === "school") return "School-day default";
+  if (e.status === "confirmed") return "Confirmed by both";
+  const who = [e.cABB && "Alejandra", e.cJL && "James"].filter(Boolean);
+  return who.length ? `Proposal (${who[0]} confirmed)` : "Proposal";
+}
+
+async function exportPDF(){
+  const btns = [$("#pdfBtn"), $("#exportPdf2")];
+  btns.forEach(b => { b.disabled = true; b.textContent = "Building PDF…"; });
+  try {
+    const JsPDF = await loadJsPDF();
+    const doc = new JsPDF({ unit:"pt", format:"letter" });   // 612 x 792
+    const W = 612, M = 36, me = S.me === "JL" ? "James" : "Alejandra";
+    const today = new Date(), exported = `${MON[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+
+    // ---------- totals ----------
+    const tot = { ale:0, james:0, both:0, open:0 }, hol = { ale:0, james:0, both:0, open:0 };
+    for (let d = new Date(2027,0,1); d.getFullYear() === 2027; d = addDays(d,1)) {
+      const k = key(d), b = eff(k).who || "open"; tot[b]++; if (OFF[k] && OFF[k].kind === "hol") hol[b]++;
+    }
+    let wk = { ale:0, james:0, both:0, open:0, split:0 }, wkConf = 0;
+    ROWS.forEach(r => {
+      const core = r.core.map(k => eff(k).who), u = new Set(core);
+      const w = u.has("") ? "open" : u.size === 1 ? core[0] : "split"; wk[w]++;
+      if (rowConf(r).done) wkConf++;
+    });
+
+    // ---------- header ----------
+    const header = (title, sub, sub2) => {
+      doc.setFont("helvetica","bold"); doc.setFontSize(18); doc.setTextColor(C.ink); doc.text(title, M, M + 10);
+      doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(C.muted);
+      doc.text(sub || "", M, M + 24); if (sub2) doc.text(sub2, M, M + 35);
+      doc.setTextColor(C.faint); doc.text(`Exported by ${me} · ${exported}`, W - M, M + 10, { align:"right" });
+    };
+    header("Camilo · 2027",
+      `Weekends: ${wk.ale} Ale · ${wk.james} James · ${wk.both} Both · ${wk.split} split · ${wk.open} open  (${wkConf} confirmed by both)`,
+      `Days: ${tot.ale} Ale · ${tot.james} James · ${tot.both} Both · ${tot.open} open     Holidays: ${hol.ale} Ale · ${hol.james} James · ${hol.both} Both · ${hol.open} open`);
+
+    // ---------- legend ----------
+    const legend = [
+      [{ fill:C.ale }, "Ale - confirmed"], [{ fill:C.aleSoft, stroke:C.ale }, "Ale - proposal"], [{ fill:C.school }, "School day (Ale)"],
+      [{ fill:C.james }, "James - confirmed"], [{ fill:C.jamesSoft, stroke:C.james }, "James - proposal"],
+      [{ split:[C.ale, C.james], stroke:C.both }, "Both"], [{ fill:"#FFFFFF", dashed:true }, "Undetermined"]
+    ];
+    let lx = M, ly = M + 50;
+    doc.setFontSize(7.5);
+    legend.forEach(([st, label]) => {
+      drawDay(doc, lx, ly - 7, 9, 9, st); doc.setTextColor(C.muted); doc.text(label, lx + 12, ly);
+      lx += 14 + doc.getTextWidth(label) + 10;
+    });
+    doc.setFillColor(C.hol); doc.circle(lx + 4, ly - 2.5, 2, "F"); doc.setTextColor(C.muted); doc.text("No school / holiday", lx + 9, ly);
+
+    // ---------- 12 months ----------
+    const cell = 21, gap = 1.6, colW = 7 * cell, cols = 3;
+    const gx = (W - 2 * M - cols * colW) / (cols - 1);
+    const top = M + 64, blockH = 14 + 11 + 6 * cell + 6;
+    for (let m = 0; m < 12; m++) {
+      const cx = M + (m % cols) * (colW + gx), cy = top + Math.floor(m / cols) * blockH;
+      const first = new Date(2027, m, 1), n = { ale:0, james:0, both:0, open:0 };
+      for (let d = new Date(first); d.getMonth() === m; d = addDays(d,1)) n[eff(key(d)).who || "open"]++;
+      doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(C.ink); doc.text(MONTH[m], cx, cy + 9);
+      doc.setFont("helvetica","normal"); doc.setFontSize(7);
+      const sum = `A ${n.ale}  J ${n.james}${n.both ? `  B ${n.both}` : ""}${n.open ? `  ${n.open} open` : ""}`;
+      doc.setTextColor(C.faint); doc.text(sum, cx + colW, cy + 9, { align:"right" });
+      ["S","M","T","W","T","F","S"].forEach((h, i) => doc.text(h, cx + i * cell + cell / 2, cy + 21, { align:"center" }));
+      let row = 0;
+      for (let d = new Date(first); d.getMonth() === m; d = addDays(d,1)) {
+        const col = d.getDay(); if (col === 0 && d.getDate() !== 1) row++;
+        const x = cx + col * cell + gap / 2, y = cy + 25 + row * cell + gap / 2, s = cell - gap;
+        const k = key(d), st = dayStyle(k), o = OFF[k];
+        drawDay(doc, x, y, s, s, st);
+        doc.setFont("helvetica", st.tx === "#FFFFFF" || st.stroke ? "bold" : "normal"); doc.setFontSize(7.5); doc.setTextColor(st.tx);
+        doc.text(String(d.getDate()), x + s / 2, y + s / 2 + 2.6, { align:"center" });
+        if (o && o.kind !== "summer") { doc.setFillColor(o.est ? "#B4BBC4" : C.hol); doc.circle(x + s - 3, y + 3, 1.4, "F"); }
+      }
+    }
+    doc.setFontSize(7); doc.setTextColor(C.faint);
+    doc.text("Spring 2027 school days and days off from the Beaverton SD 2026-27 calendar. Fall 2027 dates (gray dots, school from Aug 24) are estimates until BSD posts 2027-28.", M, 792 - M + 8);
+
+    // ---------- page 2: holidays & days off ----------
+    doc.addPage();
+    header("Holidays, breaks & days off", "Every no-school day and named holiday in 2027, with who has Camilo and whether both parents have confirmed.");
+    const groups = [];
+    Object.keys(OFF).filter(k => k.startsWith("2027") && OFF[k].kind !== "summer").sort().forEach(k => {
+      const o = OFF[k], e = eff(k), g = groups[groups.length - 1];
+      const sig = `${o.name}|${e.who}|${statusText(e)}`;
+      if (g && g.sig === sig && key(addDays(fromKey(g.to), 1)) === k) g.to = k;
+      else groups.push({ sig, from:k, to:k, name:o.name + (o.est ? " (est.)" : ""), who:e.who, status:statusText(e) });
+    });
+    table(doc, M + 44, ["Dates", "Holiday / day off", "With", "Status"], [118, 200, 80, 142],
+      groups.map(g => [g.from === g.to ? fmtLong(fromKey(g.from)) : `${fmtLong(fromKey(g.from))} - ${MON[fromKey(g.to).getMonth()]} ${fromKey(g.to).getDate()}`,
+                       g.name, NAME[g.who], g.status]), header);
+
+    // ---------- page 3: weekends ----------
+    doc.addPage();
+    header("Weekends", "Fri / Sat / Sun for every weekend in 2027, plus any attached days off.");
+    table(doc, M + 44, ["Weekend", "Fri", "Sat", "Sun", "Days off attached", "Status"], [70, 62, 62, 62, 164, 120],
+      ROWS.filter(r => r.fri.startsWith("2027")).map(r => {
+        const rc = rowConf(r);
+        const st = rc.done ? "Confirmed by both" : rc.set ? `Proposal${rc.ABB ? " (Ale confirmed)" : rc.JL ? " (James confirmed)" : ""}` : "Nothing set";
+        // group consecutive attached days with the same parent: "Mon 3/22-Thu 3/25 James"
+        const runs = [];
+        [...r.left, ...r.right].forEach(k => {
+          const w = eff(k).who, last = runs[runs.length - 1];
+          if (last && last.w === w && key(addDays(fromKey(last.to), 1)) === k) last.to = k; else runs.push({ w, from:k, to:k });
+        });
+        const ex = runs.map(g => `${DOW[fromKey(g.from).getDay()]} ${md(g.from)}${g.to !== g.from ? `-${DOW[fromKey(g.to).getDay()]} ${md(g.to)}` : ""} ${SHORT[g.w] || "open"}`).join(", ");
+        return [rangeLabel(r.core[0], r.core[2]), ...r.core.map(k => NAME[eff(k).who].replace("Undetermined","-")), ex, st];
+      }), header, (row) => row);
+
+    // page numbers
+    const pages = doc.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) { doc.setPage(i); doc.setFontSize(7); doc.setTextColor(C.faint); doc.text(`${i} / ${pages}`, W - M, 792 - M + 8, { align:"right" }); }
+
+    doc.save(`Camilo_2027_Calendar_${key(today)}.pdf`);
+    toast("PDF exported");
+  } catch (e) { toast(e.message || "PDF export failed"); }
+  btns.forEach(b => { b.disabled = false; b.textContent = "Export PDF"; });
+}
+function table(doc, y0, heads, widths, rows, header){
+  const M = 36, rh = 15, bottom = 792 - 50;
+  const colorFor = v => v === "Alejandra" || v === "Ale" ? C.ale : v === "James" ? C.james : v === "Both" ? C.both : C.ink;
+  const drawHead = y => {
+    doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(C.muted);
+    let x = M; heads.forEach((h, i) => { doc.text(h.toUpperCase(), x + 3, y); x += widths[i]; });
+    doc.setDrawColor(C.line); doc.setLineWidth(.6); doc.line(M, y + 4, M + widths.reduce((a, b) => a + b), y + 4);
+    return y + 15;
+  };
+  let y = drawHead(y0);
+  rows.forEach((r, ri) => {
+    if (y > bottom) { doc.addPage(); header("Camilo · 2027 (continued)", ""); y = drawHead(M + 44); }
+    if (ri % 2 === 0) { doc.setFillColor("#F7F8FA"); doc.rect(M, y - 10.5, widths.reduce((a, b) => a + b), rh, "F"); }
+    let x = M;
+    r.forEach((v, i) => {
+      v = String(v ?? "");
+      doc.setFont("helvetica", (v === "Alejandra" || v === "James" || v === "Both") ? "bold" : "normal");
+      doc.setFontSize(8); doc.setTextColor(colorFor(v));
+      const fit = doc.splitTextToSize(v, widths[i] - 6)[0] || "";
+      doc.text(fit + (fit.length < v.length ? "…" : ""), x + 3, y); x += widths[i];
+    });
+    y += rh;
+  });
+}
+$("#pdfBtn").onclick = exportPDF;
+$("#exportPdf2").onclick = exportPDF;
 
 /* ================= gate & boot ================= */
 $("#endpoint").value = endpoint();
