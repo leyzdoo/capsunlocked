@@ -317,8 +317,9 @@ mark("2027-04-09","2027-04-09","Grading day","Grading");
 mark("2027-04-23","2027-04-23","Staff development day","Staff day");
 mark("2027-05-31","2027-05-31","Memorial Day","Memorial");
 mark("2027-06-11","2027-06-11","Summer break begins","Summer","summer");
-mark("2027-06-18","2027-06-18","Juneteenth","Juneteenth");
-mark("2027-07-05","2027-07-05","Independence Day (observed)","July 4th");
+mark("2027-06-10","2027-06-10","Last day of school","Last day","note");
+mark("2027-06-19","2027-06-19","Juneteenth","Juneteenth");
+mark("2027-07-04","2027-07-04","Independence Day","July 4th");
 mark("2027-09-06","2027-09-06","Labor Day","Labor Day");
 mark("2027-11-11","2027-11-11","Veterans Day","Veterans");
 mark("2027-11-22","2027-11-26","Fall break · Thanksgiving","Fall brk","hol",true);
@@ -329,6 +330,22 @@ mark("2028-01-01","2028-01-01","New Year's Day","New Year's");
    Live Compás sheet ends Dec 31 2026; its winter-break note reads
    "Coparenting James (through Jan 3)". */
 const SEED_COMPAS = { "2027-01-01":"james", "2027-01-02":"james", "2027-01-03":"james" };
+
+/* ================= James's holiday proposals (Nov 15 2026) =================
+   Shown as proposals from James until both parents confirm. */
+const SEED_PLAN = {
+  "2027-01-01":"james",                                   // New Year's Day
+  "2027-01-18":"ale",                                     // MLK Day
+  "2027-01-25":"ale", "2027-01-26":"ale",                 // Grading + staff development
+  "2027-02-12":"ale", "2027-02-15":"ale",                 // Staff dev + Presidents' Day
+  "2027-03-22":"james","2027-03-23":"james","2027-03-24":"james","2027-03-25":"james","2027-03-26":"james", // Spring break
+  "2027-04-09":"james",                                   // Grading day
+  "2027-04-23":"ale",                                     // Staff development
+  "2027-05-31":"james",                                   // Memorial Day
+  "2027-06-10":"ale",                                     // Last day of school
+  "2027-06-19":"james",                                   // Juneteenth
+  "2027-07-04":"ale"                                      // Independence Day
+};
 
 /* ================= state ================= */
 let S = load();
@@ -348,6 +365,7 @@ function eff(k){
     const cJL = p.cJL || "", cABB = p.cABB || "";
     return { who:p.who, by:p.by, cJL, cABB, src:"plan", status:(cJL && cABB) ? "confirmed" : "proposed" };
   }
+  if (SEED_PLAN[k]) return { who:SEED_PLAN[k], by:"JL", cJL:"", cABB:"", src:"seed", status:"proposed" };
   if (S.compas[k]) return { who:S.compas[k], by:"compas", cJL:"", cABB:"", src:"compas", status:"proposed" };
   return { who:"", status:"open", cJL:"", cABB:"" };
 }
@@ -368,7 +386,7 @@ function confirmRow(r, on){
   r.all.forEach(k => {
     const e = eff(k); if (!e.who) return;
     if (!!e[field] === on) return;
-    const base = S.plan[k] && S.plan[k].status !== "cleared" ? S.plan[k] : { who:e.who, by:"compas", at:now, cJL:"", cABB:"" };
+    const base = S.plan[k] && S.plan[k].status !== "cleared" ? S.plan[k] : { who:e.who, by:e.by || "compas", at:now, cJL:"", cABB:"" };
     S.plan[k] = { ...base, [field]: on ? now : "", updated:now };
     S.plan[k].status = (S.plan[k].cJL && S.plan[k].cABB) ? "confirmed" : "proposed";
     S.pending[k] = true; did.push(k);
