@@ -15,7 +15,10 @@ export const BOATS = {
   sail: { name: 'Sailboat', price: 35, speed: 9, blurb: 'Sails with the wind — faster than rowing.' },
   speed: { name: 'Speedboat', price: 55, speed: 16, blurb: 'Zoom across the ocean!' }
 };
-export const PLANE = { name: 'Sky Plane', price: 0, speed: 24, blurb: 'Free! Steer with the wheel and push the lever up to fly over the whole world.' };
+export const PLANES = {
+  sky: { name: 'Sky Plane', price: 0, speed: 24, top: 60, blurb: 'Free! Steer with the wheel and push the lever up to fly over the whole world.' },
+  jet: { name: 'Jet', price: 0, speed: 36, top: 95, blurb: 'Free! The fastest thing in Mindworks. Flies higher too, and needs a longer run to take off.' }
+};
 export const ITEMS = {
   crate: { name: 'Crate', icon: '📦', value: 2 }, gear: { name: 'Gear', icon: '⚙️', value: 2 }, apple: { name: 'Apple', icon: '🍎', value: 1 },
   wood: { name: 'Wood', icon: '🪵', value: 1 }, gem: { name: 'Gem', icon: '💎', value: 5 }, fossil: { name: 'Fossil', icon: '🦴', value: 4 },
@@ -75,7 +78,8 @@ export function makeBoat(kind) {
   return g;
 }
 /** one plane, faces +z; propeller is g.userData.prop */
-export function makePlane() {
+export function makePlane(kind) {
+  if (kind === 'jet') return makeJet();
   const g = new THREE.Group(), paint = std(0xf2f4f7, .35, .3), red = std(0xd8352a, .4, .2), dark = std(0x1e1e1e, .6), glass = std(0x22303a, .1, .8);
   const body = new THREE.Mesh(new THREE.CylinderGeometry(.62, .42, 5.6, 16), paint); body.rotation.x = Math.PI / 2; body.position.set(0, 1.5, 0); body.castShadow = true; g.add(body);
   const nose = new THREE.Mesh(new THREE.SphereGeometry(.62, 16, 12), red); nose.scale.z = .8; nose.position.set(0, 1.5, 2.8); g.add(nose);
@@ -86,6 +90,22 @@ export function makePlane() {
   const prop = new THREE.Group(); prop.position.set(0, 1.5, 3.35); bx(prop, .14, 2, .06, dark, 0, 0, 0); bx(prop, 2, .14, .06, dark, 0, 0, 0); g.add(prop); g.userData.prop = prop;
   [[.9, 1.3], [-.9, 1.3]].forEach(([x, z]) => { bx(g, .08, .8, .08, dark, x, .75, z); wheel(g, x, z, .32, .22); });
   bx(g, .06, .5, .06, dark, 0, .85, -3.2); wheel(g, 0, -3.2, .18, .14);
+  return g;
+}
+function makeJet() {
+  const g = new THREE.Group(), paint = std(0x3a4f6e, .3, .6), stripe = std(0xffc300, .4, .2), dark = std(0x1e1e1e, .6), glass = std(0x7fd6ff, .05, .6);
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(.55, .5, 6.2, 16), paint); body.rotation.x = Math.PI / 2; body.position.set(0, 1.5, -.2); body.castShadow = true; g.add(body);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(.55, 2.2, 16), paint); nose.rotation.x = Math.PI / 2; nose.position.set(0, 1.5, 4); g.add(nose);
+  const cock = new THREE.Mesh(new THREE.SphereGeometry(.45, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), glass); cock.scale.set(.9, .9, 2.4); cock.position.set(0, 1.9, 1.9); g.add(cock);
+  [-1, 1].forEach(s => { // swept wings and tail fins
+    const w = new THREE.Shape(); w.moveTo(0, 1.2); w.lineTo(s * 3.6, -1.4); w.lineTo(s * 3.6, -2.1); w.lineTo(0, -1.6);
+    const wing = new THREE.Mesh(new THREE.ExtrudeGeometry(w, { depth: .1, bevelEnabled: false }), paint); wing.rotation.x = Math.PI / 2; wing.position.set(0, 1.4, 0); wing.castShadow = true; g.add(wing);
+    bx(g, .5, .13, .7, stripe, s * 3.3, 1.36, -1.7);
+    const fin = bx(g, .08, 1.2, 1, paint, s * .45, 2.2, -3); fin.rotation.z = s * -.35;
+  });
+  const flame = new THREE.Mesh(new THREE.ConeGeometry(.38, 1.4, 12), new THREE.MeshBasicMaterial({ color: 0xff8a2a, transparent: true, opacity: .85 })); flame.rotation.x = -Math.PI / 2; flame.position.set(0, 1.5, -4); g.add(flame);
+  const prop = new THREE.Group(); prop.add(flame); g.add(prop); g.userData.prop = prop; g.userData.flame = flame; // "prop" spins nothing visible on a jet
+  [[.9, .9], [-.9, .9], [0, 3]].forEach(([x, z]) => { bx(g, .08, .8, .08, dark, x, .75, z); wheel(g, x, z, .28, .2); });
   return g;
 }
 const ITEM_MESH = {

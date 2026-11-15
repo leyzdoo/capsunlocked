@@ -4,7 +4,7 @@ import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, f
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
 import { createWorld, WATER_Y } from './world.js';
-import { CARS, BOATS, PLANE, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
+import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
@@ -265,13 +265,13 @@ let ride = null;
 G.isRiding = () => ride;
 function startRide(type, kind, at) {
   if (ride) stopRide(true);
-  const mesh = type === 'car' ? makeCar(kind) : type === 'plane' ? makePlane() : makeBoat(kind);
+  const mesh = type === 'car' ? makeCar(kind) : type === 'plane' ? makePlane(kind) : makeBoat(kind);
   player.root.add(mesh);
   if (type === 'car' || type === 'plane') player.model.visible = false; else player.model.position.y = .25;
   ride = { type, kind, mesh, t: 0, alt: 0, v: 0 };
   if (type === 'plane') { flight.wheel = 0; flight.lever = 0; setLever(0); }
   if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
-  showJoy(); refreshRideBtn(); toast(type === 'plane' ? '✈️ Push the lever up to take off — steer with the wheel!' : type === 'car' ? '🚗 Driving your ' + CARS[kind].name + '!' : '⛵ Sailing your ' + BOATS[kind].name + '!');
+  showJoy(); refreshRideBtn(); toast(type === 'plane' ? '✈️ ' + PLANES[kind].name + ': push the lever up to take off — steer with the wheel!' : type === 'car' ? '🚗 Driving your ' + CARS[kind].name + '!' : '⛵ Sailing your ' + BOATS[kind].name + '!');
 }
 function stopRide(silent, at) {
   if (!ride) return;
@@ -306,15 +306,15 @@ function refreshRideBtn() {
   const show = !!(u && out && (landed || (u.car && !(ride && (ride.type === 'boat' || flying)))));
   b.classList.toggle('hide', !show);
   if (show) b.textContent = landed ? '🚶 Get out' : ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
-  $('flyBtn').classList.toggle('hide', !(u && u.plane && out && !ride));
+  $('flyBtn').classList.toggle('hide', !(u && u.planeKind && out && !ride)); if (u && u.planeKind) $('flyBtn').textContent = '✈️ Fly ' + PLANES[u.planeKind].name;
   $('wheel').classList.toggle('hide', !flying); $('lever').classList.toggle('hide', !flying);
 }
 /* ---------------- the plane: steering wheel + height lever ---------------- */
 const clamp = THREE.MathUtils.clamp, flight = { wheel: 0, lever: 0, held: false, warned: 0 };
-const MAX_ALT = 60;
+const topAlt = () => ride && ride.type === 'plane' ? PLANES[ride.kind].top : 60;
 function setLever(v) {
   flight.lever = clamp(v, 0, 1); $('leverKnob').style.bottom = (flight.lever * 100) + '%';
-  $('leverLab').textContent = flight.lever < .02 ? 'Ground' : Math.round(flight.lever * MAX_ALT) + ' m';
+  $('leverLab').textContent = flight.lever < .02 ? 'Ground' : Math.round(flight.lever * topAlt()) + ' m';
 }
 (function cockpit() {
   const w = $('wheel'), rot = $('wheelRot'); let id = null, x0 = 0;
@@ -339,18 +339,18 @@ function flyStep(dt) {
   if (kLev) setLever(flight.lever + kLev * dt * .5);
   G._wheelRot.setAttribute('transform', 'rotate(' + (flight.wheel * 90) + ' 50 50)');
   const ground = world.heightAt(p.x, p.z), wet = ground < WATER_Y, floor = Math.max(ground, WATER_Y);
-  let target = floor + flight.lever * MAX_ALT;
+  const PL = PLANES[ride.kind]; let target = floor + flight.lever * PL.top;
   if (wet && flight.lever < .05) { target = WATER_Y + 3; if (performance.now() - flight.warned > 5000) { flight.warned = performance.now(); toast('🌊 Can’t land on water — fly to land first!'); } }
   const air = ride.alt > .3;
   // speed: rolls on the runway, flies at full speed in the air, stops when it lands with the lever down
-  const wantV = flight.lever > .02 || air || wet ? PLANE.speed : 0;
+  const wantV = flight.lever > .02 || air || wet ? PL.speed : 0;
   ride.v += (wantV - ride.v) * Math.min(1, dt * (wantV ? 1.1 : 1.6));
   // steering turns the plane (less while it is rolling slowly on the ground)
   player.root.rotation.y -= flight.wheel * dt * (air ? 1.1 : .9) * Math.min(1, ride.v / 6);
   const yaw = player.root.rotation.y;
   p.x += Math.sin(yaw) * ride.v * dt; p.z += Math.cos(yaw) * ride.v * dt;
   // climb only once it is going fast enough to lift off
-  const lift = ride.v > PLANE.speed * .45 || air ? 1 : 0;
+  const lift = ride.v > PL.speed * .45 || air ? 1 : 0;
   const ny = lift ? p.y + clamp(target - p.y, -9 * dt, 7 * dt) : floor;
   const climb = (ny - p.y) / Math.max(dt, 1e-4); p.y = Math.max(ny, floor);
   ride.alt = p.y - floor;
@@ -358,12 +358,13 @@ function flyStep(dt) {
   ride.mesh.rotation.z += ((air ? flight.wheel * .55 : 0) - ride.mesh.rotation.z) * Math.min(1, dt * 4);
   ride.mesh.rotation.x += (clamp(-climb * .05, -.35, .35) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
   ride.mesh.userData.prop.rotation.z += dt * (6 + ride.v * 2);
+  if (ride.mesh.userData.flame) ride.mesh.userData.flame.scale.setScalar(.4 + ride.v / PL.speed * (.8 + Math.random() * .3));
   // keep the camera behind the plane
   if (!cam.drag) { let dy = yaw + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.6); }
   if (!cam.drag) cam.pitch += ((air ? .32 : .25) - cam.pitch) * Math.min(1, dt * 2);
   refreshRideBtn();
 }
-$('flyBtn').onclick = () => { if (!ride && G.S.data.up.plane && active === townPlace) startRide('plane', 'sky'); };
+$('flyBtn').onclick = () => { const u = G.S.data.up; if (!ride && u.planeKind && active === townPlace) startRide('plane', u.planeKind); };
 $('rideBtn').onclick = () => { if (ride) stopRide(false); else if (G.S.data.up.car) startRide('car', G.S.data.up.car); };
 function goHome() {
   if (ride) stopRide(true);

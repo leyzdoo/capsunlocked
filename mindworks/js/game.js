@@ -29,7 +29,7 @@ export function defaultData(color) {
   return {
     avatar: '🙂', color: color || COLORS[0], coins: 0,
     levels: { maze: 0, picture: 0, pattern: 0, chess: 0, pong: 0 },
-    up: { paddle: 0, lives: 0, chessSet: 'classic', sets: ['classic'], chessHints: 0, picHints: 0, mazeHints: 0, house: 0, teleporter: false, cars: [], car: null, boats: [], boat: null, plane: false },
+    up: { paddle: 0, lives: 0, chessSet: 'classic', sets: ['classic'], chessHints: 0, picHints: 0, mazeHints: 0, house: 0, teleporter: false, cars: [], car: null, boats: [], boat: null, plane: false, planes: [], planeKind: null },
     jigsaws: [], wins2p: { chess: 0, pong: 0 }, bag: {}, got: { day: '', keys: [] }
   };
 }
@@ -38,6 +38,7 @@ export function normalize(d) {
   for (const k in base) if (d[k] == null) d[k] = base[k];
   for (const k in base.levels) if (d.levels[k] == null) d.levels[k] = 0;
   for (const k in base.up) if (d.up[k] == null) d.up[k] = base.up[k];
+  if (d.up.plane && !d.up.planes.length) { d.up.planes = ['sky']; d.up.planeKind = 'sky'; } // plane 1 owners from before
   return d;
 }
 export const coinsFor = level => Math.min(5, 1 + Math.floor((level - 1) / 5));

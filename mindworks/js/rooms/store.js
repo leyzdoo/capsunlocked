@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, el, save, toast, refreshCoins, openPanel, closePanel } from '../game.js';
 import { buildHouse } from '../town.js';
 import { currentHome, designHomes, describeKind, renderHome, sketch } from '../homes.js';
-import { CARS, BOATS, PLANE, ITEMS, makeCar, makeBoat, makePlane, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
+import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
 import { makeRoom, shelf, plant, box, std, env, at } from './common.js';
 import { CHESS_SETS } from './chess.js';
 import { mat, signTexture } from '../tex.js';
@@ -144,13 +144,16 @@ function renderShopInto(body) {
   };
   vgrid('Cars — drive anywhere, carry more', '🚗', CARS, 'cars', 'car', makeCar);
   vgrid('Boats — sail lakes and the sea', '⛵', BOATS, 'boats', 'boat', makeBoat);
-  // ---- the plane (one, free) ----
-  const pl = grid(section('Plane — fly over everything', '✈️')), pit = el('div', { class: 'item' });
-  pit.appendChild(vehiclePic(makePlane, 'sky')); pit.appendChild(el('div', { class: 't' }, PLANE.name)); pit.appendChild(el('div', { class: 'd' }, PLANE.blurb));
-  if (u.plane) pit.appendChild(el('div', { class: 'own' }, 'Your plane — tap ✈️ Fly outside'));
-  const pb = el('button', { class: 'btn ' + (u.plane ? '' : 'go') }, u.plane ? 'You have it!' : '🎁 Get it free'); pb.disabled = !!u.plane;
-  pb.onclick = () => { u.plane = true; save(true); G.refreshBag(); renderShop(); toast('✈️ The plane is yours! Tap ✈️ Fly when you are outside.'); };
-  pit.appendChild(pb); pl.appendChild(pit);
+  // ---- planes (free) ----
+  const pl = grid(section('Planes — fly over everything', '✈️'));
+  Object.entries(PLANES).forEach(([k, c]) => {
+    const owned = u.planes.includes(k), on = u.planeKind === k, it = el('div', { class: 'item' });
+    it.appendChild(vehiclePic(makePlane, k)); it.appendChild(el('div', { class: 't' }, c.name)); it.appendChild(el('div', { class: 'd' }, c.blurb));
+    if (on) it.appendChild(el('div', { class: 'own' }, 'Your plane — tap ✈️ Fly outside'));
+    const b = el('button', { class: 'btn ' + (owned && on ? '' : 'go') }, owned ? (on ? 'Flying this one' : 'Use this one') : '🎁 Get it free'); b.disabled = on;
+    b.onclick = () => { if (!owned) u.planes.push(k); u.planeKind = k; u.plane = true; save(true); G.refreshBag(); renderShop(); if (!owned) toast('✈️ The ' + c.name + ' is yours! Tap ✈️ Fly when you are outside.'); };
+    it.appendChild(b); pl.appendChild(it);
+  });
   // ---- ping pong ----
   const pg = grid(section('Ping Pong', '🏓'));
   const np = u.paddle < PADDLE_PRICES.length ? PADDLE_PRICES[u.paddle] : null;
