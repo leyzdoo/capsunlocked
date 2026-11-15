@@ -147,6 +147,38 @@
   .cell.flash{animation:fl .6s}
   @keyframes fl{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
 
+  /* ---------- tabs ---------- */
+  .tabs{display:inline-flex;gap:2px;background:var(--track);border-radius:10px;padding:3px;margin-top:9px}
+  .tab{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  /* ---------- year view ---------- */
+  #year{max-width:1080px}
+  .ylegend{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 14px;font-size:11.5px;color:var(--muted);margin:16px 0 6px}
+  .ylegend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-3px;margin-right:5px;font-style:normal}
+  .ynote{text-align:center;font-size:11px;color:var(--faint);margin-bottom:14px}
+  .months{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 20px}
+  .mo h3{font-family:"Special Elite",monospace;font-weight:400;font-size:16px;margin:0 0 2px;text-align:center}
+  .mo .msum{text-align:center;font-size:10.5px;color:var(--faint);margin-bottom:6px;font-variant-numeric:tabular-nums}
+  .mo .msum b{font-weight:700} .msum .a{color:var(--ale)} .msum .j{color:var(--james)} .msum .bo{color:var(--both)} .msum .o{color:#C2410C}
+  .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .mgrid .h{font-size:9.5px;font-weight:700;color:var(--faint);text-align:center;padding-bottom:2px}
+  .yd{position:relative;aspect-ratio:1;border:1px solid transparent;border-radius:6px;background:#fff;font:inherit;font-size:11.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;font-variant-numeric:tabular-nums}
+  .yd.blank{visibility:hidden}
+  .yd.t-open{border:1.5px dashed #C9CED6;color:var(--muted)}
+  .yd.t-school{background:#EEF7F1;color:#5E8F72;font-weight:500}
+  .yd.t-ale{background:var(--ale-soft);border:2px solid var(--ale);color:#1E6B3E}
+  .yd.t-james{background:var(--james-soft);border:2px solid var(--james);color:#1F4FA8}
+  .yd.t-both{background:linear-gradient(135deg,var(--ale-soft) 50%,var(--james-soft) 50%);border:2px solid var(--both);color:#5B3FA0}
+  .yd.c-confirmed.t-ale{background:var(--ale);color:#fff}
+  .yd.c-confirmed.t-james{background:var(--james);color:#fff}
+  .yd.c-confirmed.t-both{background:linear-gradient(135deg,var(--ale) 50%,var(--james) 50%);color:#fff;border-color:var(--both)}
+  .yd .hd{position:absolute;top:2px;right:2px;width:5px;height:5px;border-radius:50%;background:var(--hol)}
+  .yd.est .hd{background:#B4BBC4}
+  .yd:hover{filter:brightness(.96)}
+  @media (max-width:900px){ .months{grid-template-columns:repeat(2,1fr);gap:16px 12px} }
+  @media (max-width:640px){ .yd{font-size:10.5px;border-radius:5px} .mgrid{gap:2px} .tab{padding:6px 10px;font-size:12px} }
+
   /* ---------- data drawer ---------- */
   details.data{max-width:860px;margin:30px auto 0;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px}
   details.data summary{cursor:pointer;font-weight:600}
@@ -215,6 +247,10 @@
           <span><span class="dot j"></span>James</span>
           <span class="hint" style="color:var(--faint)">· ring = proposal · solid = confirmed by both</span>
         </div>
+        <div class="tabs" role="tablist">
+          <button class="tab" data-view="year" role="tab">Year</button>
+          <button class="tab" data-view="list" role="tab">Weekends</button>
+        </div>
         <div class="me" id="meLine"></div>
       </div>
       <div class="counter" aria-live="polite">
@@ -231,6 +267,7 @@
     </div>
   </header>
 
+  <main id="year" class="hidden"></main>
   <main id="list"></main>
 
   <div style="padding:0 16px 40px">
@@ -304,7 +341,8 @@ function mark(a, b, name, short, kind = "hol", est = false, weekdaysOnly = false
     OFF[key(d)] = { name, short, kind, est };
   }
 }
-mark("2027-06-14","2027-08-26","Summer break","Summer","summer",false,true);   // Mon–Thu of summer weeks
+mark("2027-06-14","2027-08-23","Summer break","Summer","summer",false,true);   // Mon–Thu of summer weeks
+mark("2027-06-14","2027-06-17","Possible makeup school day","Makeup?","summer",false,true);
 mark("2027-01-01","2027-01-01","New Year's Day · Winter break","New Year's");
 mark("2027-01-04","2027-01-04","Staff development day","Staff day");
 mark("2027-01-18","2027-01-18","MLK Jr. Day","MLK Day");
@@ -316,8 +354,9 @@ mark("2027-03-22","2027-03-26","Spring break","Spring brk");
 mark("2027-04-09","2027-04-09","Grading day","Grading");
 mark("2027-04-23","2027-04-23","Staff development day","Staff day");
 mark("2027-05-31","2027-05-31","Memorial Day","Memorial");
-mark("2027-06-11","2027-06-11","Summer break begins","Summer","summer");
+mark("2027-06-11","2027-06-11","Grading day (no school)","Grading");
 mark("2027-06-10","2027-06-10","Last day of school","Last day","note");
+mark("2027-08-24","2027-08-24","First day of school","1st day","note",true);
 mark("2027-06-19","2027-06-19","Juneteenth","Juneteenth");
 mark("2027-07-04","2027-07-04","Independence Day","July 4th");
 mark("2027-09-06","2027-09-06","Labor Day","Labor Day");
@@ -325,6 +364,17 @@ mark("2027-11-11","2027-11-11","Veterans Day","Veterans");
 mark("2027-11-22","2027-11-26","Fall break · Thanksgiving","Fall brk","hol",true);
 mark("2027-12-20","2027-12-31","Winter break","Winter brk","hol",true);
 mark("2028-01-01","2028-01-01","New Year's Day","New Year's");
+
+/* ================= regular school days =================
+   Mon–Thu school days default to Alejandra. Fridays belong to the weekend decision.
+   Spring 2027 from BSD 2026-27 calendar (approved 1/21/2025). Fall 2027 start is an estimate. */
+const SCHOOL_TERMS = [["2027-01-05","2027-06-10"], ["2027-08-24","2027-12-17"]];
+const FALL_EST_FROM = "2027-08-24";
+function isSchool(k){
+  const w = fromKey(k).getDay();
+  if (w < 1 || w > 4 || OFF[k]) return false;
+  return SCHOOL_TERMS.some(([a, b]) => k >= a && k <= b);
+}
 
 /* ================= Compás seed =================
    Live Compás sheet ends Dec 31 2026; its winter-break note reads
@@ -344,7 +394,8 @@ const SEED_PLAN = {
   "2027-05-31":"james",                                   // Memorial Day
   "2027-06-10":"ale",                                     // Last day of school
   "2027-06-19":"james",                                   // Juneteenth
-  "2027-07-04":"ale"                                      // Independence Day
+  "2027-07-04":"ale",                                     // Independence Day
+  "2027-08-24":"ale"                                      // First day of school (est. date)
 };
 
 /* ================= state ================= */
@@ -367,6 +418,7 @@ function eff(k){
   }
   if (SEED_PLAN[k]) return { who:SEED_PLAN[k], by:"JL", cJL:"", cABB:"", src:"seed", status:"proposed" };
   if (S.compas[k]) return { who:S.compas[k], by:"compas", cJL:"", cABB:"", src:"compas", status:"proposed" };
+  if (isSchool(k)) return { who:"ale", by:"school", cJL:"", cABB:"", src:"school", status:"default" };
   return { who:"", status:"open", cJL:"", cABB:"" };
 }
 
@@ -527,11 +579,6 @@ function paint(){
     if (rs === "split") rall.classList.add("s-mixed"); else if (rs) rall.classList.add("s-" + rs);
     pill.textContent = rs === "split" ? "Split" : (NAME[rs] + (rs && r.all.length > 3 && uniq.size === 1 ? ` · all ${r.all.length}` : ""));
 
-    r.all.forEach(k => {
-      const e = eff(k), bucket = e.who || "open";
-      c.D[bucket]++;
-      if (OFF[k] && OFF[k].kind === "hol") c.H[bucket]++;
-    });
     const rc = rowConf(r), mine = rc[me], other = me === "JL" ? rc.ABB : rc.JL;
     if (rc.done) confirmedWknds++;
     const needsMe = rc.set > 0 && !mine;
@@ -553,12 +600,71 @@ function paint(){
     btn.disabled = rc.set === 0;
     btn.textContent = rc.set === 0 ? "Confirm" : mine ? "Undo my ✓" : "Confirm";
   });
+  for (let d = new Date(2027, 0, 1); d.getFullYear() === 2027; d = addDays(d, 1)) {
+    const k = key(d), bucket = eff(k).who || "open";
+    c.D[bucket]++;
+    if (OFF[k] && OFF[k].kind === "hol") c.H[bucket]++;
+  }
+  if (S.view === "year") renderYear();
   const set = (id, v) => { $(id).textContent = v; };
   for (const [g, o] of Object.entries(c)) { set(`#c${g}a`, o.ale); set(`#c${g}b`, o.both); set(`#c${g}o`, o.open); set(`#c${g}j`, o.james); }
   set("#cSplit", `${confirmedWknds} confirmed` + (c.W.split ? ` · ${c.W.split} split` : ""));
   set("#cAwait", awaitMe ? `${awaitMe} need your ✓` : "");
   $("#meLine").innerHTML = `Signed in as <b>${me === "JL" ? "James" : "Alejandra"}</b>`;
 }
+
+/* ================= year at a glance ================= */
+const yearEl = $("#year");
+function renderYear(){
+  let html = `<div class="ylegend">
+      <span><i style="background:var(--ale)"></i>Ale · confirmed</span>
+      <span><i style="background:var(--ale-soft);border:2px solid var(--ale)"></i>Ale · proposal</span>
+      <span><i style="background:#EEF7F1"></i>School day · Ale</span>
+      <span><i style="background:var(--james)"></i>James · confirmed</span>
+      <span><i style="background:var(--james-soft);border:2px solid var(--james)"></i>James · proposal</span>
+      <span><i style="background:linear-gradient(135deg,var(--ale) 50%,var(--james) 50%)"></i>Both</span>
+      <span><i style="border:1.5px dashed #C9CED6"></i>Undetermined</span>
+      <span><i style="background:#fff;box-shadow:inset 0 0 0 4px #fff;position:relative"><b style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--hol)"></b></i>No school / holiday</span>
+    </div>
+    <div class="ynote">Tap any weekend or holiday to jump to it. School days from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
+    <div class="months">`;
+  for (let m = 0; m < 12; m++) {
+    const first = new Date(2027, m, 1), n = { ale:0, james:0, both:0, open:0 };
+    let cells = "";
+    for (let i = 0; i < first.getDay(); i++) cells += `<span class="yd blank"></span>`;
+    for (let d = new Date(first); d.getMonth() === m; d = addDays(d, 1)) {
+      const k = key(d), e = eff(k), o = OFF[k];
+      n[e.who || "open"]++;
+      const t = e.src === "school" ? "t-school" : e.who ? "t-" + e.who : "t-open";
+      const cls = ["yd", t, e.status === "confirmed" ? "c-confirmed" : "", (o && o.est) || (e.src === "school" && k >= FALL_EST_FROM) ? "est" : ""].join(" ");
+      const tip = `${DOW[d.getDay()]} ${MON[m]} ${d.getDate()} · ${e.src === "school" ? "School day · Alejandra" : (NAME[e.who] + (e.who ? (e.status === "confirmed" ? " · confirmed" : " · proposal") : ""))}${o ? " · " + o.name + (o.est ? " (est.)" : "") : ""}`;
+      cells += `<button class="${cls}" data-k="${k}" title="${tip}" aria-label="${tip}">${d.getDate()}${o && o.kind !== "summer" ? `<span class="hd"></span>` : ""}</button>`;
+    }
+    html += `<div class="mo"><h3>${MONTH[m]}</h3>
+      <div class="msum"><b class="a">A ${n.ale}</b> · <b class="j">J ${n.james}</b>${n.both ? ` · <b class="bo">B ${n.both}</b>` : ""}${n.open ? ` · <b class="o">${n.open} open</b>` : ""}</div>
+      <div class="mgrid">${["S","M","T","W","T","F","S"].map(h => `<span class="h">${h}</span>`).join("")}${cells}</div></div>`;
+  }
+  yearEl.innerHTML = html + `</div>`;
+}
+const ROW_OF = () => { const m = {}; ROWS.forEach(r => r.all.forEach(k => m[k] = r.fri)); return m; };
+yearEl.addEventListener("click", ev => {
+  const b = ev.target.closest(".yd[data-k]"); if (!b) return;
+  const k = b.dataset.k, fri = ROW_OF()[k];
+  if (!fri) { toast(`${b.title}`); return; }
+  setView("list");
+  const row = document.getElementById("r-" + fri);
+  row.scrollIntoView({ block:"center" });
+  const cell = row.querySelector(`.cell[data-k="${k}"]`);
+  if (cell) { cell.classList.remove("flash"); void cell.offsetWidth; cell.classList.add("flash"); cell.focus({ preventScroll:true }); }
+});
+function setView(v){
+  S.view = v; save();
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === v));
+  $("#list").classList.toggle("hidden", v !== "list");
+  yearEl.classList.toggle("hidden", v !== "year");
+  if (v === "year") { renderYear(); window.scrollTo(0, 0); }
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => setView(t.dataset.view));
 
 /* ================= interaction ================= */
 function zone(el, clientX){
@@ -732,7 +838,7 @@ function showGate(step){
 }
 function openApp(){
   $("#gate").classList.add("hidden"); $("#app").classList.remove("hidden");
-  buildRows(); renderAll();
+  buildRows(); renderAll(); setView(S.view || "year");
   if (endpoint()) pull(true);
 }
 $("#pwForm").onsubmit = ev => {
