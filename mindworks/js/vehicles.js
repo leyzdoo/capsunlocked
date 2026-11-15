@@ -18,6 +18,7 @@ export const BOATS = {
 export const PLANES = {
   sky: { name: 'Sky Plane', price: 0, speed: 24, top: 60, blurb: 'Free! Steer with the wheel and push the lever up to fly over the whole world.' },
   sea: { name: 'Seaplane', price: 0, speed: 22, top: 50, water: true, blurb: 'Free! Has floats, so it can land on lakes and the sea. Pull the lever down over water to land, then steer to the shore.' },
+  jumbo: { name: 'Royal Jumbo', price: 0, speed: 30, top: 85, big: true, blurb: 'Free! The biggest plane — two decks, leather seats and a lounge. Tap the 🗺️ map to pick a place, turn on autopilot and relax in the back.' },
   jet: { name: 'Jet', price: 0, speed: 36, top: 95, blurb: 'Free! The fastest thing in Mindworks. Flies higher too, and needs a longer run to take off.' }
 };
 export const ITEMS = {
@@ -79,7 +80,9 @@ export function makeBoat(kind) {
   return g;
 }
 /** one plane, faces +z; propeller is g.userData.prop */
+export const planeMakers = {}; // extra planes register here (see jumbo.js)
 export function makePlane(kind) {
+  if (planeMakers[kind]) return planeMakers[kind]();
   if (kind === 'jet') return makeJet();
   const sea = kind === 'sea', g = new THREE.Group(), paint = std(sea ? 0xffd23f : 0xf2f4f7, .35, .3), red = std(sea ? 0x1f6fd1 : 0xd8352a, .4, .2), dark = std(0x1e1e1e, .6), glass = std(0x22303a, .1, .8);
   const body = new THREE.Mesh(new THREE.CylinderGeometry(.62, .42, 5.6, 16), paint); body.rotation.x = Math.PI / 2; body.position.set(0, 1.5, 0); body.castShadow = true; g.add(body);

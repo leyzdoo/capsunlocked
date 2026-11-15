@@ -91,6 +91,9 @@ input,textarea{font:inherit}
 #lever .knob{position:absolute;left:50%;width:76px;height:34px;margin-left:-38px;margin-bottom:-17px;border-radius:10px;background:linear-gradient(180deg,#ff6b5a,#c8321f);box-shadow:0 5px 10px rgba(0,0,0,.4),inset 0 -3px 0 rgba(0,0,0,.25);pointer-events:none}
 #lever .lab{font:600 15px Fredoka,Arial;color:#fff;text-shadow:0 2px 3px #0008;margin:4px 0}
 #leverLab{margin-top:24px!important}
+#jumboBtns{position:fixed;right:14px;top:max(78px,calc(env(safe-area-inset-top) + 66px));z-index:12;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+#jumboBtns .btn{min-height:48px;font-size:17px}
+#autoChip{background:rgba(216,176,74,.9);color:#2a1a00}
 #flyBtn{position:fixed;right:14px;bottom:max(84px,calc(env(safe-area-inset-bottom) + 66px));z-index:11}
 
 /* modal + toast */
@@ -180,6 +183,7 @@ textarea.desc{width:100%;min-height:90px;border-radius:18px;border:2px solid var
 <button id="runBtn" class="hide">RUN</button>
 <button id="flyBtn" class="btn primary hide">✈️ Fly</button>
 <div id="wheel" class="hide"><svg viewBox="0 0 100 100"><g id="wheelRot"><circle cx="50" cy="50" r="42" fill="none" stroke="#2a2a33" stroke-width="10"/><circle cx="50" cy="50" r="42" fill="none" stroke="#4a4a58" stroke-width="4"/><path d="M50 50L12 44M50 50L88 44M50 50V90" stroke="#2a2a33" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="50" r="12" fill="#c8321f"/><circle cx="50" cy="8" r="4" fill="#ffd34d"/></g></svg></div>
+<div id="jumboBtns" class="hide"><span class="chip hide" id="autoChip">🤖 Autopilot</span><button class="btn primary" id="mapBtn">🗺️ Map</button><button class="btn" id="relaxBtn">🛋️ Relax in the back</button><button class="btn go hide" id="cockpitBtn">👨‍✈️ Back to the controls</button></div>
 <div id="lever" class="hide"><span class="lab">⬆️ Up</span><div class="track"><div class="knob" id="leverKnob" style="bottom:0"></div></div><span class="lab" id="leverLab">Ground</span></div>
 <button id="rideBtn" class="btn primary hide" style="position:fixed;right:14px;bottom:max(18px,env(safe-area-inset-bottom));z-index:11">🚗 Drive</button>
 

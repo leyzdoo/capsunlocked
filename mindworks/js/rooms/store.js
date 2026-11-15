@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, el, save, toast, refreshCoins, openPanel, closePanel } from '../game.js';
 import { buildHouse } from '../town.js';
 import { currentHome, designHomes, describeKind, renderHome, sketch } from '../homes.js';
+import '../jumbo.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
 import { makeRoom, shelf, plant, box, std, env, at } from './common.js';
 import { CHESS_SETS } from './chess.js';

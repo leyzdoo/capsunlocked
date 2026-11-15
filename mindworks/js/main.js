@@ -3,9 +3,10 @@ import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
-import { createWorld, WATER_Y } from './world.js';
+import { createWorld, WATER_Y, blockName } from './world.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
+import { SEATS, drawMap } from './jumbo.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
 
@@ -227,7 +228,7 @@ function walk(dt) {
   if (active.heightAt) { const ty = active.heightAt(p); p.y += (ty - p.y) * Math.min(1, dt * 16); if (Math.abs(ty - p.y) < .005) p.y = ty; }
   player.speedBlend(ride ? 0 : speed / 3.3);
   // camera
-  const C = ride ? (ride.type === 'plane' ? { dist: 16 + ride.alt * .12 } : { dist: 10, pitch: .35 }) : active.cam || { dist: 6.5, pitch: .38 };
+  const C = ride ? (ride.type === 'plane' ? { dist: (PLANES[ride.kind].big ? 34 : 16) + ride.alt * .12 } : { dist: 10, pitch: .35 }) : active.cam || { dist: 6.5, pitch: .38 };
   cam.dist += ((C.dist) - cam.dist) * Math.min(1, dt * 4);
   if (C.pitch != null && C.lockPitch) cam.pitch += (C.pitch - cam.pitch) * Math.min(1, dt * 4);
   cam.target.lerp(tmp.set(p.x, p.y + cam.height, p.z), Math.min(1, dt * 10));
@@ -247,6 +248,17 @@ function walk(dt) {
   }
   if (active.camClamp) active.camClamp(camera.position, cam.target);
   camera.lookAt(cam.target);
+  if (ride && ride.relax != null) seatCam();
+}
+/* sitting inside the Royal Jumbo: the camera is your eyes in the seat; drag to look around */
+const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3();
+function seatCam() {
+  const s = SEATS[ride.relax], look = s.yaw + (cam.yaw - ride.yaw0), up = (cam.pitch - .38) * -1.2;
+  ride.mesh.updateWorldMatrix(true, false);
+  _v1.set(s.pos[0], s.pos[1], s.pos[2]); ride.mesh.localToWorld(_v1);
+  _v2.set(s.pos[0] + Math.sin(look) * 3, s.pos[1] + up, s.pos[2] + Math.cos(look) * 3); ride.mesh.localToWorld(_v2);
+  camera.up.set(0, 1, 0).transformDirection(ride.mesh.matrixWorld); // you tilt with the plane, so the cabin looks level
+  camera.position.copy(_v1); camera.lookAt(_v2);
 }
 function updatePrompt() {
   const list = active.interact ? active.interact() : [];
@@ -277,7 +289,7 @@ function stopRide(silent, at) {
   if (!ride) return;
   player.root.remove(ride.mesh); player.model.visible = true; player.model.position.y = 0; player.model.rotation.set(0, 0, 0);
   ride.mesh.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
-  const wasPlane = ride.type === 'plane'; ride = null;
+  const wasPlane = ride.type === 'plane'; ride = null; if (camera.fov !== 55) { camera.fov = 55; camera.updateProjectionMatrix(); } camera.up.set(0, 1, 0);
   if (wasPlane) { const p = player.root.position; p.y = world.heightAt(p.x, p.z); }
   if (at) { player.root.position.x = at.x; player.root.position.z = at.z; }
   showJoy(); refreshRideBtn(); if (!silent) toast('🚶 You got out.');
@@ -307,7 +319,10 @@ function refreshRideBtn() {
   b.classList.toggle('hide', !show);
   if (show) b.textContent = landed ? '🚶 Get out' : ride ? '🚶 Get out' : '🚗 Drive ' + CARS[u.car].name;
   $('flyBtn').classList.toggle('hide', !(u && u.planeKind && out && !ride)); if (u && u.planeKind) $('flyBtn').textContent = '✈️ Fly ' + PLANES[u.planeKind].name;
-  $('wheel').classList.toggle('hide', !flying); $('lever').classList.toggle('hide', !flying);
+  const relax = flying && ride.relax != null, big = flying && PLANES[ride.kind].big;
+  $('wheel').classList.toggle('hide', !flying || relax); $('lever').classList.toggle('hide', !flying || relax);
+  $('jumboBtns').classList.toggle('hide', !big); $('autoChip').classList.toggle('hide', !(big && ride.auto));
+  if (big) { $('relaxBtn').textContent = relax ? '🪑 Change seat (' + SEATS[ride.relax].name + ')' : '🛋️ Relax in the back'; $('cockpitBtn').classList.toggle('hide', !relax); }
 }
 /* ---------------- the plane: steering wheel + height lever ---------------- */
 const clamp = THREE.MathUtils.clamp, flight = { wheel: 0, lever: 0, held: false, warned: 0 };
@@ -318,14 +333,14 @@ function setLever(v) {
 }
 (function cockpit() {
   const w = $('wheel'), rot = $('wheelRot'); let id = null, x0 = 0;
-  w.addEventListener('pointerdown', e => { id = e.pointerId; x0 = e.clientX; flight.held = true; w.setPointerCapture(id); e.preventDefault(); });
+  w.addEventListener('pointerdown', e => { autoOff(); id = e.pointerId; x0 = e.clientX; flight.held = true; w.setPointerCapture(id); e.preventDefault(); });
   w.addEventListener('pointermove', e => { if (e.pointerId === id) flight.wheel = clamp((e.clientX - x0) / 70, -1, 1); });
   const end = e => { if (e.pointerId !== id) return; id = null; flight.held = false; };
   w.addEventListener('pointerup', end); w.addEventListener('pointercancel', end);
   G._wheelRot = rot;
   const lv = $('lever'), tr = lv.querySelector('.track'); let lid = null;
   const set = e => { const r = tr.getBoundingClientRect(); setLever(1 - (e.clientY - r.top) / r.height); };
-  lv.addEventListener('pointerdown', e => { lid = e.pointerId; lv.setPointerCapture(lid); set(e); e.preventDefault(); });
+  lv.addEventListener('pointerdown', e => { autoOff(); lid = e.pointerId; lv.setPointerCapture(lid); set(e); e.preventDefault(); });
   lv.addEventListener('pointermove', e => { if (e.pointerId === lid) set(e); });
   lv.addEventListener('pointerup', e => { if (e.pointerId === lid) lid = null; }); lv.addEventListener('pointercancel', () => { lid = null; });
 })();
@@ -333,8 +348,11 @@ function flyStep(dt) {
   const p = player.root.position, k = keys;
   // keyboard: A/D or ←/→ steer, W/S or ↑/↓ move the lever
   const kSteer = (k.d || k.arrowright ? 1 : 0) - (k.a || k.arrowleft ? 1 : 0);
-  if (kSteer) flight.wheel = clamp(flight.wheel + kSteer * dt * 3, -1, 1);
+  if ((kSteer || kLevKey()) && ride.auto) autoOff();
+  if (ride.auto) autopilot(dt);
+  else if (kSteer) flight.wheel = clamp(flight.wheel + kSteer * dt * 3, -1, 1);
   else if (!flight.held) flight.wheel *= Math.max(0, 1 - dt * 4); // the wheel springs back to the middle
+  if (ride.relax != null && !ride.auto) flight.wheel = 0; // nobody at the wheel: fly straight
   const kLev = (k.w || k.arrowup ? 1 : 0) - (k.s || k.arrowdown ? 1 : 0);
   if (kLev) setLever(flight.lever + kLev * dt * .5);
   G._wheelRot.setAttribute('transform', 'rotate(' + (flight.wheel * 90) + ' 50 50)');
@@ -356,17 +374,66 @@ function flyStep(dt) {
   const climb = (ny - p.y) / Math.max(dt, 1e-4); p.y = Math.max(ny, floor);
   ride.alt = p.y - floor;
   // tilt the plane: bank into turns, nose up when climbing
-  ride.mesh.rotation.z += ((air ? flight.wheel * .55 : 0) - ride.mesh.rotation.z) * Math.min(1, dt * 4);
-  ride.mesh.rotation.x += (clamp(-climb * .05, -.35, .35) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
+  ride.mesh.rotation.z += ((air ? flight.wheel * (PL.big ? .22 : .55) : 0) - ride.mesh.rotation.z) * Math.min(1, dt * 4);
+  ride.mesh.rotation.x += (clamp(-climb * .05, PL.big ? -.1 : -.35, PL.big ? .1 : .35) - ride.mesh.rotation.x) * Math.min(1, dt * 3);
   ride.mesh.position.y = ride.onWater ? Math.sin(ride.t * 1.8) * .07 - .15 : 0; // bob on the waves
   if (ride.onWater && performance.now() - flight.warned > 6000) { flight.warned = performance.now(); toast('🌊 Splashdown! Steer to the shore to get out.'); }
   ride.mesh.userData.prop.rotation.z += dt * (6 + ride.v * 2);
   if (ride.mesh.userData.flame) ride.mesh.userData.flame.scale.setScalar(.4 + ride.v / PL.speed * (.8 + Math.random() * .3));
   // keep the camera behind the plane
-  if (!cam.drag) { let dy = yaw + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.6); }
-  if (!cam.drag) cam.pitch += ((air ? .32 : .25) - cam.pitch) * Math.min(1, dt * 2);
+  if (!cam.drag && ride.relax == null) { let dy = yaw + Math.PI - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); cam.yaw += dy * Math.min(1, dt * 1.6); }
+  if (!cam.drag && ride.relax == null) cam.pitch += ((air ? .32 : .25) - cam.pitch) * Math.min(1, dt * 2);
   refreshRideBtn();
 }
+/* ---------- Royal Jumbo: autopilot, map, seats ---------- */
+function kLevKey() { const k = keys; return (k.w || k.arrowup || k.s || k.arrowdown) ? 1 : 0; }
+function autoOff() { if (ride && ride.auto) { ride.auto = null; toast('👨‍✈️ Autopilot off — you are flying!'); refreshRideBtn(); } }
+function autopilot(dt) {
+  const p = player.root.position, a = ride.auto, dx = a.x - p.x, dz = a.z - p.z, dist = Math.hypot(dx, dz);
+  let diff = Math.atan2(dx, dz) - player.root.rotation.y; diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+  flight.wheel += (clamp(-diff * 2.2, -1, 1) - flight.wheel) * Math.min(1, dt * 3);
+  // cruise high, then come down so it lands right about at the spot you picked
+  const want = dist > 260 ? .55 : dist > 120 ? .3 : dist > 45 ? .12 : 0;
+  if (Math.abs(want - flight.lever) > .005) setLever(flight.lever + clamp(want - flight.lever, -dt * .25, dt * .25));
+  if (dist < 45 && ride.alt < .5) { ride.auto = null; flight.wheel = 0; setLever(0); toast('🛬 We have arrived at ' + a.name + '! Welcome.'); refreshRideBtn(); }
+}
+function openMap() {
+  openPanel('🗺️ Where do you want to go?', body => {
+    const wrap = el('div', { style: 'display:flex;flex-direction:column;align-items:center;gap:10px' });
+    const cv = el('canvas', { width: 540, height: 540, style: 'width:min(540px,100%);border-radius:16px;touch-action:none;cursor:crosshair' });
+    const info = el('p', { style: 'margin:0;color:var(--muted);font-weight:700;text-align:center' }, 'Tap anywhere on land. North is up. ✈️ is you.');
+    const row = el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap;justify-content:center' });
+    const go = el('button', { class: 'btn go', disabled: '' }, '🤖 Autopilot — fly me there'), home = el('button', { class: 'btn primary' }, '🏠 Fly me home');
+    row.appendChild(go); row.appendChild(home); wrap.appendChild(cv); wrap.appendChild(info); wrap.appendChild(row); body.appendChild(wrap);
+    const p = player.root.position, M = drawMap(cv, p.x, p.z), base = cv.getContext('2d').getImageData(0, 0, 540, 540); let dest = null;
+    function marks() {
+      const c = cv.getContext('2d'); c.putImageData(base, 0, 0);
+      const me = M.toMap(p.x, p.z); c.save(); c.translate(me.x, me.y); c.rotate(Math.PI - player.root.rotation.y); c.font = '34px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.rotate(-Math.PI / 4); c.fillText('✈️', 0, 0); c.restore();
+      if (dest) { const d = M.toMap(dest.x, dest.z); c.fillStyle = '#ff3d5a'; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.arc(d.x, d.y - 14, 11, 0, 7); c.fill(); c.stroke(); c.beginPath(); c.moveTo(d.x - 7, d.y - 8); c.lineTo(d.x, d.y + 2); c.lineTo(d.x + 7, d.y - 8); c.fill(); c.setLineDash([8, 7]); c.strokeStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.moveTo(me.x, me.y); c.lineTo(d.x, d.y); c.stroke(); c.setLineDash([]); }
+    }
+    marks();
+    cv.addEventListener('pointerdown', e => {
+      const r = cv.getBoundingClientRect(), w = M.toWorld((e.clientX - r.left) / r.width * 540, (e.clientY - r.top) / r.height * 540);
+      if (world.heightAt(w.x, w.z) < WATER_Y + .1) { info.textContent = '🌊 That’s water — pick a spot on land so the Royal Jumbo can land.'; return; }
+      const bi = Math.round(w.x / 160), bj = Math.round(w.z / 160);
+      dest = { x: w.x, z: w.z, name: !bi && !bj ? 'Home' : blockName(bi, bj) };
+      info.textContent = '📍 ' + dest.name + ' — ' + Math.round(Math.hypot(w.x - p.x, w.z - p.z)) + ' m away'; go.disabled = false; marks();
+    });
+    const fly = d => { ride.auto = d; if (flight.lever < .1) setLever(.15); closePanel(); toast('🤖 Autopilot on — flying to ' + d.name + '. Relax in the back if you like!'); refreshRideBtn(); };
+    go.onclick = () => dest && fly(dest);
+    home.onclick = () => { const d = town.doors.find(x => x.id === 'home'); fly({ x: d.pos.x, z: d.pos.z - 30, name: 'Home' }); };
+  });
+}
+function setSeat(i) {
+  const o = ride.mesh.userData;
+  camera.fov = i == null ? 55 : 72; camera.updateProjectionMatrix(); if (i == null) camera.up.set(0, 1, 0);
+  if (i == null) { ride.relax = null; o.outside.visible = true; o.cabin.visible = false; cam.yaw = player.root.rotation.y + Math.PI; cam.pitch = .32; }
+  else { if (ride.relax == null) ride.yaw0 = cam.yaw; ride.relax = i; o.outside.visible = false; o.cabin.visible = true; ride.yaw0 = cam.yaw; cam.pitch = .38; toast('🛋️ ' + SEATS[i].name + (ride.auto ? ' — the autopilot is flying.' : ' — drag to look around.')); }
+  refreshRideBtn();
+}
+$('mapBtn').onclick = () => { if (ride && ride.type === 'plane') openMap(); };
+$('relaxBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(ride.relax == null ? 0 : (ride.relax + 1) % SEATS.length); };
+$('cockpitBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(null); };
 $('flyBtn').onclick = () => { const u = G.S.data.up; if (!ride && u.planeKind && active === townPlace) startRide('plane', u.planeKind); };
 $('rideBtn').onclick = () => { if (ride) stopRide(false); else if (G.S.data.up.car) startRide('car', G.S.data.up.car); };
 function goHome() {
