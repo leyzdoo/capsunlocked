@@ -163,7 +163,7 @@ function renderFeedBanner(){
  $('feedState').className='feedstate '+(d?.phase==='in'&&!feedStale()?'in':'');
  if(d){const up=d.teams.find(t=>t.id==='2501'),opp=d.teams.find(t=>t.id!=='2501');$('liveScore').textContent=d.phase==='pre'?'Portland vs. '+(opp?.name||'opponent'):'PORT '+teamScore(up)+' — '+teamScore(opp)+' '+(opp?.shortName||'OPP');$('liveDetail').textContent=d.phase==='pre'?(d?.date?gameDateLabel(d.date):'See game schedule')+' · Tap for game stats':d.detail+' · Tap for box score';}
  else{$('liveScore').textContent='Portland vs. Long Beach State';$('liveDetail').textContent=liveError?'Feed unavailable · Tap for options':(d?.date?gameDateLabel(d.date):'See game schedule')+' · Tap for game stats';}
- $('feedFreshness').textContent=liveError?'Connection interrupted':d?'Fetched '+(age<60?age+'s':Math.floor(age/60)+'m')+' ago · ESPN':'Connecting…';
+ $('feedFreshness').textContent=liveError?'Connection interrupted':d?'Snapshot '+new Date(d.fetchedAt).toLocaleString()+' · ESPN':'Saved data loading…';
  $('feedFreshness').classList.toggle('feed-error',feedStale()&&!!d);
 }
 async function refreshLive(){
