@@ -183,6 +183,49 @@
   @media (max-width:900px){ .months{grid-template-columns:repeat(2,1fr);gap:16px 12px} }
   @media (max-width:640px){ .yd{font-size:10.5px;border-radius:5px} .mgrid{gap:2px} .tab{padding:6px 10px;font-size:12px} }
 
+  /* ---------- day popup ---------- */
+  .dm{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center}
+  .dm-back{position:absolute;inset:0;background:rgba(28,35,48,.32)}
+  .dm-sheet{position:relative;background:#fff;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.18);width:min(720px,calc(100vw - 24px));padding:14px 14px 12px;max-height:calc(100vh - 24px);overflow:auto}
+  .dm-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .dm-title{flex:1;text-align:center}
+  #dmTitle{font-family:"Special Elite",monospace;font-size:18px}
+  .dm-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .dm-nav,.dm-x{border:1px solid var(--line);background:#fff;border-radius:10px;width:34px;height:34px;font-size:20px;line-height:1;cursor:pointer;color:var(--ink);flex:none}
+  .dm-x{border:0;font-size:24px;color:var(--muted)}
+  .dm-cells{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .dm-cells .cell{width:auto}
+  .dm-cells .cell .meta{display:none}
+  .dm-cells .cell .hn{font-size:9px}
+  body.dm-open #toast{bottom:auto;top:18px}
+  body.dm-open{overflow:hidden}
+  .dm-cells .cell.focus{box-shadow:0 0 0 2px var(--ink)}
+  .dm-cells .cell.school .hn{color:#5E8F72}
+  .dc{display:flex;gap:3px;justify-content:center;margin-top:5px}
+  .dc button{font:inherit;font-size:10px;font-weight:700;width:22px;height:20px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--faint);cursor:pointer;padding:0}
+  .dc button.a.on{background:var(--ale);border-color:var(--ale);color:#fff}
+  .dc button.j.on{background:var(--james);border-color:var(--james);color:#fff}
+  .dc button:disabled{cursor:default}
+  .dc button.mine:not(:disabled):not(.on){border-color:var(--ink);color:var(--ink)}
+  .dc.none{visibility:hidden}
+  .dm-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px;min-height:4px}
+  .dm-foot{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .dm-foot .lab{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+  .dm-foot .lab.ok{color:var(--ink)}
+  .dm-hint{font-size:10.5px;color:var(--faint);text-align:center;margin-top:8px}
+  .yd.picked{outline:2px solid var(--ink);outline-offset:1px}
+  @media (max-width:640px){
+    .dm{align-items:flex-end}
+    .dm-sheet{width:100vw;border-radius:18px 18px 0 0;padding:12px 8px calc(12px + env(safe-area-inset-bottom))}
+    .dm-cells{gap:3px}
+    .dm-cells .cell{padding:6px 1px 5px;border-radius:9px}
+    .dm-cells .cell .dt{font-size:13px}
+    .dm-cells .tg{max-width:44px;height:20px}
+    .dm-cells .ball{width:14px;height:14px}
+    .dm-cells .s-ale .ball{left:9px} .dm-cells .s-james .ball{left:calc(100% - 9px)}
+    .dc button{width:19px;font-size:9.5px}
+  }
+
   /* ---------- data drawer ---------- */
   details.data{max-width:860px;margin:30px auto 0;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px}
   details.data summary{cursor:pointer;font-weight:600}
@@ -298,6 +341,25 @@
         School days off for Jan–Jun come from the Beaverton 2026–27 calendar. Fall 2027 days marked <i>est.</i> are placeholders until the 2027–28 calendar is out.
       </div>
     </details>
+  </div>
+</div>
+<div id="dayModal" class="dm hidden" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+  <div class="dm-back" data-close></div>
+  <div class="dm-sheet">
+    <div class="dm-head">
+      <button class="dm-nav" id="dmPrev" type="button" aria-label="Previous week">‹</button>
+      <div class="dm-title"><div id="dmTitle"></div><div class="dm-sub" id="dmSub"></div></div>
+      <button class="dm-nav" id="dmNext" type="button" aria-label="Next week">›</button>
+      <button class="dm-x" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <div class="dm-cells" id="dmCells"></div>
+    <div class="dm-tags" id="dmTags"></div>
+    <div class="dm-foot">
+      <span class="lab" id="dmLab"></span>
+      <span class="chip a" id="dmChipA"></span><span class="chip j" id="dmChipJ"></span>
+      <button class="cbtn" id="dmConfirm" type="button">Confirm</button>
+    </div>
+    <div class="dm-hint">Tap left = Ale · right = James · middle = undetermined / Both. Tap your letter under a day to confirm just that day.</div>
   </div>
 </div>
 <div id="toast"></div>
@@ -442,7 +504,7 @@ function setDay(k, v){
 function confirmRow(r, on){
   const now = stamp(), field = "c" + S.me, did = [];
   r.all.forEach(k => {
-    const e = eff(k); if (!e.who) return;
+    const e = eff(k); if (!e.who || e.src === "school") return;
     if (!!e[field] === on) return;
     const base = S.plan[k] && S.plan[k].status !== "cleared" ? S.plan[k] : { who:e.who, by:e.by || "compas", at:now, cJL:"", cABB:"" };
     S.plan[k] = { ...base, [field]: on ? now : "", updated:now };
@@ -557,6 +619,7 @@ function paint(){
     else if (e.status === "proposed") {
       if (e.cJL || e.cABB) meta = `${e.cABB ? "A✓" : "A○"} ${e.cJL ? "J✓" : "J○"}`;
       else meta = e.src === "compas" ? "Compás" : "proposal";
+    } else if (e.status === "default") { meta = "school day";
     }
     el.querySelector(".meta").textContent = meta;
     el.querySelector(".wh").textContent = SHORT[e.who];
@@ -612,6 +675,7 @@ function paint(){
     if (OFF[k] && OFF[k].kind === "hol") c.H[bucket]++;
   }
   if (S.view === "year") renderYear();
+  if (DM.focus) { paintDay(); const yd = document.querySelector(`.yd[data-k="${DM.focus}"]`); if (yd) yd.classList.add("picked"); }
   const set = (id, v) => { $(id).textContent = v; };
   for (const [g, o] of Object.entries(c)) { set(`#c${g}a`, o.ale); set(`#c${g}b`, o.both); set(`#c${g}o`, o.open); set(`#c${g}j`, o.james); }
   set("#cSplit", `${confirmedWknds} confirmed` + (c.W.split ? ` · ${c.W.split} split` : ""));
@@ -632,7 +696,7 @@ function renderYear(){
       <span><i style="border:1.5px dashed #C9CED6"></i>Undetermined</span>
       <span><i style="background:#fff;box-shadow:inset 0 0 0 4px #fff;position:relative"><b style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--hol)"></b></i>No school / holiday</span>
     </div>
-    <div class="ynote">Tap any weekend or holiday to jump to it. School days from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
+    <div class="ynote">Tap any day to set it and confirm, with three days either side. School days from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
     <div class="months">`;
   for (let m = 0; m < 12; m++) {
     const first = new Date(2027, m, 1), n = { ale:0, james:0, both:0, open:0 };
@@ -655,14 +719,86 @@ function renderYear(){
 const ROW_OF = () => { const m = {}; ROWS.forEach(r => r.all.forEach(k => m[k] = r.fri)); return m; };
 yearEl.addEventListener("click", ev => {
   const b = ev.target.closest(".yd[data-k]"); if (!b) return;
-  const k = b.dataset.k, fri = ROW_OF()[k];
-  if (!fri) { toast(`${b.title}`); return; }
-  setView("list");
-  const row = document.getElementById("r-" + fri);
-  row.scrollIntoView({ block:"center" });
-  const cell = row.querySelector(`.cell[data-k="${k}"]`);
-  if (cell) { cell.classList.remove("flash"); void cell.offsetWidth; cell.classList.add("flash"); cell.focus({ preventScroll:true }); }
+  openDay(b.dataset.k);
 });
+
+/* ================= day popup: tapped day ± 3 ================= */
+const DM = { focus:null, keys:[] };
+const FIRST_K = "2027-01-01", LAST_K = "2027-12-31";
+const confirmable = k => { const e = eff(k); return !!e.who && e.src !== "school"; };
+function openDay(k){
+  DM.focus = k;
+  let start = addDays(fromKey(k), -3);
+  if (key(start) < FIRST_K) start = fromKey(FIRST_K);
+  if (key(addDays(start, 6)) > LAST_K) start = addDays(fromKey(LAST_K), -6);
+  DM.keys = [0,1,2,3,4,5,6].map(i => key(addDays(start, i)));
+  const d = fromKey(k), o = OFF[k];
+  $("#dmTitle").textContent = `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`;
+  $("#dmSub").textContent = `${md(DM.keys[0])} – ${md(DM.keys[6])}` + (o ? ` · ${o.name}${o.est ? " (est.)" : ""}` : "");
+  $("#dmCells").innerHTML = DM.keys.map(x => {
+    const cls = isSchool(x) ? " school" : "";
+    let h = cellHTML(x, false);
+    if (isSchool(x)) h = h.replace('<div class="hn"></div>', '<div class="hn">School day</div>');
+    return h.replace('class="cell', `class="cell${cls}${x === k ? " focus" : ""}`)
+      .replace('<div class="hn">', `<div class="dc" data-k="${x}"><button class="a" data-c="ABB" type="button">A</button><button class="j" data-c="JL" type="button">J</button></div><div class="hn">`);
+  }).join("");
+  const names = [...new Set(DM.keys.map(x => OFF[x]).filter(o => o && !(o.kind === "summer" && o.name === "Summer break")).map(o => o.name + (o.est ? " (est.)" : "")))];
+  $("#dmTags").innerHTML = names.map(n => `<span class="tag">${n}</span>`).join("");
+  $("#dayModal").classList.remove("hidden"); document.body.classList.add("dm-open");
+  document.querySelectorAll(".yd.picked").forEach(e => e.classList.remove("picked"));
+  const yd = document.querySelector(`.yd[data-k="${k}"]`); if (yd) yd.classList.add("picked");
+  paint();
+}
+function closeDay(){ $("#dayModal").classList.add("hidden"); document.body.classList.remove("dm-open"); DM.focus = null; document.querySelectorAll(".yd.picked").forEach(e => e.classList.remove("picked")); }
+function paintDay(){
+  if (!DM.focus) return;
+  const me = S.me;
+  document.querySelectorAll("#dmCells .dc").forEach(dc => {
+    const k = dc.dataset.k, e = eff(k), ok = confirmable(k);
+    dc.classList.toggle("none", !ok);
+    dc.querySelectorAll("button").forEach(b => {
+      const c = b.dataset.c, on = ok && !!e["c" + c];
+      b.classList.toggle("on", on); b.classList.toggle("mine", c === me);
+      b.disabled = !ok || c !== me;
+      b.title = `${c === "JL" ? "James" : "Alejandra"} ${on ? "confirmed" : "hasn't confirmed"}`;
+    });
+  });
+  const set = DM.keys.filter(confirmable);
+  const all = f => set.length > 0 && set.every(k => eff(k)[f]);
+  const n = f => set.filter(k => eff(k)[f]).length;
+  const mark = f => all(f) ? "✓" : n(f) ? `${n(f)}/${set.length}` : "○";
+  const done = all("cJL") && all("cABB");
+  $("#dmLab").textContent = !set.length ? "Nothing to confirm" : done ? "✓ Confirmed" : "Proposal";
+  $("#dmLab").classList.toggle("ok", done);
+  $("#dmChipA").textContent = `Alejandra ${set.length ? mark("cABB") : "○"}`; $("#dmChipA").classList.toggle("on", all("cABB"));
+  $("#dmChipJ").textContent = `James ${set.length ? mark("cJL") : "○"}`;    $("#dmChipJ").classList.toggle("on", all("cJL"));
+  const btn = $("#dmConfirm"), mine = all("c" + me);
+  btn.disabled = !set.length;
+  btn.className = "cbtn" + (mine ? " undo" : " me-" + me);
+  btn.textContent = !set.length ? "Confirm" : mine ? "Undo my ✓" : `Confirm ${set.length} day${set.length > 1 ? "s" : ""}`;
+}
+$("#dayModal").addEventListener("click", ev => {
+  if (ev.target.closest("[data-close]")) { closeDay(); return; }
+  const cb = ev.target.closest(".dc button");
+  if (cb) {
+    if (cb.disabled) return;
+    const k = cb.closest(".dc").dataset.k, on = !eff(k)["c" + S.me];
+    const did = confirmRow({ all:[k] }, on);
+    if (did.length) { changed(did); toast(on ? (eff(k).status === "confirmed" ? "Confirmed by both ✓" : "Your ✓ added") : "Your ✓ removed"); }
+    return;
+  }
+  if (ev.target.closest("#dmConfirm")) {
+    const set = DM.keys.filter(confirmable), on = !set.every(k => eff(k)["c" + S.me]);
+    const did = confirmRow({ all:set }, on);
+    if (did.length) { changed(did); toast(on ? "Your ✓ added to these days" : "Your ✓ removed"); }
+    return;
+  }
+  if (ev.target.closest("#dmPrev")) { openDay(key(addDays(fromKey(DM.focus), -7)) < FIRST_K ? FIRST_K : key(addDays(fromKey(DM.focus), -7))); return; }
+  if (ev.target.closest("#dmNext")) { openDay(key(addDays(fromKey(DM.focus), 7)) > LAST_K ? LAST_K : key(addDays(fromKey(DM.focus), 7))); return; }
+  const cell = ev.target.closest(".cell");
+  if (cell) { const k = cell.dataset.k, z = zone(cell, ev.clientX); if (setDay(k, z === "mid" ? midTarget(k) : z)) changed([k]); }
+});
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && DM.focus) closeDay(); });
 function setView(v){
   S.view = v; save();
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === v));
