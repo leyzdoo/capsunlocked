@@ -8,6 +8,7 @@ import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bag
 import { loadCharacter, makeCharacter } from './character.js';
 import { SEATS, drawMap } from './jumbo.js';
 import { DOOR_OUT } from './cabins.js';
+import { makeThing } from './stuff.js';
 import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
 
@@ -103,9 +104,9 @@ async function boot() {
     heightAt: p => { if (ride && ride.type === 'plane') return p.y; if (ride && ride.type === 'boat') return WATER_Y + .05; const r = roofAt(p.x, p.z); return r > p.y - 1.5 && r < p.y + 1.5 ? r : world.heightAt(p.x, p.z); },
     blocked: p => ride && ride.type === 'plane' ? false : onRoofEdge(p) ? true : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
-    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs(), parkedActs()); },
+    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs(), parkedActs(), stuffActs()); },
     update(dt) { const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
-      town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); syncT += dt; if (syncT > .5) { syncT = 0; syncPlanes(); } }
+      town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); syncT += dt; if (syncT > .5) { syncT = 0; syncPlanes(); syncStuff(); } }
   };
   // warm-up render so the first frame after sign-in is quick
   player = makeCharacter('player', 0x3f7fd9); placeInTown(town.spawn.pos, town.spawn.yaw);
@@ -523,6 +524,49 @@ G.takeOff = async () => {
   const pk = spotOf(kind); await G.backToTown(doorOut(kind));
   player.root.position.set(pk.x, pk.y || world.heightAt(pk.x, pk.z), pk.z); player.root.rotation.y = pk.yaw;
   startRide('plane', kind); syncPlanes(true); cam.yaw = cam.tYaw = pk.yaw + Math.PI; cam.target.copy(player.root.position);
+};
+/* ---------- your stuff from the 'buy anything' boxes: it sits in the world; pick it up and put it down anywhere ---------- */
+const stuffShown = new Map(); // id → { mesh, key }
+const myStuff = () => (G.S.data && G.S.data.up.stuff) || [];
+function syncStuff() {
+  if (!town || !G.S.data) return;
+  const p = player.root.position, list = myStuff();
+  for (const [id, o] of stuffShown) {
+    const t = list.find(x => x.id === id);
+    if (!t || !t.placed || o.key !== t.x + ',' + t.z || Math.hypot(t.x - p.x, t.z - p.z) > 280) { town.scene.remove(o.mesh); o.mesh.traverse(m => { if (m.isMesh) m.geometry.dispose(); }); stuffShown.delete(id); }
+  }
+  for (const t of list) {
+    if (!t.placed || stuffShown.has(t.id) || Math.hypot(t.x - p.x, t.z - p.z) > 250) continue;
+    const mesh = makeThing(t.thing); mesh.position.set(t.x, t.y != null ? t.y : world.heightAt(t.x, t.z), t.z); mesh.rotation.y = t.yaw || 0; town.scene.add(mesh);
+    t.r = mesh.userData.radius; stuffShown.set(t.id, { mesh, key: t.x + ',' + t.z });
+  }
+  const carrying = list.filter(t => !t.placed).length, b = $('btnStuff');
+  b.classList.toggle('hide', !carrying); b.textContent = carrying > 1 ? '🎁' + carrying : '🎁';
+}
+function stuffActs() {
+  if (ride) return [];
+  return [...stuffShown.keys()].map(id => { const t = myStuff().find(x => x.id === id); if (!t) return null;
+    return { pos: new THREE.Vector3(t.x, t.y != null ? t.y : world.heightAt(t.x, t.z), t.z), r: (t.r || 1) + 1.8, label: '📦 Pick up your ' + t.name, sub: 'Then tap 🎁 at the top to put it down anywhere', fn: () => { t.placed = false; save(true); syncStuff(); toast('📦 Got it! Tap 🎁 at the top to put your ' + t.name + ' down wherever you want.'); } }; }).filter(Boolean);
+}
+function putDown(t, at, yaw) { t.x = at.x; t.z = at.z; t.y = undefined; t.yaw = yaw; t.placed = true; save(true); syncStuff(); }
+/* something you just bought appears outside the Game Store */
+G.placeNewStuff = t => {
+  const d = town.doors.find(x => x.id === 'store'); if (!d) return;
+  const n = myStuff().filter(x => x.placed).length, out = new THREE.Vector3(Math.sin(d.facing), 0, Math.cos(d.facing)), side = new THREE.Vector3(out.z, 0, -out.x);
+  const r = makeThing(t.thing).userData.radius || 1, k = (n % 5) - 2;
+  const at = d.pos.clone().addScaledVector(out, 4 + r).addScaledVector(side, k * 5);
+  putDown(t, at, d.facing);
+};
+$('btnStuff').onclick = () => {
+  if (active !== townPlace || ride) { toast('Go outside (and get out of your car or plane) to put things down.'); return; }
+  const carrying = myStuff().filter(t => !t.placed);
+  const drop = t => { const yaw = player.root.rotation.y, r = makeThing(t.thing).userData.radius || 1, p = player.root.position; putDown(t, new THREE.Vector3(p.x + Math.sin(yaw) * (r + 2), 0, p.z + Math.cos(yaw) * (r + 2)), yaw + Math.PI); toast('🎁 Put down your ' + t.name + '!'); };
+  if (carrying.length === 1) return drop(carrying[0]);
+  openPanel('🎁 Put something down', body => {
+    const list = el('div', { style: 'display:flex;flex-direction:column;gap:10px' });
+    carrying.forEach(t => { const row = el('div', { class: 'prow', style: 'gap:12px' }, '<b style="flex:1">' + t.name + '</b>'); const b = el('button', { class: 'btn go' }, 'Put it here'); b.onclick = () => { closePanel(); drop(t); }; row.appendChild(b); list.appendChild(row); });
+    body.appendChild(list);
+  });
 };
 /* where is each plane? */
 function whereIs(kind) {

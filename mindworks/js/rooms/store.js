@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, el, save, toast, refreshCoins, openPanel, closePanel } from '../game.js';
 import { buildHouse } from '../town.js';
 import { currentHome, designHomes, describeKind, renderHome, sketch } from '../homes.js';
+import { interpret, makeThing } from '../stuff.js';
 import '../jumbo.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, bagCount, bagValue, capacity, TELEPORTER_PRICE } from '../vehicles.js';
 import { makeRoom, shelf, plant, box, std, env, at } from './common.js';
@@ -91,6 +92,87 @@ function preview(T) {
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
   document.body.appendChild(ov);
 }
+/* ---- buy anything: two search boxes ---- */
+const lastAny = { paid: null, free: null };
+function anythingSection(body, section) {
+  const sec = section('Buy anything — just type it', '🔎');
+  sec.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 10px' }, 'Type anything you want. I’ll think about what it looks like and give it a fair price. The 🎁 box is almost free — everything costs less than 5 coins!'));
+  const box = (kind, title, ph, btn, cls) => {
+    const wrap = el('div', { style: 'background:var(--bg2);border-radius:18px;padding:14px;margin-bottom:12px' });
+    wrap.appendChild(el('div', { style: 'font-family:Fredoka;font-size:20px;margin-bottom:8px' }, title));
+    const row = el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' });
+    const inp = el('input', { placeholder: ph, maxlength: '60', autocomplete: 'off', style: 'flex:1;min-width:220px;height:56px;border-radius:15px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:0 16px;font-size:20px;outline:none;-webkit-user-select:text;user-select:text' });
+    const go = el('button', { class: 'btn ' + cls }, btn);
+    row.appendChild(inp); row.appendChild(go); wrap.appendChild(row);
+    const out = el('div'); wrap.appendChild(out); sec.appendChild(wrap);
+    const L = lastAny[kind]; if (L) { inp.value = L.q; showAny(out, L.q, kind === 'free', L.salt, false); }
+    const search = () => { const q = inp.value.trim(); if (!q) { inp.focus(); return; } inp.blur(); lastAny[kind] = { q, salt: 0 }; showAny(out, q, kind === 'free', 0, true); };
+    go.onclick = search; inp.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+  };
+  box('paid', '💰 The store box', 'e.g. the biggest mansion in the world, a gold dragon…', '🔎 Search', 'primary');
+  box('free', '🎁 The almost-free box (under 5 coins)', 'e.g. a giant pizza, a pet unicorn, a race car…', '🎁 Search', 'go');
+  const mine = (G.S.data.up.stuff || []);
+  if (mine.length) {
+    const w = el('div', { style: 'color:var(--muted);font-weight:700' }, '🎁 Your stuff: ' + mine.map(t => escapeHtml(t.name) + (t.placed ? '' : ' (carrying)')).join(' · ') + '. Walk up to your things outside to pick them up, then tap 🎁 at the top to put them down anywhere.');
+    sec.appendChild(w);
+  }
+}
+let anyTimer = 0;
+function showAny(out, q, free, salt, fresh) {
+  clearTimeout(anyTimer); out.innerHTML = '';
+  const R = interpret(q, free, salt);
+  const card = el('div', { style: 'display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:12px' });
+  const picBox = el('div', { style: 'flex:0 0 300px;max-width:100%;min-height:170px;border-radius:12px;background:#0002;display:flex;align-items:center;justify-content:center;font-family:Fredoka;font-size:18px;color:var(--muted)' }, '🤔 Thinking<span class="dots">…</span>');
+  const info = el('div', { style: 'flex:1;min-width:220px' });
+  card.appendChild(picBox); card.appendChild(info); out.appendChild(card);
+  const reveal = () => {
+    picBox.innerHTML = '';
+    let pic;
+    if (R.type === 'house') { pic = renderHome(R.spec, 300, R.spec.kind === 'tower' ? 300 : 200); pic.style.cssText = 'width:100%;border-radius:12px;display:block'; }
+    else if (R.type === 'thing') pic = thingPic(R.thing);
+    else pic = vehiclePic(R.type === 'car' ? makeCar : R.type === 'boat' ? makeBoat : makePlane, R.kind);
+    picBox.appendChild(pic); picBox.style.background = 'none';
+    info.appendChild(el('div', { style: 'font-family:Fredoka;font-size:24px;margin-bottom:4px' }, escapeHtml(R.name)));
+    info.appendChild(el('p', { style: 'margin:0 0 10px;color:var(--muted);font-weight:700' }, escapeHtml(R.why)));
+    const row = el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' });
+    const buyB = el('button', { class: 'btn go' }, 'Buy it for <i class="coin"></i> ' + R.price);
+    const again = el('button', { class: 'btn ghost' }, '🔄 Show me another one');
+    buyB.onclick = () => buy(R.price, () => giveAny(R));
+    again.onclick = () => { const L = free ? lastAny.free : lastAny.paid; L.salt++; showAny(out, q, free, L.salt, true); };
+    row.appendChild(buyB); if (R.type === 'thing' || R.type === 'house') row.appendChild(again); info.appendChild(row);
+  };
+  if (fresh) { let d = 0; const di = setInterval(() => { const s = picBox.querySelector('.dots'); if (s) s.textContent = '.'.repeat(1 + d++ % 3); else clearInterval(di); }, 300); anyTimer = setTimeout(() => { clearInterval(di); reveal(); }, 1400); }
+  else reveal();
+}
+function giveAny(R) {
+  const u = G.S.data.up;
+  if (R.type === 'house') { u.home = R.spec; setTimeout(() => toast('🎉 ' + R.name + ' is now your home! Go see it.'), 50); return; }
+  if (R.type === 'car') { if (!u.cars.includes(R.kind)) u.cars.push(R.kind); u.car = R.kind; setTimeout(() => toast('🚗 Your ' + R.name + ' is ready — tap 🚗 Drive outside.'), 50); return; }
+  if (R.type === 'boat') { if (!u.boats.includes(R.kind)) u.boats.push(R.kind); u.boat = R.kind; setTimeout(() => toast('⛵ Your ' + R.name + ' is ready — walk to the water.'), 50); return; }
+  if (R.type === 'plane') { if (!u.planes.includes(R.kind)) u.planes.push(R.kind); if (!u.planeKind) u.planeKind = R.kind; u.plane = true; setTimeout(() => toast('✈️ Your ' + R.name + ' is waiting at Hometown Airport.'), 50); return; }
+  const t = { id: Date.now().toString(36), name: R.name, thing: R.thing, placed: false };
+  (u.stuff || (u.stuff = [])).push(t);
+  if (G.placeNewStuff) G.placeNewStuff(t);
+  setTimeout(() => toast('🎁 Your ' + R.name + ' is waiting for you right outside the Game Store!'), 50);
+}
+const tpics = {};
+function thingPic(T) {
+  const key = JSON.stringify(T);
+  if (!tpics[key]) {
+    const W = 300, H = 200, R = G.renderer, rt = new THREE.WebGLRenderTarget(W, H, { samples: 4 }), sc = new THREE.Scene();
+    sc.background = new THREE.Color(0xcfe6f5); sc.environment = env();
+    sc.add(new THREE.HemisphereLight(0xffffff, 0x6a6050, 1.2)); const dl = new THREE.DirectionalLight(0xffffff, 2); dl.position.set(5, 8, 6); sc.add(dl);
+    const m = makeThing(T); sc.add(m);
+    const gr = new THREE.Mesh(new THREE.CircleGeometry(60, 32), std(0x6f9a52, .95)); gr.rotation.x = -Math.PI / 2; sc.add(gr);
+    const bb = new THREE.Box3().setFromObject(m), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3()).length();
+    const cam = new THREE.PerspectiveCamera(30, W / H, .05, 400); cam.position.set(c.x + sz * 1.2, c.y + sz * .55, c.z + sz * 1.5); cam.lookAt(c);
+    R.setRenderTarget(rt); R.render(sc, cam); const pix = new Uint8Array(W * H * 4); R.readRenderTargetPixels(rt, 0, 0, W, H, pix); R.setRenderTarget(null); rt.dispose();
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d'), img = x.createImageData(W, H);
+    for (let y = 0; y < H; y++) img.data.set(pix.subarray((H - 1 - y) * W * 4, (H - y) * W * 4), y * W * 4); x.putImageData(img, 0, 0);
+    tpics[key] = cv.toDataURL();
+  }
+  return el('img', { src: tpics[key], style: 'width:100%;border-radius:12px;display:block' });
+}
 const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 let vpics = {};
@@ -128,6 +210,7 @@ function renderShopInto(body) {
     if (price == null) { b.disabled = !label; b.className = 'btn' + (label ? ' go' : ''); }
     b.onclick = fn; it.appendChild(b); g.appendChild(it);
   }
+  anythingSection(body, section);
   houseSection(body, section);
   // ---- sell what you found ----
   const sv = section('Sell what you found', '🎒'), bag = G.S.data.bag, n = bagCount();
