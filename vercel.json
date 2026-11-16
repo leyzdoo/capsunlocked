@@ -12,5 +12,11 @@
       "destination": "https://script.google.com/macros/s/AKfycbwop94SVKMOsWbrl_HPXcxx0AelVdlDZ_wHLGe3AZkyHGFAX5R2QzoEiyhTKgFVyqs4GQ/exec",
       "permanent": false
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/:store([tT][jJ])",
+      "destination": "/TJ"
+    }
   ]
 }
