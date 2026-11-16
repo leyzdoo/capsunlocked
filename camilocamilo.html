@@ -923,7 +923,7 @@ async function push(){
   const keys = Object.keys(S.pending).filter(k => S.plan[k]); if (!keys.length) return;
   try {
     const res = await fetch(endpoint(), { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
-      body:JSON.stringify({ key:PASS, action:"upsert", rows:keys.map(toRow) }) });
+      body:JSON.stringify({ key:PASS, action:"upsert", by:S.me, rows:keys.map(toRow) }) });
     const j = await res.json(); if (!j.ok) throw new Error(j.error || "save failed");
     keys.forEach(k => delete S.pending[k]); save();
     syncState(`Saved to Compás · ${new Date().toLocaleTimeString([], { hour:"numeric", minute:"2-digit" })}`, "ok");
