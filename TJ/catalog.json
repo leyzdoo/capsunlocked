@@ -1,0 +1,1064 @@
+[
+  {
+    "id": "p0",
+    "name": "Bananas",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Bananas",
+    "verified": false
+  },
+  {
+    "id": "p1",
+    "name": "Avocados",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Avocados",
+    "verified": false
+  },
+  {
+    "id": "p2",
+    "name": "Lemons",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Lemons",
+    "verified": false
+  },
+  {
+    "id": "p3",
+    "name": "Limes",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Limes",
+    "verified": false
+  },
+  {
+    "id": "p4",
+    "name": "Organic Baby Spinach",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Organic%20Baby%20Spinach",
+    "verified": false
+  },
+  {
+    "id": "p5",
+    "name": "Broccoli Florets",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Broccoli%20Florets",
+    "verified": false
+  },
+  {
+    "id": "p6",
+    "name": "Sweet Potatoes",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Sweet%20Potatoes",
+    "verified": false
+  },
+  {
+    "id": "p7",
+    "name": "Yellow Onions",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Yellow%20Onions",
+    "verified": false
+  },
+  {
+    "id": "p8",
+    "name": "Garlic",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Garlic",
+    "verified": false
+  },
+  {
+    "id": "p9",
+    "name": "Roma Tomatoes",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Roma%20Tomatoes",
+    "verified": false
+  },
+  {
+    "id": "p10",
+    "name": "Persian Cucumbers",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Persian%20Cucumbers",
+    "verified": false
+  },
+  {
+    "id": "p11",
+    "name": "Blueberries",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Blueberries",
+    "verified": false
+  },
+  {
+    "id": "p12",
+    "name": "Strawberries",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Strawberries",
+    "verified": false
+  },
+  {
+    "id": "p13",
+    "name": "Apples",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Apples",
+    "verified": false
+  },
+  {
+    "id": "p14",
+    "name": "Romaine Hearts",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Romaine%20Hearts",
+    "verified": false
+  },
+  {
+    "id": "p15",
+    "name": "Carrots",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Carrots",
+    "verified": false
+  },
+  {
+    "id": "p16",
+    "name": "Bell Peppers",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Bell%20Peppers",
+    "verified": false
+  },
+  {
+    "id": "p17",
+    "name": "Green Onions",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Green%20Onions",
+    "verified": false
+  },
+  {
+    "id": "p18",
+    "name": "Mushrooms",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Mushrooms",
+    "verified": false
+  },
+  {
+    "id": "p19",
+    "name": "Fresh Cilantro",
+    "section": "Produce",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Fresh%20Cilantro",
+    "verified": false
+  },
+  {
+    "id": "p20",
+    "name": "Sourdough Bread",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Sourdough%20Bread",
+    "verified": false
+  },
+  {
+    "id": "p21",
+    "name": "Whole Wheat Bread",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Whole%20Wheat%20Bread",
+    "verified": false
+  },
+  {
+    "id": "p22",
+    "name": "Everything Bagels",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Everything%20Bagels",
+    "verified": false
+  },
+  {
+    "id": "p23",
+    "name": "Flour Tortillas",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Flour%20Tortillas",
+    "verified": false
+  },
+  {
+    "id": "p24",
+    "name": "Corn Tortillas",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Corn%20Tortillas",
+    "verified": false
+  },
+  {
+    "id": "p25",
+    "name": "English Muffins",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=English%20Muffins",
+    "verified": false
+  },
+  {
+    "id": "p26",
+    "name": "Croissants",
+    "section": "Bakery",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Croissants",
+    "verified": false
+  },
+  {
+    "id": "p27",
+    "name": "Honey Greek Yogurt",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Honey%20Greek%20Yogurt",
+    "verified": false
+  },
+  {
+    "id": "p28",
+    "name": "Plain Greek Yogurt",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Plain%20Greek%20Yogurt",
+    "verified": false
+  },
+  {
+    "id": "p29",
+    "name": "Whole Milk",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Whole%20Milk",
+    "verified": false
+  },
+  {
+    "id": "p30",
+    "name": "Organic Free Range Eggs",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Organic%20Free%20Range%20Eggs",
+    "verified": false
+  },
+  {
+    "id": "p31",
+    "name": "Salted Butter",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Salted%20Butter",
+    "verified": false
+  },
+  {
+    "id": "p32",
+    "name": "Cottage Cheese",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Cottage%20Cheese",
+    "verified": false
+  },
+  {
+    "id": "p33",
+    "name": "Shredded Mozzarella",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Shredded%20Mozzarella",
+    "verified": false
+  },
+  {
+    "id": "p34",
+    "name": "Feta Cheese",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Feta%20Cheese",
+    "verified": false
+  },
+  {
+    "id": "p35",
+    "name": "Parmesan Cheese",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Parmesan%20Cheese",
+    "verified": false
+  },
+  {
+    "id": "p36",
+    "name": "Cheddar Cheese",
+    "section": "Dairy & Eggs",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Cheddar%20Cheese",
+    "verified": false
+  },
+  {
+    "id": "p37",
+    "name": "Chicken Breast",
+    "section": "Meat & Seafood",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Chicken%20Breast",
+    "verified": false
+  },
+  {
+    "id": "p38",
+    "name": "Ground Turkey",
+    "section": "Meat & Seafood",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Ground%20Turkey",
+    "verified": false
+  },
+  {
+    "id": "p39",
+    "name": "Ground Beef",
+    "section": "Meat & Seafood",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Ground%20Beef",
+    "verified": false
+  },
+  {
+    "id": "p40",
+    "name": "Fresh Atlantic Salmon",
+    "section": "Meat & Seafood",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Fresh%20Atlantic%20Salmon",
+    "verified": false
+  },
+  {
+    "id": "p41",
+    "name": "Smoked Salmon",
+    "section": "Meat & Seafood",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Smoked%20Salmon",
+    "verified": false
+  },
+  {
+    "id": "p42",
+    "name": "Chicken Sausage",
+    "section": "Meat & Seafood",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Chicken%20Sausage",
+    "verified": false
+  },
+  {
+    "id": "p43",
+    "name": "Shawarma Chicken Thighs",
+    "section": "Meat & Seafood",
+    "price": 6.99,
+    "unit": "1 lb",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=chicken",
+    "verified": true
+  },
+  {
+    "id": "p44",
+    "name": "Chicken Meatballs",
+    "section": "Meat & Seafood",
+    "price": 3.99,
+    "unit": "12 oz",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=chicken",
+    "verified": true
+  },
+  {
+    "id": "p45",
+    "name": "Extra Firm Tofu",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Extra%20Firm%20Tofu",
+    "verified": false
+  },
+  {
+    "id": "p46",
+    "name": "Hummus",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Hummus",
+    "verified": false
+  },
+  {
+    "id": "p47",
+    "name": "Guacamole",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Guacamole",
+    "verified": false
+  },
+  {
+    "id": "p48",
+    "name": "Pesto",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Pesto",
+    "verified": false
+  },
+  {
+    "id": "p49",
+    "name": "Garlic & Herb Pizza Dough",
+    "section": "Refrigerated",
+    "price": 1.69,
+    "unit": "16 oz",
+    "url": "https://www.traderjoes.com/home/products/category?categoryId=8&filters=%7B%22characteristics%22%3A%5B%22Vegan%22%5D%7D",
+    "verified": true
+  },
+  {
+    "id": "p50",
+    "name": "Fresh Pizza Dough",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Fresh%20Pizza%20Dough",
+    "verified": false
+  },
+  {
+    "id": "p51",
+    "name": "Steamed Lentils",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Steamed%20Lentils",
+    "verified": false
+  },
+  {
+    "id": "p52",
+    "name": "Balsamic Vinaigrette",
+    "section": "Refrigerated",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Balsamic%20Vinaigrette",
+    "verified": false
+  },
+  {
+    "id": "p53",
+    "name": "Mandarin Orange Chicken",
+    "section": "Frozen",
+    "price": 5.49,
+    "unit": "22 oz",
+    "url": "https://www.traderjoes.com/home/products/pdp/066563",
+    "verified": true
+  },
+  {
+    "id": "p54",
+    "name": "Brown Rice",
+    "section": "Frozen",
+    "price": 3.99,
+    "unit": "30 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p55",
+    "name": "Vegetable Fried Rice",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Vegetable%20Fried%20Rice",
+    "verified": false
+  },
+  {
+    "id": "p56",
+    "name": "Cauliflower Gnocchi",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Cauliflower%20Gnocchi",
+    "verified": false
+  },
+  {
+    "id": "p57",
+    "name": "Chicken Tikka Masala",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Chicken%20Tikka%20Masala",
+    "verified": false
+  },
+  {
+    "id": "p58",
+    "name": "Butter Chicken",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Butter%20Chicken",
+    "verified": false
+  },
+  {
+    "id": "p59",
+    "name": "Frozen Broccoli",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Frozen%20Broccoli",
+    "verified": false
+  },
+  {
+    "id": "p60",
+    "name": "Frozen Blueberries",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Frozen%20Blueberries",
+    "verified": false
+  },
+  {
+    "id": "p61",
+    "name": "Frozen Mango",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Frozen%20Mango",
+    "verified": false
+  },
+  {
+    "id": "p62",
+    "name": "Shelled Edamame",
+    "section": "Frozen",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Shelled%20Edamame",
+    "verified": false
+  },
+  {
+    "id": "p63",
+    "name": "Mandu Korean Kimchi Potstickers",
+    "section": "Frozen",
+    "price": 3.49,
+    "unit": "16 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p64",
+    "name": "Pasta Primavera",
+    "section": "Frozen",
+    "price": 4.49,
+    "unit": "16 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p65",
+    "name": "Garlicky Pasta",
+    "section": "Frozen",
+    "price": 4.49,
+    "unit": "16 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p66",
+    "name": "Chicken Florentine Lasagna",
+    "section": "Frozen",
+    "price": 7.49,
+    "unit": "32 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p67",
+    "name": "Detroit Style Uncured Pepperoni Pizza",
+    "section": "Frozen",
+    "price": 7.99,
+    "unit": "24 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p68",
+    "name": "Gözlemes",
+    "section": "Frozen",
+    "price": 4.99,
+    "unit": "12.7 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p69",
+    "name": "Breaded Chicken Tenderloin Breasts",
+    "section": "Frozen",
+    "price": 8.99,
+    "unit": "28 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p70",
+    "name": "Middle Eastern Style Kebabs",
+    "section": "Frozen",
+    "price": 6.99,
+    "unit": "12 oz",
+    "url": "https://www.traderjoes.com/home/products/category/entrees-sides-101",
+    "verified": true
+  },
+  {
+    "id": "p71",
+    "name": "Mango Sticky Rice",
+    "section": "Frozen",
+    "price": 4.69,
+    "unit": "7.05 oz",
+    "url": "https://www.traderjoes.com/home/products/category?categoryId=8&filters=%7B%22characteristics%22%3A%5B%22Vegan%22%5D%7D",
+    "verified": true
+  },
+  {
+    "id": "p72",
+    "name": "Pineapple Coconut Bars",
+    "section": "Frozen",
+    "price": 3.79,
+    "unit": "15 fl oz",
+    "url": "https://www.traderjoes.com/home/products/category?categoryId=8&filters=%7B%22characteristics%22%3A%5B%22Vegan%22%5D%7D",
+    "verified": true
+  },
+  {
+    "id": "p73",
+    "name": "Passion Fruit Guava Bars",
+    "section": "Frozen",
+    "price": 2.99,
+    "unit": "16 fl oz",
+    "url": "https://www.traderjoes.com/home/products/category?categoryId=8&filters=%7B%22characteristics%22%3A%5B%22Vegan%22%5D%7D",
+    "verified": true
+  },
+  {
+    "id": "p74",
+    "name": "Jasmine Rice",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Jasmine%20Rice",
+    "verified": false
+  },
+  {
+    "id": "p75",
+    "name": "Spaghetti",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Spaghetti",
+    "verified": false
+  },
+  {
+    "id": "p76",
+    "name": "Penne Pasta",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Penne%20Pasta",
+    "verified": false
+  },
+  {
+    "id": "p77",
+    "name": "Marinara Sauce",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Marinara%20Sauce",
+    "verified": false
+  },
+  {
+    "id": "p78",
+    "name": "Canned Chickpeas",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Canned%20Chickpeas",
+    "verified": false
+  },
+  {
+    "id": "p79",
+    "name": "Canned Black Beans",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Canned%20Black%20Beans",
+    "verified": false
+  },
+  {
+    "id": "p80",
+    "name": "Coconut Milk",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Coconut%20Milk",
+    "verified": false
+  },
+  {
+    "id": "p81",
+    "name": "Rolled Oats",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Rolled%20Oats",
+    "verified": false
+  },
+  {
+    "id": "p82",
+    "name": "Creamy Peanut Butter",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Creamy%20Peanut%20Butter",
+    "verified": false
+  },
+  {
+    "id": "p83",
+    "name": "Almond Butter",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Almond%20Butter",
+    "verified": false
+  },
+  {
+    "id": "p84",
+    "name": "Extra Virgin Olive Oil",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Extra%20Virgin%20Olive%20Oil",
+    "verified": false
+  },
+  {
+    "id": "p85",
+    "name": "Soy Sauce",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Soy%20Sauce",
+    "verified": false
+  },
+  {
+    "id": "p86",
+    "name": "Vegetable Broth",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Vegetable%20Broth",
+    "verified": false
+  },
+  {
+    "id": "p87",
+    "name": "Chicken Broth",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Chicken%20Broth",
+    "verified": false
+  },
+  {
+    "id": "p88",
+    "name": "All Purpose Flour",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=All%20Purpose%20Flour",
+    "verified": false
+  },
+  {
+    "id": "p89",
+    "name": "Granola",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Granola",
+    "verified": false
+  },
+  {
+    "id": "p90",
+    "name": "Honey",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Honey",
+    "verified": false
+  },
+  {
+    "id": "p91",
+    "name": "Everything but the Bagel Seasoning",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Everything%20but%20the%20Bagel%20Seasoning",
+    "verified": false
+  },
+  {
+    "id": "p92",
+    "name": "Chili Onion Crunch",
+    "section": "Pantry",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Chili%20Onion%20Crunch",
+    "verified": false
+  },
+  {
+    "id": "p93",
+    "name": "Granola Butter",
+    "section": "Pantry",
+    "price": 5.49,
+    "unit": "12 oz",
+    "url": "https://www.traderjoes.com/home/products/category?categoryId=8&filters=%7B%22characteristics%22%3A%5B%22Vegan%22%5D%7D",
+    "verified": true
+  },
+  {
+    "id": "p94",
+    "name": "Dark Chocolate Peanut Butter Cups",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Dark%20Chocolate%20Peanut%20Butter%20Cups",
+    "verified": false
+  },
+  {
+    "id": "p95",
+    "name": "Plantain Chips",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Plantain%20Chips",
+    "verified": false
+  },
+  {
+    "id": "p96",
+    "name": "Tortilla Chips",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Tortilla%20Chips",
+    "verified": false
+  },
+  {
+    "id": "p97",
+    "name": "Organic Corn Chip Dippers",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Organic%20Corn%20Chip%20Dippers",
+    "verified": false
+  },
+  {
+    "id": "p98",
+    "name": "Roasted Almonds",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Roasted%20Almonds",
+    "verified": false
+  },
+  {
+    "id": "p99",
+    "name": "Cashews",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Cashews",
+    "verified": false
+  },
+  {
+    "id": "p100",
+    "name": "Dried Mango",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Dried%20Mango",
+    "verified": false
+  },
+  {
+    "id": "p101",
+    "name": "Trail Mix",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Trail%20Mix",
+    "verified": false
+  },
+  {
+    "id": "p102",
+    "name": "Popcorn",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Popcorn",
+    "verified": false
+  },
+  {
+    "id": "p103",
+    "name": "Joe-Joe’s Cookies",
+    "section": "Snacks & Sweets",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Joe-Joe%E2%80%99s%20Cookies",
+    "verified": false
+  },
+  {
+    "id": "p104",
+    "name": "Sparkling Water",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Sparkling%20Water",
+    "verified": false
+  },
+  {
+    "id": "p105",
+    "name": "Orange Juice",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Orange%20Juice",
+    "verified": false
+  },
+  {
+    "id": "p106",
+    "name": "Cold Brew Coffee Concentrate",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Cold%20Brew%20Coffee%20Concentrate",
+    "verified": false
+  },
+  {
+    "id": "p107",
+    "name": "Whole Bean Coffee",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Whole%20Bean%20Coffee",
+    "verified": false
+  },
+  {
+    "id": "p108",
+    "name": "Oat Beverage",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Oat%20Beverage",
+    "verified": false
+  },
+  {
+    "id": "p109",
+    "name": "Almond Beverage",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Almond%20Beverage",
+    "verified": false
+  },
+  {
+    "id": "p110",
+    "name": "Green Tea",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Green%20Tea",
+    "verified": false
+  },
+  {
+    "id": "p111",
+    "name": "Spiced Cider",
+    "section": "Beverages",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Spiced%20Cider",
+    "verified": false
+  },
+  {
+    "id": "p112",
+    "name": "Seasonal Bouquet",
+    "section": "Flowers & Plants",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Seasonal%20Bouquet",
+    "verified": false
+  },
+  {
+    "id": "p113",
+    "name": "Potted Orchid",
+    "section": "Flowers & Plants",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Potted%20Orchid",
+    "verified": false
+  },
+  {
+    "id": "p114",
+    "name": "Dish Soap",
+    "section": "Home & Body",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Dish%20Soap",
+    "verified": false
+  },
+  {
+    "id": "p115",
+    "name": "Paper Towels",
+    "section": "Home & Body",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Paper%20Towels",
+    "verified": false
+  },
+  {
+    "id": "p116",
+    "name": "Sunscreen",
+    "section": "Home & Body",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Sunscreen",
+    "verified": false
+  },
+  {
+    "id": "p117",
+    "name": "Hand Cream",
+    "section": "Home & Body",
+    "price": null,
+    "unit": "package · confirm size",
+    "url": "https://www.traderjoes.com/home/search?global=yes&q=Hand%20Cream",
+    "verified": false
+  }
+]
