@@ -213,6 +213,31 @@ function loop() {
   const c = active.walks ? camera : (active.camera || camera);
   if (c.aspect !== innerWidth / innerHeight) { c.aspect = innerWidth / innerHeight; c.updateProjectionMatrix(); }
   renderer.render(active.scene, c);
+  drawCompass();
+}
+/* ---------- compass: which way you're facing, and which way home is ---------- */
+// In Mindworks north is +z and east is -x (the same as the map). The compass follows the camera (where you're looking).
+const DIRS = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+let compassLast = '';
+function drawCompass() {
+  const box = $('compass'), show = active === townPlace && !!G.S.data && !$('hud').classList.contains('hide');
+  box.classList.toggle('hide', !show); if (!show) return;
+  const bearing = Math.PI - cam.yaw, p = player.root.position;
+  const hd = town.doors.find(x => x.id === 'home'), hx = hd ? hd.pos.x - p.x : 0, hz = hd ? hd.pos.z - p.z : 0, farHome = Math.hypot(hx, hz) > 25;
+  const homeB = Math.atan2(-hx, hz), key = bearing.toFixed(2) + (farHome ? homeB.toFixed(2) : '');
+  if (key === compassLast) return; compassLast = key;
+  const cv = $('compassCv'), x = cv.getContext('2d'), R = 100, C = 104;
+  x.clearRect(0, 0, 208, 208);
+  x.beginPath(); x.arc(C, C, R, 0, Math.PI * 2); x.fillStyle = '#1b1838e6'; x.fill(); x.lineWidth = 6; x.strokeStyle = '#ffd34d'; x.stroke();
+  const at = (b, r) => [C + Math.sin(b - bearing) * r, C - Math.cos(b - bearing) * r];
+  for (let k = 0; k < 16; k++) { const b = k * Math.PI / 8, [x1, y1] = at(b, R - 6), [x2, y2] = at(b, R - (k % 4 ? 14 : 22)); x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2, y2); x.lineWidth = k % 4 ? 3 : 5; x.strokeStyle = '#ffffff88'; x.stroke(); }
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  [['N', 0, '#ff5a4a'], ['E', Math.PI / 2, '#fff'], ['S', Math.PI, '#fff'], ['W', Math.PI * 1.5, '#fff']].forEach(([t, b, c]) => { const [tx, ty] = at(b, R - 42); x.font = '700 ' + (t === 'N' ? 40 : 32) + 'px Fredoka, system-ui'; x.fillStyle = c; x.fillText(t, tx, ty); });
+  if (farHome) { const [tx, ty] = at(homeB, R - 4); x.font = '30px system-ui'; x.fillText('🏠', tx, ty); }
+  // the arrow is you: it always points the way you're looking
+  x.beginPath(); x.moveTo(C, C - 30); x.lineTo(C + 13, C + 14); x.lineTo(C, C + 6); x.lineTo(C - 13, C + 14); x.closePath(); x.fillStyle = '#4ad6ff'; x.fill(); x.lineWidth = 3; x.strokeStyle = '#fff'; x.stroke();
+  const d = DIRS[Math.round(((bearing % (Math.PI * 2)) + Math.PI * 2) / (Math.PI / 4)) % 8];
+  if ($('compassTxt').textContent !== 'Going ' + d) $('compassTxt').textContent = 'Going ' + d;
 }
 function walk(dt) {
   let mx = joy.x, my = joy.y;

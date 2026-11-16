@@ -66,6 +66,9 @@ input,textarea{font:inherit}
 /* HUD */
 #hud{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:max(12px,env(safe-area-inset-top));z-index:10;pointer-events:none}
 #hud > *{pointer-events:auto}
+#compass{position:fixed;left:14px;top:calc(max(12px,env(safe-area-inset-top)) + 58px);z-index:9;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+#compass canvas{width:104px;height:104px;filter:drop-shadow(0 4px 10px #0006)}
+#compassTxt{font:700 15px Fredoka,system-ui;color:#fff;background:#1b1838cc;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .chip{display:inline-flex;align-items:center;gap:8px;background:rgba(18,16,46,.78);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:16px}
 .chip.coins{color:var(--coin);font-family:Fredoka;font-size:19px}
 #hudTitle{font-family:Fredoka;font-size:19px}
@@ -176,6 +179,7 @@ textarea.desc{width:100%;min-height:90px;border-radius:18px;border:2px solid var
   <button class="icon-btn" id="btnHome" aria-label="Go home" title="Go home">🏠</button>
   <button class="icon-btn" id="btnOut" aria-label="Sign out" title="Sign out">⏻</button>
 </div>
+<div id="compass" class="hide"><canvas id="compassCv" width="208" height="208"></canvas><span id="compassTxt">North</span></div>
 <div id="prompt" class="hide"><button class="btn go" id="promptBtn">Go in</button><small id="promptSub"></small></div>
 <div id="roomHelp" class="hide"><span class="chip" id="roomHelpTxt"></span></div>
 <div id="roomBtns" class="hide"></div>
