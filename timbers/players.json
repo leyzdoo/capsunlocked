@@ -1,0 +1,499 @@
+[
+  {
+    "n": 11,
+    "name": "Antony",
+    "pos": "Forward",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/wnwz0mcqaxxuyqrayh0m.png",
+    "url": "https://www.timbers.com/players/antony/",
+    "facts": {
+      "Name": "Antony Alves Santos",
+      "Height": "6' 1\"",
+      "Date of Birth": "9.8.2001 (25)",
+      "Position": "Forward",
+      "Roster Category": "Senior",
+      "Player Category": "U22 Initiative"
+    },
+    "home": "Not supplied"
+  },
+  {
+    "n": 28,
+    "name": "Alexander Aravena",
+    "pos": "Forward",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ubzqbu6855twoi5gs8eg.png",
+    "url": "https://www.timbers.com/players/alexander-aravena/",
+    "facts": {
+      "Name": "Alexander Aravena",
+      "Height": "5' 8\"",
+      "Date of Birth": "9.6.2002 (24)",
+      "Birthplace": "Huechuraba, Chile",
+      "Position": "Forward",
+      "Roster Category": "Senior",
+      "Player Category": "International"
+    },
+    "home": "Huechuraba, Chile"
+  },
+  {
+    "n": 17,
+    "name": "Cole Bassett",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/rgqcfgzudtj1qgkh6eqm.png",
+    "url": "https://www.timbers.com/players/cole-bassett/",
+    "facts": {
+      "Name": "Cole Bassett",
+      "Height": "5' 11\"",
+      "Weight": "150 lbs",
+      "Date of Birth": "7.28.2001 (25)",
+      "Birthplace": "Littleton, CO, USA",
+      "Position": "Midfielder",
+      "Footedness": "both",
+      "Roster Category": "Senior",
+      "Player Category": "Homegrown, U22 Initiative"
+    },
+    "home": "Littleton, CO, USA"
+  },
+  {
+    "n": 6,
+    "name": "Alex Bonetig",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/nbxctqewrqrbadaaihxl.png",
+    "url": "https://www.timbers.com/players/alex-bonetig/",
+    "facts": {
+      "Name": "Alex Bonetig",
+      "Date of Birth": "8.20.2002 (24)",
+      "Birthplace": "Shellharbour, Australia",
+      "Position": "Defender",
+      "Roster Category": "Senior",
+      "Player Category": "International",
+      "Player Status": "Season Ending Injury"
+    },
+    "home": "Shellharbour, Australia"
+  },
+  {
+    "n": 5,
+    "name": "Brandon Bye",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/rsfusc8dilpzcm52bbc3.png",
+    "url": "https://www.timbers.com/players/brandon-bye/",
+    "facts": {
+      "Name": "Brandon Bye",
+      "Pronunciation": "BYE",
+      "Height": "6' 0\"",
+      "Weight": "174 lbs",
+      "Date of Birth": "11.29.1995 (30)",
+      "Birthplace": "Kalamazoo, MI, USA",
+      "Position": "Defender",
+      "Roster Category": "Senior"
+    },
+    "home": "Kalamazoo, MI, USA"
+  },
+  {
+    "n": 30,
+    "name": "José Caicedo",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/qkyucjrlbotob9spkmek.png",
+    "url": "https://www.timbers.com/players/jose-caicedo/",
+    "facts": {
+      "Name": "José Caicedo",
+      "Height": "6' 0\"",
+      "Date of Birth": "5.23.2002 (24)",
+      "Birthplace": "Palmira, Colombia",
+      "Position": "Midfielder",
+      "Roster Category": "Senior",
+      "Player Category": "International"
+    },
+    "home": "Palmira, Colombia"
+  },
+  {
+    "n": 21,
+    "name": "Diego Chara",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/m4kevtvj4hzfjxzhhaya.png",
+    "url": "https://www.timbers.com/players/diego-chara/",
+    "facts": {
+      "Name": "Diego Chará",
+      "Height": "5' 8\"",
+      "Weight": "150 lbs",
+      "Date of Birth": "4.5.1986 (40)",
+      "Birthplace": "Cali, Colombia",
+      "Position": "Midfielder",
+      "Footedness": "Right",
+      "Roster Category": "Senior"
+    },
+    "home": "Cali, Colombia"
+  },
+  {
+    "n": 10,
+    "name": "David Da Costa",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/vtwkzvx0lrzepshzr7rp.png",
+    "url": "https://www.timbers.com/players/david-da-costa/",
+    "facts": {
+      "Name": "David Da Costa",
+      "Height": "5' 6\"",
+      "Date of Birth": "1.5.2001 (25)",
+      "Birthplace": "Almada, Portugal",
+      "Position": "Midfielder",
+      "Roster Category": "Senior",
+      "Player Category": "Designated Player, International"
+    },
+    "home": "Almada, Portugal"
+  },
+  {
+    "n": 22,
+    "name": "Omir Fernández",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/abe9fymvc07kf2nbgxbj.png",
+    "url": "https://www.timbers.com/players/omir-fernandez/",
+    "facts": {
+      "Name": "Omir Fernández",
+      "Pronunciation": "oh-MEAR",
+      "Height": "5' 7\"",
+      "Weight": "141 lbs",
+      "Date of Birth": "2.8.1999 (27)",
+      "Birthplace": "Bronx, NY, USA",
+      "Position": "Midfielder",
+      "Roster Category": "Senior"
+    },
+    "home": "Bronx, NY, USA"
+  },
+  {
+    "n": 27,
+    "name": "Jimer Fory",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/yjq2zgljcnw5uxgw6vdo.png",
+    "url": "https://www.timbers.com/players/jimer-fory/",
+    "facts": {
+      "Name": "Jimer Fory",
+      "Height": "6' 2\"",
+      "Date of Birth": "5.24.2002 (24)",
+      "Birthplace": "Santander de Quilichao, Colombia",
+      "Position": "Defender",
+      "Footedness": "Left",
+      "Roster Category": "Senior",
+      "Player Category": "International"
+    },
+    "home": "Santander de Quilichao, Colombia"
+  },
+  {
+    "n": 88,
+    "name": "Gage Guerra",
+    "pos": "Forward",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/vvxhcmchofbeoqyo73xn.png",
+    "url": "https://www.timbers.com/players/gage-guerra/",
+    "facts": {
+      "Name": "Gage Guerra",
+      "Height": "5' 10\"",
+      "Date of Birth": "12.21.2002 (23)",
+      "Birthplace": "Houston, TX, USA",
+      "Position": "Forward",
+      "Roster Category": "Supplemental Slots 25-28"
+    },
+    "home": "Houston, TX, USA"
+  },
+  {
+    "n": 12,
+    "name": "Ronald Hernández",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/pvtbvykuxc4o5famqoda.png",
+    "url": "https://www.timbers.com/players/ronald-hernandez/",
+    "facts": {
+      "Name": "Ronald Hernández",
+      "Height": "5' 8\"",
+      "Weight": "154 lbs",
+      "Date of Birth": "9.21.1997 (29)",
+      "Birthplace": "Barinas, Venezuela",
+      "Position": "Defender",
+      "Footedness": "Right",
+      "Roster Category": "Senior"
+    },
+    "home": "Barinas, Venezuela"
+  },
+  {
+    "n": 73,
+    "name": "Eric Izoita",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/krhrrfmwgjnlqiowkdbx.png",
+    "url": "https://www.timbers.com/players/eric-izoita/",
+    "facts": {
+      "Name": "Eric Izoita",
+      "Date of Birth": "9.8.2007 (19)",
+      "Birthplace": "Vancouver, WA, USA",
+      "Position": "Midfielder",
+      "Roster Category": "Supplemental Slots 25-28",
+      "Player Category": "Homegrown"
+    },
+    "home": "Vancouver, WA, USA"
+  },
+  {
+    "n": 14,
+    "name": "Vincent Janssen",
+    "pos": "Forward",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/naso8posyct0sjvirlop.png",
+    "url": "https://www.timbers.com/players/vincent-janssen/",
+    "facts": {
+      "Name": "Vincent Janssen",
+      "Height": "6' 1\"",
+      "Weight": "174 lbs",
+      "Date of Birth": "6.15.1994 (32)",
+      "Birthplace": "Heesch, Netherlands",
+      "Position": "Forward",
+      "Position Detail": "striker",
+      "Preferred Side": "centre",
+      "Footedness": "Left",
+      "Roster Category": "Senior",
+      "Player Category": "International"
+    },
+    "home": "Heesch, Netherlands"
+  },
+  {
+    "n": 16,
+    "name": "Sawyer Jura",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ivnelsbo1ejphfk5fdvh.png",
+    "url": "https://www.timbers.com/players/sawyer-jura/",
+    "facts": {
+      "Name": "Sawyer Jura",
+      "Date of Birth": "3.9.2006 (20)",
+      "Birthplace": "Bend, Oregon USA",
+      "Position": "Defender",
+      "Roster Category": "Supplemental Slots 25-28"
+    },
+    "home": "Bend, Oregon USA"
+  },
+  {
+    "n": 7,
+    "name": "Ariel Lassiter",
+    "pos": "Forward",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ojezqcks7ftinmgdfvww.png",
+    "url": "https://www.timbers.com/players/ariel-lassiter/",
+    "facts": {
+      "Name": "Ariel Lassiter",
+      "Pronunciation": "ah-ree-el lah-sih-ter",
+      "Height": "5' 10\"",
+      "Weight": "154 lbs",
+      "Date of Birth": "9.27.1994 (32)",
+      "Birthplace": "Turrialba, Costa Rica",
+      "Position": "Forward",
+      "Footedness": "both",
+      "Roster Category": "Senior"
+    },
+    "home": "Turrialba, Costa Rica"
+  },
+  {
+    "n": 18,
+    "name": "Zac McGraw",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ggm8pngcpoo541y3gtrn.png",
+    "url": "https://www.timbers.com/players/zac-mcgraw/",
+    "facts": {
+      "Name": "Zac McGraw",
+      "Height": "6' 4\"",
+      "Weight": "205 lbs",
+      "Date of Birth": "6.8.1997 (29)",
+      "Birthplace": "Torrence, CA, USA",
+      "Position": "Defender",
+      "Roster Category": "Senior",
+      "Player Status": "Season Ending Injury"
+    },
+    "home": "Torrence, CA, USA"
+  },
+  {
+    "n": 15,
+    "name": "Eric Miller",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/u08ucfoox0nnplppu7mx.png",
+    "url": "https://www.timbers.com/players/eric-miller/",
+    "facts": {
+      "Name": "Eric Miller",
+      "Height": "6' 1\"",
+      "Weight": "174 lbs",
+      "Date of Birth": "1.15.1993 (33)",
+      "Birthplace": "Jacksonville, FL, USA",
+      "Position": "Defender",
+      "Position Detail": "full back",
+      "Preferred Side": "Right",
+      "Footedness": "Right",
+      "Roster Category": "Supplemental Slots 21-24"
+    },
+    "home": "Jacksonville, FL, USA"
+  },
+  {
+    "n": 4,
+    "name": "Kamal Miller",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/yk2tvlyr9ygzhguiooxn.png",
+    "url": "https://www.timbers.com/players/kamal-miller/",
+    "facts": {
+      "Name": "Kamal Miller",
+      "Pronunciation": "Kah-mal Miller",
+      "Height": "6' 0\"",
+      "Weight": "165 lbs",
+      "Date of Birth": "5.16.1997 (29)",
+      "Birthplace": "Scarborough, ON, Canada",
+      "Position": "Defender",
+      "Footedness": "Left",
+      "Roster Category": "Senior"
+    },
+    "home": "Scarborough, ON, Canada"
+  },
+  {
+    "n": 29,
+    "name": "Juan Mosquera",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/chwkgxjcrdivta1zfp5e.png",
+    "url": "https://www.timbers.com/players/juan-mosquera/",
+    "facts": {
+      "Name": "Juan Mosquera",
+      "Pronunciation": "MOH-sque-rah",
+      "Height": "5' 11\"",
+      "Weight": "159 lbs",
+      "Date of Birth": "9.5.2002 (24)",
+      "Birthplace": "Santiago de Cali, Colombia",
+      "Position": "Defender",
+      "Footedness": "Right",
+      "Roster Category": "Senior",
+      "Player Status": "Season Ending Injury"
+    },
+    "home": "Santiago de Cali, Colombia"
+  },
+  {
+    "n": 25,
+    "name": "Trey Muse",
+    "pos": "Goalkeeper",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/y4weoybyv44gut47kyr0.png",
+    "url": "https://www.timbers.com/players/trey-muse/",
+    "facts": {
+      "Name": "Trey Muse",
+      "Height": "6' 4\"",
+      "Weight": "185 lbs",
+      "Date of Birth": "7.26.1999 (27)",
+      "Birthplace": "Louisville, KY, USA",
+      "Position": "Goalkeeper",
+      "Roster Category": "Supplemental Slots 21-24"
+    },
+    "home": "Louisville, KY, USA"
+  },
+  {
+    "n": 80,
+    "name": "Joao Ortiz",
+    "pos": "Midfielder",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/bkvuwrer3wog5galwzlg.png",
+    "url": "https://www.timbers.com/players/julio-ortiz/",
+    "facts": {
+      "Name": "Joao Ortiz",
+      "Height": "5' 10\"",
+      "Date of Birth": "5.1.1996 (30)",
+      "Birthplace": "Esmeraldas, Ecuador",
+      "Position": "Midfielder",
+      "Roster Category": "Senior"
+    },
+    "home": "Esmeraldas, Ecuador"
+  },
+  {
+    "n": 41,
+    "name": "James Pantemis",
+    "pos": "Goalkeeper",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/novsgm3ugtjurbtcv67v.png",
+    "url": "https://www.timbers.com/players/james-pantemis/",
+    "facts": {
+      "Name": "James Pantemis",
+      "Pronunciation": "James Pan-te-miss",
+      "Height": "6' 1\"",
+      "Weight": "170 lbs",
+      "Date of Birth": "2.21.1997 (29)",
+      "Birthplace": "Montreal, QC, Canada",
+      "Position": "Goalkeeper",
+      "Roster Category": "Senior"
+    },
+    "home": "Montreal, QC, Canada"
+  },
+  {
+    "n": 23,
+    "name": "Ian Smith",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ovmge23ykb7dgy3qwz89.png",
+    "url": "https://www.timbers.com/players/ian-smith/",
+    "facts": {
+      "Name": "Ian Smith",
+      "Height": "6' 1\"",
+      "Date of Birth": "7.16.2002 (24)",
+      "Birthplace": "Littleton, CO, USA",
+      "Position": "Defender",
+      "Roster Category": "Supplemental Slots 25-28"
+    },
+    "home": "Littleton, CO, USA"
+  },
+  {
+    "n": 26,
+    "name": "Hunter Sulte",
+    "pos": "Goalkeeper",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ori7snesc9qgvkafvjcp.png",
+    "url": "https://www.timbers.com/players/hunter-sulte/",
+    "facts": {
+      "Name": "Hunter Sulte",
+      "Pronunciation": "SULT",
+      "Height": "6' 7\"",
+      "Weight": "194 lbs",
+      "Date of Birth": "4.25.2002 (24)",
+      "Birthplace": "Anchorage, AK, USA",
+      "Position": "Goalkeeper",
+      "Roster Category": "Supplemental Slots 21-24",
+      "Player Category": "Homegrown"
+    },
+    "home": "Anchorage, AK, USA"
+  },
+  {
+    "n": 20,
+    "name": "Finn Surman",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/ucsak1cbugkhk5tuu5kq.png",
+    "url": "https://www.timbers.com/players/finn-surman/",
+    "facts": {
+      "Name": "Finn Surman",
+      "Height": "6' 3\"",
+      "Date of Birth": "9.23.2003 (23)",
+      "Birthplace": "Christchurch, New Zealand",
+      "National Team": "New Zealand",
+      "Position": "Defender",
+      "Roster Category": "Senior"
+    },
+    "home": "Christchurch, New Zealand"
+  },
+  {
+    "n": 99,
+    "name": "Kristoffer Velde",
+    "pos": "Forward",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/mh3vcusnjr1agsoeelrt.png",
+    "url": "https://www.timbers.com/players/kristoffer-velde/",
+    "facts": {
+      "Name": "Kristoffer Velde",
+      "Height": "5' 9\"",
+      "Date of Birth": "9.9.1999 (27)",
+      "Birthplace": "Haugesund, Norway",
+      "Position": "Forward",
+      "Roster Category": "Senior",
+      "Player Category": "Designated Player, International"
+    },
+    "home": "Haugesund, Norway"
+  },
+  {
+    "n": 2,
+    "name": "Joel Waterman",
+    "pos": "Defender",
+    "img": "https://images.mlssoccer.com/image/private/t_keep-aspect-ratio-e-mobile/f_png/mls-por/hsby6kb0xzfckhenpnbf.png",
+    "url": "https://www.timbers.com/players/joel-waterman/",
+    "facts": {
+      "Name": "Joel Waterman",
+      "Height": "6' 1\"",
+      "Weight": "172 lbs",
+      "Date of Birth": "1.24.1996 (30)",
+      "Birthplace": "Langley, BC, Canada",
+      "National Team": "Canada",
+      "Position": "Defender",
+      "Footedness": "Right",
+      "Roster Category": "Senior",
+      "Player Category": "International"
+    },
+    "home": "Langley, BC, Canada"
+  }
+]
