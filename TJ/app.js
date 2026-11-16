@@ -15,7 +15,7 @@ let moreRows=new Map(),rowMarkup=()=>'';
 const counts=()=>{const c={};for(const t of state.trips)for(const id of new Set(t.lines.map(l=>l.id)))c[id]=(c[id]||0)+1;return c};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch{storageOK=false;$('#status').textContent='Browser storage unavailable. Export a backup before leaving.'}}
 function update(id,patch){state.items[id]={...item(id),...patch};save();render()}
-function announce(s){$('#status').textContent=s}
+function announce(s){$('#status').textContent=s;let toast=document.getElementById('globalStatus');if(!toast){toast=document.createElement('p');toast.id='globalStatus';toast.setAttribute('role','status');toast.style.cssText='position:fixed;z-index:30;right:18px;bottom:18px;max-width:min(450px,90vw);margin:0;padding:10px 14px;border:1px solid #edcfca;border-radius:7px;background:#fff7f5;color:#8f3129;font-size:12px;box-shadow:0 4px 20px #0000000a';document.body.appendChild(toast)}toast.textContent=s;toast.hidden=false}
 const DEPARTMENTS=['Produce','Meat & Seafood','Frozen','Refrigerated','Dairy & Eggs','Pantry','Cheese','Bakery','Snacks & Sweets','Dips & Sauces','Wine','Beer & Cider','Nonalcoholic Drinks','Coffee & Tea','Flowers & Plants','Home & Body','Pets','Spirits & Cocktails','Other','Fees'];
 const deptId=n=>'dept-'+n.toLowerCase().replace(/[^a-z0-9]+/g,'-');
 function render(){
