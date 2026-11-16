@@ -235,3 +235,5 @@ export async function enter({ player, makeCharacter, data }) {
     exit() {}
   };
 }
+
+export { shell, door, caption, robotHome, BOT_COLORS, ACTS, SAY };

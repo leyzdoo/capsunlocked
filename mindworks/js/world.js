@@ -134,6 +134,8 @@ const LAST = ['Sam', 'Lily', 'Max', 'Ruby', 'Leo', 'Mia', 'Jax', 'Ivy', 'Otto', 
 export const robotName = r => FIRST[Math.floor(r() * FIRST.length)] + '-' + LAST[Math.floor(r() * LAST.length)];
 const BOT_COLORS = [0xd7dbe0, 0xe0b04a, 0x6fb7e8, 0xe87a6f, 0x8fd18a, 0xb79ce8, 0xf2f2f2, 0xff9f43, 0x5ad1c8];
 const SHOPS = [['BAKERY', 'baking bread 🍞'], ['PIZZA', 'making pizza 🍕'], ['BOOKS', 'stacking books 📚'], ['TOY SHOP', 'fixing toys 🧸'], ['ROBOT REPAIR', 'fixing robots 🔧'], ['ICE CREAM', 'scooping ice cream 🍦'], ['BANK', 'counting coins 🪙'], ['FLOWERS', 'watering flowers 🌷'], ['HARDWARE', 'selling bolts 🔩'], ['CAFE', 'making cocoa ☕'], ['ARCADE', 'playing games 🕹️'], ['MUSIC', 'tuning guitars 🎸'], ['GROCERY', 'stacking apples 🍎'], ['HOTEL', 'greeting guests 🛎️'], ['LIBRARY', 'reading 📖'], ['POST OFFICE', 'sorting mail ✉️'], ['DINER', 'flipping pancakes 🥞'], ['GYM', 'lifting weights 🏋️']];
+const SHOP_NAMES = { FLOWERS: 'Flower Shop', BOOKS: 'Bookstore', GROCERY: 'Grocery Store', MUSIC: 'Music Shop', HARDWARE: 'Hardware Store', 'ICE CREAM': 'Ice Cream Shop', PIZZA: 'Pizza Place', 'ROBOT REPAIR': 'Robot Repair Shop' };
+const shopName = sg => SHOP_NAMES[sg] || sg.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 const WALK_JOBS = ['taking a walk', 'going to work', 'shopping', 'walking to the park', 'jogging', 'delivering mail ✉️', 'looking around'];
 const WALLS = [['brick', ['#8e3b2c', '#cfc3b3']], ['brick', ['#b8875c', '#ded3c3']], ['brick', ['#5b5f66', '#b9bcc0']], ['brick', ['#a24a3a', '#d8cbbb']], ['brick', ['#6f7f8c', '#c9d0d6']], ['brick', ['#a8566d', '#e2d4d6']], ['concrete', ['#d8cfbf', 160]], ['concrete', ['#c9b79a', 160]]];
 const AWN = [['#1f7a5a', '#f2efe6'], ['#c55a2c', '#f6eadb'], ['#3d3470', '#e9e6f5'], ['#2f6fa8', '#eef5fb'], ['#c7962a', '#fff6dc'], ['#b8436f', '#fbecf2'], null];
@@ -418,6 +420,7 @@ export function createWorld(town) {
       const o = { w: l.w, d: D, floors: apt ? 4 + Math.floor(r() * 3) : 2 + Math.floor(r() * 3), wall: WALLS[Math.floor(r() * WALLS.length)], awning: apt ? null : AWN[Math.floor(r() * AWN.length)], sign: apt ? ['ROBOT APARTMENTS', 'SUNNY APTS', 'GEAR TOWER APTS', 'BOLT HOUSE APTS'][Math.floor(r() * 4)] : shop[0], owner };
       const b = roadBuilding(P, l.x, l.z, l.face, o);
       const ox = P.ox, oz = P.oz, wpos = b.door.clone().add(V(ox, 0, oz));
+      if (!apt) { const sg = o.sign, sd = Math.floor(r() * 1e6) + k; C.doors.push({ pos: wpos, r: 2.0, label: '🚪 Go into the ' + shopName(sg), sub: 'Owned by ' + owner, fn: () => G.enterRoom('building', { data: { kind: 'shop', sign: sg, name: owner + '’s ' + shopName(sg), owner, seed: sd }, doorObj: { pos: wpos.clone(), facing: l.face } }) }); }
       if (apt) C.doors.push({ pos: wpos, r: 2.0, label: '🏢 Go into ' + o.sign[0] + o.sign.slice(1).toLowerCase(), sub: 'Robots live upstairs · owned by ' + owner, fn: () => G.enterRoom('apartment', { data: { kind: 'apts', name: o.sign, owner, seed: Math.floor(r() * 1e6) + k, floors: Math.min(3, o.floors - 1) }, doorObj: { pos: wpos.clone(), facing: l.face } }) });
       if (r() < .45) addBot(P, { x: b.door.x + b.out.x * 1.2 + (r() - .5) * 2, z: b.door.z + b.out.z * 1.2 + (r() - .5) * 2, face: l.face, name: owner, job: apt ? 'the building manager 🔑' : shop[1], owns: apt ? 'apartment building' : o.sign.toLowerCase() });
     });
@@ -428,6 +431,8 @@ export function createWorld(town) {
       if (r() < .25) return;
       const T = randomSpec('tower', Math.floor(r() * 1e6)); T.w = Math.min(T.w, 14); T.d = Math.min(T.d, 12); if (home) T.floors = Math.min(T.floors, 18);
       const t = buildHouse(T); t.position.set(x, 0, z); t.rotation.y = z > 0 ? Math.PI : 0; g.add(t);
+      { const face = t.rotation.y, dp = t.userData.door.clone().applyAxisAngle(V(0, 1, 0), face).add(V(x, 0, z)).add(V(P.ox, 0, P.oz)), owner = robotName(r), sd = Math.floor(r() * 1e6);
+        C.doors.push({ pos: dp, r: 2.4, label: '🏢 Go into ' + T.name, sub: T.floors + ' floors · take the elevator to the roof!', fn: () => G.enterRoom('building', { data: { kind: 'tower', name: T.name, floors: T.floors, real: T.real, owner, seed: sd }, doorObj: { pos: dp.clone(), facing: face } }) }); }
       col(x - T.w / 2 - .2, x + T.w / 2 + .2, z - T.d / 2 - .2, z + T.d / 2 + .2, true);
       const R = t.userData.roof; if (R) { C.cols[C.cols.length - 1].top = R.y; C.roofs.push({ x1: P.ox + x - R.w / 2, x2: P.ox + x + R.w / 2, z1: P.oz + z - R.d / 2, z2: P.oz + z + R.d / 2, y: R.y, dome: R.dome }); }
     });
@@ -490,6 +495,7 @@ export function createWorld(town) {
       const owner = robotName(r), shop = SHOPS[Math.floor(r() * SHOPS.length)], apt = r() < .18;
       const o = { w: l.w, d: D, floors: apt ? 3 : 1 + Math.floor(r() * 2), wall: WALLS[Math.floor(r() * WALLS.length)], awning: AWN[Math.floor(r() * AWN.length)], sign: apt ? 'APARTMENTS' : shop[0], owner };
       const b = roadBuilding(P, l.x, l.z, l.face, o), wpos = b.door.clone().add(V(P.ox, 0, P.oz));
+      if (!apt) { const sg = o.sign, sd = Math.floor(r() * 1e6) + k; C.doors.push({ pos: wpos, r: 2.0, label: '🚪 Go into the ' + shopName(sg), sub: 'Owned by ' + owner, fn: () => G.enterRoom('building', { data: { kind: 'shop', sign: sg, name: owner + '’s ' + shopName(sg), owner, seed: sd }, doorObj: { pos: wpos.clone(), facing: l.face } }) }); }
       if (apt) C.doors.push({ pos: wpos, r: 2.0, label: '🏢 Go into the apartments', sub: 'Robots live upstairs · owned by ' + owner, fn: () => G.enterRoom('apartment', { data: { kind: 'apts', name: 'Main Street Apartments', owner, seed: Math.floor(r() * 1e6) + k, floors: 2 }, doorObj: { pos: wpos.clone(), facing: l.face } }) });
       if (r() < .5) addBot(P, { x: b.door.x + b.out.x * 1.2, z: b.door.z + b.out.z * 1.2, face: l.face, name: owner, job: apt ? 'the building manager 🔑' : shop[1], owns: o.sign.toLowerCase() });
     });
