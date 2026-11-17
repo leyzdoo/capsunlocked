@@ -496,7 +496,7 @@ function eff(k){
   }
   if (SEED_PLAN[k]) return { who:SEED_PLAN[k], by:"JL", cJL:"", cABB:"", src:"seed", status:"proposed" };
   if (S.compas[k]) return { who:S.compas[k], by:"compas", cJL:"", cABB:"", src:"compas", status:"proposed" };
-  if (isSchool(k)) return { who:"ale", by:"school", cJL:"", cABB:"", src:"school", status:"default" };
+  if (isSchool(k)) return { who:"ale", by:"JL", cJL:"", cABB:"", src:"weeknight", status:"proposed" };   // weeknights: Ale proposals, confirmable
   return { who:"", status:"open", cJL:"", cABB:"" };
 }
 
@@ -699,14 +699,13 @@ function renderYear(){
   let html = `<div class="ylegend">
       <span><i style="background:var(--ale)"></i>Ale · confirmed</span>
       <span><i style="background:var(--ale-soft);border:2px solid var(--ale)"></i>Ale · proposal</span>
-      <span><i style="background:#EEF7F1"></i>Weeknight · Ale</span>
       <span><i style="background:var(--james)"></i>James · confirmed</span>
       <span><i style="background:var(--james-soft);border:2px solid var(--james)"></i>James · proposal</span>
       <span><i style="background:linear-gradient(135deg,var(--ale) 50%,var(--james) 50%)"></i>Both</span>
       <span><i style="border:1.5px dashed #C9CED6"></i>Undetermined</span>
       <span><i style="background:#fff;box-shadow:inset 0 0 0 4px #fff;position:relative"><b style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--hol)"></b></i>No school / holiday</span>
     </div>
-    <div class="ynote">Tap any day to set it and confirm, with three days either side. Mon–Thu school weeknights are Ale's; Fri/Mon holidays stay open until that weekend is set. Weeknights from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
+    <div class="ynote">Tap any day to set it and confirm, with three days either side. Mon–Thu school weeknights are proposed to Ale; Fri/Mon holidays follow their weekend. Weeknights from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
     <div class="months">`;
   for (let m = 0; m < 12; m++) {
     const first = new Date(2027, m, 1), n = { ale:0, james:0, both:0, open:0 };
@@ -716,7 +715,7 @@ function renderYear(){
       const k = key(d), e = eff(k), o = OFF[k];
       n[e.who || "open"]++;
       const t = e.src === "school" ? "t-school" : e.who ? "t-" + e.who : "t-open";
-      const cls = ["yd", t, e.status === "confirmed" ? "c-confirmed" : "", (o && o.est) || (e.src === "school" && k >= FALL_EST_FROM) ? "est" : ""].join(" ");
+      const cls = ["yd", t, e.status === "confirmed" ? "c-confirmed" : "", (o && o.est) || (e.src === "weeknight" && k >= FALL_EST_FROM) ? "est" : ""].join(" ");
       const tip = `${DOW[d.getDay()]} ${MON[m]} ${d.getDate()} · ${e.src === "school" ? "Weeknight · Alejandra" : (NAME[e.who] + (e.who ? (e.status === "confirmed" ? " · confirmed" : " · proposal") : ""))}${o ? " · " + o.name + (o.est ? " (est.)" : "") : ""}`;
       cells += `<button class="${cls}" data-k="${k}" title="${tip}" aria-label="${tip}">${d.getDate()}${o && o.kind !== "summer" ? `<span class="hd"></span>` : ""}</button>`;
     }
@@ -1051,7 +1050,7 @@ async function exportPDF(){
 
     // ---------- legend ----------
     const legend = [
-      [{ fill:C.ale }, "Ale - confirmed"], [{ fill:C.aleSoft, stroke:C.ale }, "Ale - proposal"], [{ fill:C.school }, "Weeknight (Ale)"],
+      [{ fill:C.ale }, "Ale - confirmed"], [{ fill:C.aleSoft, stroke:C.ale }, "Ale - proposal"],
       [{ fill:C.james }, "James - confirmed"], [{ fill:C.jamesSoft, stroke:C.james }, "James - proposal"],
       [{ split:[C.ale, C.james], stroke:C.both }, "Both"], [{ fill:"#FFFFFF", dashed:true }, "Undetermined"]
     ];
