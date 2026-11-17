@@ -433,8 +433,8 @@ mark("2027-11-22","2027-11-26","Fall break · Thanksgiving","Fall brk","hol",tru
 mark("2027-12-20","2027-12-31","Winter break","Winter brk","hol",true);
 mark("2028-01-01","2028-01-01","New Year's Day","New Year's");
 
-/* ================= regular school days =================
-   Mon–Thu school days default to Alejandra. Fridays belong to the weekend decision.
+/* ================= weeknights =================
+   Mon–Thu school nights go to Alejandra (Nov 17). Fridays and Fri/Mon holidays belong to the weekend decision.
    Spring 2027 from BSD 2026-27 calendar (approved 1/21/2025). Fall 2027 start is an estimate. */
 const SCHOOL_TERMS = [["2027-01-05","2027-06-10"], ["2027-08-24","2027-12-17"]];
 const FALL_EST_FROM = "2027-08-24";
@@ -453,12 +453,10 @@ const SEED_COMPAS = { "2027-01-01":"james", "2027-01-02":"james", "2027-01-03":"
    Shown as proposals from James until both parents confirm. */
 const SEED_PLAN = {
   "2027-01-01":"james",                                   // New Year's Day
-  "2027-01-18":"ale",                                     // MLK Day
-  "2027-01-25":"ale", "2027-01-26":"ale",                 // Grading + staff development
-  "2027-02-12":"ale", "2027-02-15":"ale",                 // Staff dev + Presidents' Day
+  // Fri/Mon holidays are left open until that weekend is decided (Nov 17): Jan 18, Jan 25, Feb 12, Feb 15, Apr 23
+  "2027-01-26":"ale",                                     // Staff development (Tue weeknight)
   "2027-03-22":"james","2027-03-23":"james","2027-03-24":"james","2027-03-25":"james","2027-03-26":"james", // Spring break
   "2027-04-09":"james",                                   // Grading day
-  "2027-04-23":"ale",                                     // Staff development
   "2027-05-31":"james",                                   // Memorial Day
   "2027-06-10":"ale",                                     // Last day of school
   "2027-06-19":"james",                                   // Juneteenth
@@ -627,7 +625,7 @@ function paint(){
     else if (e.status === "proposed") {
       if (e.cJL || e.cABB) meta = `${e.cABB ? "A✓" : "A○"} ${e.cJL ? "J✓" : "J○"}`;
       else meta = e.src === "compas" ? "Compás" : "proposal";
-    } else if (e.status === "default") { meta = "school day";
+    } else if (e.status === "default") { meta = "weeknight";
     }
     el.querySelector(".meta").textContent = meta;
     el.querySelector(".wh").textContent = SHORT[e.who];
@@ -697,14 +695,14 @@ function renderYear(){
   let html = `<div class="ylegend">
       <span><i style="background:var(--ale)"></i>Ale · confirmed</span>
       <span><i style="background:var(--ale-soft);border:2px solid var(--ale)"></i>Ale · proposal</span>
-      <span><i style="background:#EEF7F1"></i>School day · Ale</span>
+      <span><i style="background:#EEF7F1"></i>Weeknight · Ale</span>
       <span><i style="background:var(--james)"></i>James · confirmed</span>
       <span><i style="background:var(--james-soft);border:2px solid var(--james)"></i>James · proposal</span>
       <span><i style="background:linear-gradient(135deg,var(--ale) 50%,var(--james) 50%)"></i>Both</span>
       <span><i style="border:1.5px dashed #C9CED6"></i>Undetermined</span>
       <span><i style="background:#fff;box-shadow:inset 0 0 0 4px #fff;position:relative"><b style="position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:var(--hol)"></b></i>No school / holiday</span>
     </div>
-    <div class="ynote">Tap any day to set it and confirm, with three days either side. School days from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
+    <div class="ynote">Tap any day to set it and confirm, with three days either side. Mon–Thu school weeknights are Ale's; Fri/Mon holidays stay open until that weekend is set. Weeknights from ${MON[7]} 24 on are estimated until Beaverton posts 2027–28.</div>
     <div class="months">`;
   for (let m = 0; m < 12; m++) {
     const first = new Date(2027, m, 1), n = { ale:0, james:0, both:0, open:0 };
@@ -715,7 +713,7 @@ function renderYear(){
       n[e.who || "open"]++;
       const t = e.src === "school" ? "t-school" : e.who ? "t-" + e.who : "t-open";
       const cls = ["yd", t, e.status === "confirmed" ? "c-confirmed" : "", (o && o.est) || (e.src === "school" && k >= FALL_EST_FROM) ? "est" : ""].join(" ");
-      const tip = `${DOW[d.getDay()]} ${MON[m]} ${d.getDate()} · ${e.src === "school" ? "School day · Alejandra" : (NAME[e.who] + (e.who ? (e.status === "confirmed" ? " · confirmed" : " · proposal") : ""))}${o ? " · " + o.name + (o.est ? " (est.)" : "") : ""}`;
+      const tip = `${DOW[d.getDay()]} ${MON[m]} ${d.getDate()} · ${e.src === "school" ? "Weeknight · Alejandra" : (NAME[e.who] + (e.who ? (e.status === "confirmed" ? " · confirmed" : " · proposal") : ""))}${o ? " · " + o.name + (o.est ? " (est.)" : "") : ""}`;
       cells += `<button class="${cls}" data-k="${k}" title="${tip}" aria-label="${tip}">${d.getDate()}${o && o.kind !== "summer" ? `<span class="hd"></span>` : ""}</button>`;
     }
     html += `<div class="mo"><h3>${MONTH[m]}</h3>
@@ -746,7 +744,7 @@ function openDay(k){
   $("#dmCells").innerHTML = DM.keys.map(x => {
     const cls = isSchool(x) ? " school" : "";
     let h = cellHTML(x, false);
-    if (isSchool(x)) h = h.replace('<div class="hn"></div>', '<div class="hn">School day</div>');
+    if (isSchool(x)) h = h.replace('<div class="hn"></div>', '<div class="hn">Weeknight</div>');
     return h.replace('class="cell', `class="cell${cls}${x === k ? " focus" : ""}`)
       .replace('<div class="hn">', `<div class="dc" data-k="${x}"><button class="a" data-c="ABB" type="button">A</button><button class="j" data-c="JL" type="button">J</button></div><div class="hn">`);
   }).join("");
@@ -1009,7 +1007,7 @@ function drawDay(doc, x, y, w, h, st){
 const fmtLong = d => `${DOW[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}`;
 function statusText(e){
   if (!e.who) return "Undetermined";
-  if (e.src === "school") return "School-day default";
+  if (e.src === "school") return "Weeknight (Ale)";
   if (e.status === "confirmed") return "Confirmed by both";
   const who = [e.cABB && "Alejandra", e.cJL && "James"].filter(Boolean);
   return who.length ? `Proposal (${who[0]} confirmed)` : "Proposal";
@@ -1049,7 +1047,7 @@ async function exportPDF(){
 
     // ---------- legend ----------
     const legend = [
-      [{ fill:C.ale }, "Ale - confirmed"], [{ fill:C.aleSoft, stroke:C.ale }, "Ale - proposal"], [{ fill:C.school }, "School day (Ale)"],
+      [{ fill:C.ale }, "Ale - confirmed"], [{ fill:C.aleSoft, stroke:C.ale }, "Ale - proposal"], [{ fill:C.school }, "Weeknight (Ale)"],
       [{ fill:C.james }, "James - confirmed"], [{ fill:C.jamesSoft, stroke:C.james }, "James - proposal"],
       [{ split:[C.ale, C.james], stroke:C.both }, "Both"], [{ fill:"#FFFFFF", dashed:true }, "Undetermined"]
     ];
