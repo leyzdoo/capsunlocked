@@ -16,10 +16,13 @@ function shade(color, amt) { const c = new THREE.Color(color); const hsl = {}; c
 function noise(ctx, w, h, r, n, alpha, light) {
   for (let i = 0; i < n; i++) { ctx.fillStyle = (light ? 'rgba(255,255,255,' : 'rgba(0,0,0,') + (r() * alpha) + ')'; ctx.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
 }
+// one GPU copy per painted canvas: every material gets a clone that shares the same image (clones only differ in repeat)
+const baseTex = new WeakMap();
 function toTex(canvas, repeatX = 1, repeatY = 1, color = true) {
-  const t = new THREE.CanvasTexture(canvas);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeatX, repeatY);
-  t.anisotropy = maxAniso; if (color) t.colorSpace = THREE.SRGBColorSpace;
+  let per = baseTex.get(canvas); if (!per) { per = {}; baseTex.set(canvas, per); }
+  const k = color ? 'c' : 'l';
+  if (!per[k]) { const b = new THREE.CanvasTexture(canvas); b.wrapS = b.wrapT = THREE.RepeatWrapping; b.anisotropy = maxAniso; if (color) b.colorSpace = THREE.SRGBColorSpace; per[k] = b; }
+  const t = per[k].clone(); t.repeat.set(repeatX, repeatY); t.userData.pooled = true;
   return t;
 }
 function cached(key, make) { if (!cache.has(key)) cache.set(key, make()); return cache.get(key); }

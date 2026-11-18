@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mat, signTexture, stripes, rng, COLORS } from './tex.js';
-import { bakeGroup } from './bake.js';
+import { bakeGroup, markShared } from './bake.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const std = (color, rough = .7, metal = 0, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal, ...extra });
@@ -18,6 +18,7 @@ export function shared() {
   SHARED.stone = mat('concrete', ['#c9c1b2', 0, 21], 1, 1, { roughness: .85, bump: .6 });
   SHARED.concreteDark = mat('concrete', ['#8f8c86', 0, 22], 1, 1);
   SHARED.metal = std(0x3a3d42, .4, .8);
+  queueMicrotask(() => markShared(Object.values(SHARED).filter(m => m && m.isMaterial)));
   SHARED.black = std(0x151515, .5, .3);
   SHARED.interior = new THREE.MeshBasicMaterial({ color: 0xffd9a0 });
   return SHARED;
@@ -486,7 +487,7 @@ function lotExtras(T, lot, side, frontZ, r) {
 }
 
 /* ---------------- props ---------------- */
-const leafMats = [0x2f5a1f, 0x3a6a26, 0x2a4f1c, 0x46772c].map(c => std(c, .9));
+const leafMats = [0x2f5a1f, 0x3a6a26, 0x2a4f1c, 0x46772c].map(c => std(c, .9)); markShared(leafMats);
 const leafGeo = (function () { let g = new THREE.IcosahedronGeometry(1, 4); g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g); const p = g.attributes.position, v = new THREE.Vector3();
   for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const n = Math.sin(v.x * 5.1) * Math.cos(v.y * 4.3) * Math.sin(v.z * 6.7) * .13 + Math.sin(v.x * 11 + v.z * 9) * .05; v.multiplyScalar(1 + n); p.setXYZ(i, v.x, v.y, v.z); }
   g.computeVertexNormals(); return g; })();
@@ -606,8 +607,17 @@ export function createTown(renderer) {
   [[-24, -1], [24, -1], [-12, 1], [12, 1]].forEach(([x, s]) => { const b = bench(); b.position.set(x, .18, s * 9.4); b.rotation.y = s > 0 ? Math.PI : 0; stat.add(b); colliders.push({ x1: x - .95, x2: x + .95, z1: s * 9.4 - .4, z2: s * 9.4 + .4 }); });
   const carCols = [0x9b1c1c, 0x1f3f7a, 0xd9d9d9, 0x2b2b2b, 0x3f6e5a, 0xb08a2e];
   [-54, -30, 4, 30, 54].forEach((x, i) => { const s = i % 2 ? 1 : -1; const c = car(carCols[i], r); c.position.set(x + (r() - .5) * 4, 0, s * 3.4); if (s > 0) c.rotation.y = Math.PI; stat.add(c); });
+  // (a little red fire hydrant behind Ping Pong — shh, it's a secret)
+  const hyd = new THREE.Group(), red = std(0xd0201c, .45, .2), cap = std(0xc9ccd1, .3, .9);
+  const hb = new THREE.Mesh(new THREE.CylinderGeometry(.2, .24, .7, 16), red); hb.position.y = .35; hyd.add(hb);
+  const hd = new THREE.Mesh(new THREE.SphereGeometry(.21, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), red); hd.position.y = .7; hyd.add(hd);
+  const ht = new THREE.Mesh(new THREE.CylinderGeometry(.06, .08, .1, 8), cap); ht.position.y = .92; hyd.add(ht);
+  [-1, 1].forEach(k => { const n = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, .16, 10), cap); n.rotation.z = Math.PI / 2; n.position.set(k * .26, .48, 0); hyd.add(n); });
+  const hn = new THREE.Mesh(new THREE.CylinderGeometry(.11, .11, .14, 10), cap); hn.rotation.x = Math.PI / 2; hn.position.set(0, .45, .25); hyd.add(hn);
+  hyd.position.set(2.5, 0, 25.2); hyd.traverse(o => { if (o.isMesh) o.castShadow = true; }); stat.add(hyd);
+  colliders.push({ x1: 2.2, x2: 2.8, z1: 24.9, z2: 25.5 });
   bakeGroup(stat);
-  const town = {
+  const town = { hydrant: V(2.5, 0, 25.2),
     scene, doors, colliders: base.slice(), camBlockers: base.slice(), plaques, sun: dir, homeKey: null,
     spawn: { pos: V(home.x, 0, home.side * (SETBACK - 1.8)), yaw: Math.PI },
     setHome(spec) {

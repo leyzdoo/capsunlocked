@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, $, el, GAMES, MASTER, COLORS, Store, defaultData, normalize, save, flush, toast, modal, closeModal, modalOpen, refreshCoins, setHelp, setTitle, setRoomButtons, openPanel, closePanel, jigsawUnlocked, masteredCount } from './game.js';
 import { createTown, paintPlaque } from './town.js';
 import { currentHome } from './homes.js';
+import { disposeDeep } from './bake.js';
 import { createWorld, WATER_Y, blockName, roofY, biomeOf, airportAt, slotAt, runwayAt } from './world.js';
 import { CARS, BOATS, PLANES, ITEMS, makeCar, makeBoat, makePlane, capacity, bagCount, today, TELEPORTER_PRICE } from './vehicles.js';
 import { loadCharacter, makeCharacter } from './character.js';
@@ -105,7 +106,7 @@ async function boot() {
     blocked: p => ride && ride.type === 'plane' ? false : onRoofEdge(p) ? true : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
     interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs(), parkedActs(), stuffActs()); },
-    update(dt) { const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
+    update(dt) { secretHydrant(); const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
       town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); syncT += dt; if (syncT > .5) { syncT = 0; syncPlanes(); syncStuff(); } }
   };
   // warm-up render so the first frame after sign-in is quick
@@ -157,6 +158,7 @@ G.enterRoom = async (id, opts = {}) => {
   if (ride) stopRide(true);
   closeModal(); closePanel();
   fade.style.opacity = 1; await wait(260);
+  const prevRoom = active !== townPlace ? active : null;
   if (active && active !== townPlace && active.exit) active.exit();
   if (active === townPlace) lastDoor = opts.doorObj || town.doors.find(d => d.id === (opts.door === 'back' ? 'homeBack' : id)) || lastDoor;
   try {
@@ -169,6 +171,7 @@ G.enterRoom = async (id, opts = {}) => {
       room.scene.add(player.root); player.root.position.copy(room.start || new THREE.Vector3()); player.root.rotation.y = room.startYaw || Math.PI;
       cam.yaw = cam.tYaw = room.camYaw ?? 0; cam.target.copy(player.root.position);
     }
+    if (prevRoom && prevRoom.scene && prevRoom.scene !== room.scene) retire(prevRoom);
     setTitle(room.title || id); setHelp(room.help || '');
     const btns = (room.buttons || []).concat([{ label: '🚪 Leave', fn: leaveBuilding, cls: 'ghost' }]);
     setRoomButtons(btns);
@@ -176,17 +179,21 @@ G.enterRoom = async (id, opts = {}) => {
   showJoy(); fade.style.opacity = 0; switching = false;
 };
 function leaveBuilding() { G.backToTown(); }
+// free a building's textures and shapes once you've left it (iPads run out of memory otherwise)
+function retire(room) { try { if (room.scene && room.scene !== town.scene) disposeDeep(room.scene, player.root); } catch (e) { console.warn(e); } }
 G.backToTown = async (doorId) => {
   if (switching) return;
   if (typeof doorId === 'string') lastDoor = town.doors.find(d => d.id === doorId) || lastDoor;
   else if (doorId && doorId.pos) lastDoor = doorId; // a spot that isn't a building door (like outside a plane)
   switching = true;
   closeModal(); closePanel(); fade.style.opacity = 1; await wait(260);
+  const prevRoom = active !== townPlace ? active : null;
   if (active && active !== townPlace && active.exit) active.exit();
   active = townPlace; setTitle(G.S.name); setHelp(''); setRoomButtons(null);
   const d = lastDoor || town.doors.find(x => x.id === 'home');
   const out = d.pos.clone(); out.x += Math.sin(d.facing) * .6; out.z += Math.cos(d.facing) * .6;
   placeInTown(out, d.facing);
+  if (prevRoom) retire(prevRoom);
   refreshPlaques(); showJoy(); fade.style.opacity = 0; switching = false;
 };
 G.refresh = () => { refreshPlaques(); refreshCoins(); if (town && G.S.data) town.setHome(currentHome()); };
@@ -435,6 +442,14 @@ function kLevKey() { const k = keys; return (k.w || k.arrowup || k.s || k.arrowd
 function autoOff() { if (ride && ride.auto) { ride.auto = null; toast('👨‍✈️ Autopilot off — you are flying!'); refreshRideBtn(); } }
 function autopilot(dt) {
   const p = player.root.position, a = ride.auto, dx = a.x - p.x, dz = a.z - p.z, dist = Math.hypot(dx, dz);
+  if (a.heli) { // helicopter: fly over the spot, stop, and sink straight down onto it
+    let df = Math.atan2(dx, dz) - player.root.rotation.y; df = Math.atan2(Math.sin(df), Math.cos(df));
+    flight.wheel += (clamp(-df * 2.2, -1, 1) - flight.wheel) * Math.min(1, dt * 3);
+    const want = dist > 60 ? .3 : dist > 7 ? (Math.abs(df) > .5 ? .03 : .09) : 0;
+    if (Math.abs(want - flight.lever) > .005) setLever(flight.lever + clamp(want - flight.lever, -dt * .4, dt * .4));
+    if (dist < 7 && ride.alt < .4) { ride.auto = null; flight.wheel = 0; setLever(0); toast('🚁 Landed on ' + a.name + '!'); refreshRideBtn(); }
+    return;
+  }
   let diff = Math.atan2(dx, dz) - player.root.rotation.y; diff = Math.atan2(Math.sin(diff), Math.cos(diff));
   flight.wheel += (clamp(-diff * 2.2, -1, 1) - flight.wheel) * Math.min(1, dt * 3);
   // cruise high, then come down so it lands right about at the spot you picked
@@ -479,6 +494,47 @@ function setSeat(i) {
   refreshRideBtn();
 }
 $('mapBtn').onclick = () => { if (ride && ride.type === 'plane') openMap(); };
+/* 🚁 every skyscraper roof has a helicopter: take off from the roof of the building you are in */
+G.flyFromRoof = async () => {
+  await G.backToTown();
+  const p = player.root.position, roofs = (town.roofs || []).concat(...world.near(p).map(c => c.roofs || []));
+  let best = null, bd = 1e9;
+  for (const r of roofs) { const x = (r.x1 + r.x2) / 2, z = (r.z1 + r.z2) / 2, d = Math.hypot(x - p.x, z - p.z); if (d < bd) { bd = d; best = { x, z }; } }
+  if (best && bd < 45) { p.x = best.x; p.z = best.z; p.y = roofAt(best.x, best.z); }
+  startRide('plane', 'heli'); setLever(.12); cam.target.copy(p);
+  toast('🚁 Up, up and away! Steer with the wheel — tap 🛬 Land when you want to come down.');
+};
+/* shh — touch the red fire hydrant behind Ping Pong */
+let hydArmed = true;
+function secretHydrant() {
+  if (!town.hydrant || !G.S.data || ride) return;
+  const p = player.root.position, d = Math.hypot(p.x - town.hydrant.x, p.z - town.hydrant.z);
+  if (d > 3) { hydArmed = true; return; }
+  if (d < 1.15 && hydArmed) {
+    hydArmed = false; G.S.data.coins += 1000000; save(true); refreshCoins(); refreshPlaques();
+    toast('💦💰 WOOSH! +1,000,000 coins!');
+    const sp = []; for (let k = 0; k < 40; k++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.07, 6, 4), new THREE.MeshBasicMaterial({ color: k % 3 ? 0x9fd8ff : 0xffd34d })); m.position.copy(town.hydrant).add(new THREE.Vector3(0, .9, 0)); m.userData.v = new THREE.Vector3((Math.random() - .5) * 3, 3 + Math.random() * 3, (Math.random() - .5) * 3); town.scene.add(m); sp.push(m); }
+    let t = 0; const tick = () => { t += .016; sp.forEach(m => { m.userData.v.y -= 9.8 * .016; m.position.addScaledVector(m.userData.v, .016); }); if (t < 1.2) requestAnimationFrame(tick); else sp.forEach(m => { town.scene.remove(m); m.geometry.dispose(); m.material.dispose(); }); };
+    tick();
+  }
+}
+/* 🛬 Land: the autopilot flies to the nearest place this aircraft can land, and lands there */
+$('landBtn').onclick = () => {
+  if (!ride || ride.type !== 'plane') return;
+  const p = player.root.position, PL = PLANES[ride.kind];
+  if (ride.alt < .3) return toast('🛬 You are already on the ground!');
+  if (PL.water && world.heightAt(p.x, p.z) < WATER_Y) { ride.auto = null; setLever(0); toast('🌊 Landing on the water…'); refreshRideBtn(); return; }
+  let best = null, bd = 1e9;
+  if (PL.heli) { // nearest skyscraper roof
+    const roofs = (town.roofs || []).concat(...world.near(p).map(c => c.roofs || []));
+    for (const r of roofs) { const x = (r.x1 + r.x2) / 2, z = (r.z1 + r.z2) / 2, d = Math.hypot(x - p.x, z - p.z); if (d < bd) { bd = d; best = { x, z, name: 'the roof', heli: true }; } }
+  }
+  const ti = Math.round(p.x / 160), tj = Math.round(p.z / 160); // nearest airport
+  for (let i = ti - 4; i <= ti + 4; i++) for (let j = tj - 4; j <= tj + 4; j++) { if (biomeOf(i, j) !== 'airport') continue; const rw = runwayAt(i, j), d = Math.hypot(rw.x - p.x, rw.z - p.z); if (d < bd - (PL.heli ? 100 : 0)) { bd = d; best = { ...rw, name: blockName(i, j), heli: PL.heli }; } }
+  if (!best) { const rw = runwayAt(HOME_AP.i, HOME_AP.j); best = { ...rw, name: HOME_AP.name, heli: PL.heli }; }
+  ride.auto = best; if (flight.lever < .1) setLever(.15);
+  toast('🛬 Landing at ' + best.name + (bd > 60 ? ' — ' + Math.round(bd) + ' m away. The autopilot is flying!' : '!')); refreshRideBtn();
+};
 $('relaxBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(ride.relax == null ? 0 : (ride.relax + 1) % SEATS.length); };
 $('cockpitBtn').onclick = () => { if (ride && ride.type === 'plane') setSeat(null); };
 $('flyBtn').onclick = () => { if (!ride && active === townPlace) myPlanes(); };

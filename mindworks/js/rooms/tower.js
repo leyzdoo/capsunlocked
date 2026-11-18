@@ -1,9 +1,11 @@
 // Inside your skyscraper: a lobby, elevators to every floor, and the city below the windows.
 import * as THREE from 'three';
+import { disposeDeep } from '../bake.js';
 import { G, el, openPanel, closePanel, toast } from '../game.js';
 import { TOWER_FH } from '../town.js';
 import { sofa, table, rug, plant, lamp, shelf, chandelier, box, std, env } from './common.js';
 import { mat, rng, signTexture } from '../tex.js';
+import { makePlane } from '../vehicles.js';
 
 const W = 24, D = 18;
 const REAL = ['office', 'apartment', 'office', 'apartment', 'gym', 'office', 'apartment', 'restaurant', 'office', 'pool', 'apartment', 'office'];
@@ -53,7 +55,7 @@ export async function enter({ player, makeCharacter, T, door }) {
   let floorN = 0, group = null, cols = [], acts = [], tramps = [], anim = [], h = 5.2, t = 0, riding = false;
 
   function build(n) {
-    if (group) { scene.remove(group); group.traverse(o => { if (o.isMesh) o.geometry.dispose(); }); }
+    if (group) { scene.remove(group); disposeDeep(group); }
     group = new THREE.Group(); scene.add(group); cols = []; acts = []; tramps = []; anim = [];
     floorN = n; const type = floorType(T, n), r = rng(T.seed + n * 13);
     h = type === 'lobby' ? 5.2 : type === 'penthouse' ? 4.6 : 3.4;
@@ -223,7 +225,10 @@ const FLOORS = {
     for (let i = 0; i < 4; i++) add(box(.7, .3, 1.8, std(0xffffff, .5), -7 + i * 2.2, .3, D / 2 - 1.3), -7 + i * 2.2, D / 2 - 1.3, 0, .7, 1.8);
     add(plant(1.6), W / 2 - .8, D / 2 - .8, 0, .6, .6);
   },
-  roof({ add, group, cols, T }) {
+  roof({ add, group, cols, T, acts, anim }) {
+    const heli = makePlane('heli'); heli.position.set(-4, .2, 3); heli.rotation.y = Math.PI / 2; group.add(heli); cols.push({ x1: -6, x2: -2, z1: 1.8, z2: 4.2 });
+    if (heli.userData.rotor) anim.push(t2 => { heli.userData.rotor.rotation.y = t2 * 1.5; });
+    acts.push({ pos: new THREE.Vector3(-4, 0, 5.2), r: 2.6, label: '🚁 Fly helicopter', sub: 'Take off from your roof!', fn: () => G.flyFromRoof() });
     const hp = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, .2, 32), std(0x3a3d42, .7)); hp.position.set(-4, .1, 3); group.add(hp);
     const hc = document.createElement('canvas'); hc.width = hc.height = 256; const hx = hc.getContext('2d'); hx.strokeStyle = '#ffd34d'; hx.lineWidth = 14; hx.beginPath(); hx.arc(128, 128, 110, 0, 7); hx.stroke(); hx.fillStyle = '#fff'; hx.font = 'bold 160px Arial'; hx.textAlign = 'center'; hx.fillText('H', 128, 184);
     const hm = new THREE.Mesh(new THREE.CircleGeometry(3.8, 32), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(hc), transparent: true })); hm.rotation.x = -Math.PI / 2; hm.position.set(-4, .21, 3); group.add(hm);

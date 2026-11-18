@@ -28,3 +28,21 @@ export function bakeGroup(g, cell = 80) {
   const empties = []; g.traverse(o => { if (o.isGroup && o !== g && !o.children.length) empties.push(o); }); empties.forEach(o => o.parent && o.parent.remove(o));
   return g;
 }
+
+/** free a scene/group's GPU memory: shapes, materials and textures (except shared ones marked userData.shared) */
+const TEX = ['map', 'bumpMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'alphaMap', 'aoMap', 'lightMap'];
+export function disposeDeep(root, skip) {
+  root.traverse(o => {
+    if (skip && (o === skip || isInside(o, skip))) return;
+    if (o.geometry && !o.isSkinnedMesh && !o.geometry.userData.shared) o.geometry.dispose();
+    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+    for (const m of ms) {
+      if (m.userData.shared) continue;
+      for (const k of TEX) { const t = m[k]; if (t && !t.userData.shared) t.dispose(); }
+      m.dispose();
+    }
+    if (o.isLight && o.shadow && o.shadow.map) { o.shadow.map.dispose(); o.shadow.map = null; }
+  });
+}
+function isInside(o, p) { for (let q = o.parent; q; q = q.parent) if (q === p) return true; return false; }
+export function markShared(...mats) { mats.flat().forEach(m => { if (!m) return; m.userData.shared = true; for (const k of TEX) if (m[k]) m[k].userData.shared = true; }); }

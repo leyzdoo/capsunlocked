@@ -2,7 +2,7 @@
 // Walk toward the edge and the next block loads — cities, suburbs, small towns, hills, mountains, desert and lakes.
 // Every building is owned by a robot, and robots live and work everywhere.
 import * as THREE from 'three';
-import { bakeGroup } from './bake.js';
+import { bakeGroup, disposeDeep, markShared } from './bake.js';
 import { shopBuilding, buildHouse, tree, streetLight, bench, car, box, shared, SETBACK } from './town.js';
 import { randomSpec } from './homes.js';
 import { mat, rng, signTexture } from './tex.js';
@@ -78,17 +78,28 @@ const LAKE = { x: -20, z: -48, r: 28 };
 const wf = d => d < 56 ? 1 : d > 104 ? 0 : 1 - sstep(56, 104, d);
 export function heightAt(x, z) {
   const ci = Math.round(x / CH), cj = Math.round(z / CH);
-  let amp = 0, ws = 0, lake = 0, sea = 0;
+  let amp = 0, ws = 0, lake = 0;
   for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) {
     const w = wf(Math.abs(x - i * CH)) * wf(Math.abs(z - j * CH)); if (!w) continue;
-    const b = biomeOf(i, j); amp += BIOMES[b].amp * w; ws += w; if (b === 'sea') sea += w;
+    const b = biomeOf(i, j); amp += BIOMES[b].amp * w; ws += w;
     if (b === 'lake') { const d = Math.hypot(x - i * CH - LAKE.x, z - j * CH - LAKE.z); if (d < LAKE.r * 1.3) lake = Math.max(lake, 4.2 * (1 - sstep(LAKE.r * .55, LAKE.r * 1.3, d))); }
   }
-  amp /= ws || 1; sea /= ws || 1;
+  amp /= ws || 1;
+  // the ocean: open water with no roads; the sea floor drops away from the beach at the edge of the nearest land
+  let seaD = 0; const isSea = biomeOf(ci, cj) === 'sea';
+  if (isSea) {
+    const lx = x - ci * CH, lz = z - cj * CH; let d = 1e9;
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+      if ((!di && !dj) || biomeOf(ci + di, cj + dj) === 'sea') continue;
+      const ex = HALF - di * lx, ez = HALF - dj * lz;
+      d = Math.min(d, di && dj ? Math.hypot(Math.max(0, ex), Math.max(0, ez)) : di ? ex : ez);
+    }
+    seaD = 7 * sstep(2, 30, d);
+  }
   const rx = Math.abs(((x - VX) % CH + CH * 1.5) % CH - CH / 2), rz = Math.abs(((z % CH) + CH * 1.5) % CH - CH / 2); // distance to nearest roads
-  const road = sstep(7, 24, Math.min(rx, rz));
+  const road = isSea ? 1 : sstep(7, 24, Math.min(rx, rz));
   let n = fbm(x * .011, z * .011); n = amp > 20 ? Math.pow(n, 1.7) * 1.6 : n;
-  const h = amp * n * road - lake * road - 7 * sstep(.15, .8, sea) * road;
+  const h = amp * n * road - lake * road - seaD;
   if (biomeOf(ci, cj) === 'airport') { const lx = x - ci * CH, lz = z - cj * CH; return h * (1 - sstep(-12, -2, -Math.max(FIELD.x1 - lx, lx - FIELD.x2, FIELD.z1 - lz, lz - FIELD.z2))); }
   return h;
 }
@@ -103,7 +114,7 @@ function groundMat() {
     const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'), r = rng(5);
     x.fillStyle = '#ffffff'; x.fillRect(0, 0, 256, 256);
     for (let i = 0; i < 9000; i++) { const g = 190 + r() * 65; x.fillStyle = `rgb(${g},${g},${g})`; x.fillRect(r() * 256, r() * 256, 1 + r() * 2, 1 + r() * 3); }
-    groundTex = new THREE.CanvasTexture(c); groundTex.wrapS = groundTex.wrapT = THREE.RepeatWrapping; groundTex.repeat.set(40, 40); groundTex.colorSpace = THREE.SRGBColorSpace;
+    groundTex = new THREE.CanvasTexture(c); groundTex.wrapS = groundTex.wrapT = THREE.RepeatWrapping; groundTex.repeat.set(40, 40); groundTex.colorSpace = THREE.SRGBColorSpace; groundTex.userData.shared = true;
   }
   return new THREE.MeshStandardMaterial({ vertexColors: true, map: groundTex, roughness: 1 });
 }
@@ -117,6 +128,7 @@ function mats() {
   M.water = new THREE.MeshStandardMaterial({ color: 0x1d6a9a, roughness: .18, metalness: 0, transparent: true, opacity: .9, envMapIntensity: .35 });
   M.pine = std(0x2a4f2a, .9); M.trunk = std(0x4a3628, 1); M.rock = std(0x8a857c, .95); M.redrock = std(0xb0603a, .95); M.cactus = std(0x3f7a3a, .8);
   M.sand = std(0xd8c08a, 1); M.wood = mat('wood', ['#8a6440', 4, 49], 1, 1);
+  markShared(Object.values(M));
   return M;
 }
 
@@ -175,11 +187,11 @@ export function createWorld(town) {
     for (const [k, c] of chunks) { if (!c.i && !c.j) continue; const dx = Math.max(0, Math.abs(p.x - c.i * CH) - HALF), dz = Math.max(0, Math.abs(p.z - c.j * CH) - HALF); if (Math.hypot(dx, dz) > 190) { unload(c); chunks.delete(k); } }
     // tell the player when they walk into a new block
     const [ci, cj] = chunkAt(p.x, p.z), key = ci + ',' + cj;
-    if (key !== curKey) { const first = curKey == null; curKey = key; W.block = { i: ci, j: cj }; if (!first) toast(blockIcon(ci, cj) + ' ' + blockName(ci, cj) + (ci || cj ? '' : ' — welcome home!')); G.onBlock && G.onBlock(ci, cj); }
+    if (key !== curKey) { const first = curKey == null; curKey = key; W.block = { i: ci, j: cj }; if (!first && !(biomeOf(ci, cj) === 'sea' && W.lastBiome === 'sea')) toast(blockIcon(ci, cj) + ' ' + blockName(ci, cj) + (ci || cj ? '' : ' — welcome home!')); G.onBlock && G.onBlock(ci, cj); W.lastBiome = biomeOf(ci, cj); }
   };
   function unload(c) {
     scene.remove(c.group);
-    c.group.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && o.userData.own !== false) o.geometry.dispose(); });
+    disposeDeep(c.group);
   }
   W.near = p => { const [ci, cj] = chunkAt(p.x, p.z), out = []; for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) { const c = chunks.get(i + ',' + j); if (c) out.push(c); } return out; };
   W.roofAt = (x, z) => { let y = -1e9; for (const c of W.near({ x, z })) for (const r of c.roofs || []) if (x > r.x1 && x < r.x2 && z > r.z1 && z < r.z2) y = Math.max(y, roofY(r, x, z)); return y; }; // top of a skyscraper, if you're over one
@@ -240,7 +252,7 @@ export function createWorld(town) {
       [-4.6, 4.6].forEach(z => { const l = new THREE.Mesh(new THREE.PlaneGeometry(CH, .12), m.white); l.rotation.x = -Math.PI / 2; l.position.set(0, .02, z); g.add(l); }); };
     const roadV = () => { const p = new THREE.Mesh(new THREE.PlaneGeometry(10, CH), m.asphaltV); p.rotation.x = -Math.PI / 2; p.position.set(VX, .014, 0); p.receiveShadow = true; g.add(p);
       [-.1, .1].forEach(x => { [[-HALF, -5.2], [5.2, HALF]].forEach(([a, b]) => { const l = new THREE.Mesh(new THREE.PlaneGeometry(.1, b - a), m.yellow); l.rotation.x = -Math.PI / 2; l.position.set(VX + x, .024, (a + b) / 2); g.add(l); }); }); };
-    roadH(); roadV();
+    if (biome !== 'sea') { roadH(); roadV(); }
     if (biome === 'sea') { const w = new THREE.Mesh(new THREE.PlaneGeometry(CH, CH), m.water); w.rotation.x = -Math.PI / 2; w.position.y = WATER_Y; w.userData.water = true; g.add(w); }
     if (lite) { if (biome === 'lake') { const w = new THREE.Mesh(new THREE.CircleGeometry(LAKE.r * 1.2, 48), m.water); w.rotation.x = -Math.PI / 2; w.position.set(LAKE.x, WATER_Y, LAKE.z); g.add(w); } scene.add(g); return C; }
     if (urban) {
@@ -325,16 +337,9 @@ export function createWorld(town) {
   }
 
   function seaBlock(P) {
-    const { g, r, m, col, hAt, C } = P;
-    // a lighthouse on the causeway corner, rocks in the water, a robot fishing off the causeway
-    const lh = new THREE.Group(), white = std(0xf4f1ea, .5), red = std(0xc0392b, .5);
-    for (let k = 0; k < 5; k++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(1.5 - k * .15, 1.6 - k * .15, 2.4, 20), k % 2 ? red : white); c.position.y = 1.2 + k * 2.4; lh.add(c); }
-    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 1.2, 16), new THREE.MeshBasicMaterial({ color: 0xfff1b0 })); lamp.position.y = 12.6; lamp.userData.noBake = true; lh.add(lamp);
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(1.2, 1.4, 16), std(0x222222, .5)); cap.position.y = 13.9; lh.add(cap);
-    lh.position.set(VX - 9, 0, 9); g.add(lh); col(VX - 10.6, VX - 7.4, 7.4, 10.6, true);
-    for (let k = 0; k < 18; k++) { const x = -78 + r() * 156, z = -78 + r() * 156; if (Math.abs(z) < 12 || Math.abs(x - VX) < 12) continue; const s = 1 + r() * 2.5, rk = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), m.rock); rk.position.set(x, hAt(x, z) + s * .5, z); rk.scale.y = .7; rk.castShadow = true; g.add(rk); }
-    addBot(P, { x: 20, z: -6.4, face: Math.PI, job: 'fishing 🎣', say: 'The sea is huge! If you buy a boat at the Game Store, you can sail all the way out.' });
-    addBot(P, { path: [[-60, 7.6], [40, 7.6]], job: 'walking on the causeway', pause: 3 });
+    const { g, r, m, hAt } = P;
+    // open ocean: just water, and a few rocks poking out of the waves
+    for (let k = 0; k < 10; k++) { const x = -76 + r() * 152, z = -76 + r() * 152; if (hAt(x, z) > WATER_Y - 2) continue; const s = 1 + r() * 2.5, rk = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), m.rock); rk.position.set(x, WATER_Y + s * .25, z); rk.scale.y = .7; rk.castShadow = true; g.add(rk); P.col(x - s * .7, x + s * .7, z - s * .7, z + s * .7); }
   }
   /* things to find: a few in every block, gone for the day once you pick them up */
   function spawnItems(P, biome) {

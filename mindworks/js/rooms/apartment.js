@@ -1,6 +1,7 @@
 // Robot homes. Apartment buildings: a lobby, stairs up to hallways of little apartments — knock and go in to see
 // what each robot is doing. Suburb and country houses: one robot's home.
 import * as THREE from 'three';
+import { disposeDeep } from '../bake.js';
 import { G, toast, modal } from '../game.js';
 import { sofa, table, rug, plant, lamp, shelf, box, std, env } from './common.js';
 import { mat, rng, signTexture } from '../tex.js';
@@ -153,7 +154,7 @@ export async function enter({ player, makeCharacter, data }) {
   const residents = []; for (let f = 1; f <= floors; f++) for (let k = 0; k < 4; k++) { const rr = rng((data.seed || 1) * 31 + f * 7 + k); residents.push({ f, k, name: robotName(rr), act: ACTS[Math.floor(rr() * ACTS.length)], apt: (f + 1) + 'ABCD'[k] }); }
   let group = null, cols = [], acts = [], anim = [], where = null, t = 0, busy = false;
   const ctx = { get group() { return group; }, get cols() { return cols; }, get anim() { return anim; }, makeCharacter, add: (o, x, z, ry = 0, cw = 0, cd = 0) => { o.position.set(x, o.position.y, z); o.rotation.y = ry; group.add(o); if (cw) { const s2 = Math.abs(Math.sin(ry)) > .5, a = s2 ? cd : cw, b = s2 ? cw : cd; cols.push({ x1: x - a / 2, x2: x + a / 2, z1: z - b / 2, z2: z + b / 2 }); } return o; } };
-  function clear() { if (group) { scene.remove(group); group.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) o.geometry.dispose(); }); } group = new THREE.Group(); scene.add(group); cols = []; acts = []; anim = []; }
+  function clear() { if (group) { scene.remove(group); disposeDeep(group); } group = new THREE.Group(); scene.add(group); cols = []; acts = []; anim = []; }
 
   function goLobby(fromStairs) {
     clear(); where = 'lobby'; const w = 12, d = 9;

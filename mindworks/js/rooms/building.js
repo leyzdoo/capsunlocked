@@ -3,9 +3,11 @@
 //  - towers (like Skyline Tower): a lobby with a front desk and an elevator to every floor —
 //    offices, apartments, a cafe, a gym, an arcade, a pool, trampolines… and the roof
 import * as THREE from 'three';
+import { disposeDeep } from '../bake.js';
 import { G, el, toast, openPanel, closePanel } from '../game.js';
 import { sofa, table, rug, plant, shelf, box, std, env, chandelier } from './common.js';
 import { mat, rng, signTexture } from '../tex.js';
+import { makePlane } from '../vehicles.js';
 import { robotName } from '../world.js';
 import { shell, door, caption, robotHome, BOT_COLORS } from './apartment.js';
 
@@ -50,7 +52,7 @@ export async function enter({ player, makeCharacter, data }) {
   let group = null, cols = [], acts = [], anim = [], t = 0, busy = false, H = 3.6, roof = false;
   const add = (o, x, z, ry = 0, cw = 0, cd = 0) => { o.position.set(x, o.position.y, z); o.rotation.y = ry; group.add(o); if (cw) { const s2 = Math.abs(Math.sin(ry)) > .5, a = s2 ? cd : cw, b = s2 ? cw : cd; cols.push({ x1: x - a / 2, x2: x + a / 2, z1: z - b / 2, z2: z + b / 2 }); } return o; };
   const ctx = { get group() { return group; }, get cols() { return cols; }, get anim() { return anim; }, makeCharacter, add };
-  function clear() { if (group) { scene.remove(group); group.traverse(o => { if (o.isMesh && !o.isSkinnedMesh) o.geometry.dispose(); }); } group = new THREE.Group(); scene.add(group); cols = []; acts = []; anim = []; scene.background = new THREE.Color(0x0e0d1c); roof = false; }
+  function clear() { if (group) { scene.remove(group); disposeDeep(group); } group = new THREE.Group(); scene.add(group); cols = []; acts = []; anim = []; scene.background = new THREE.Color(0x0e0d1c); roof = false; }
   function place(p, yaw) { player.root.position.copy(p); player.root.rotation.y = yaw; G.camYawTo && G.camYawTo(yaw + Math.PI); }
   async function move(fn) {
     if (busy) return; busy = true;
@@ -218,6 +220,9 @@ export async function enter({ player, makeCharacter, data }) {
     for (let k = 0; k < 160; k++) { const a = cr() * Math.PI * 2, dist = 40 + cr() * 260, h = 6 + cr() * Math.max(8, -below * .8 - 6); const b = new THREE.Mesh(new THREE.BoxGeometry(10 + cr() * 14, h, 10 + cr() * 14), std([0x8796a8, 0x6d7f93, 0xb8b0a0, 0x9aa8b8][Math.floor(cr() * 4)], .8)); b.position.set(Math.cos(a) * dist, below + h / 2, Math.sin(a) * dist); city.add(b); }
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), std(0x4f8f3a, 1)); ground.rotation.x = -Math.PI / 2; ground.position.y = below; city.add(ground); group.add(city);
     scene.fog = new THREE.Fog(0x8fc4ff, 120, 420);
+    const heli = makePlane('heli'); heli.position.set(-3, 0, -2); heli.rotation.y = Math.PI / 2; group.add(heli); cols.push({ x1: -5, x2: -1, z1: -3.2, z2: -.8 });
+    if (heli.userData.rotor) anim.push(t2 => { heli.userData.rotor.rotation.y = t2 * 1.5; });
+    acts.push({ pos: new THREE.Vector3(-3, 0, 0), r: 2.6, label: '🚁 Fly helicopter', sub: 'Take off from this roof!', fn: () => G.flyFromRoof() });
     const sh = new THREE.Group(); sh.add(box(2.6, 2.9, 2.2, std(0xd8d8d8, .6), 0, 1.45, 0)); add(sh, 6, 5.5, 0, 2.6, 2.2); elevatorDoors(6, 4.35, Math.PI);
     elevatorAct(6, 3.4, 'roof');
     bot(2, 2, 0, robotName(R), 'enjoying the view 🌇', 'You can see the whole city from up here! ' + FLOORS + ' floors up!');
