@@ -75,11 +75,13 @@ function preview(T) {
     T = { ...T };
     const row = el('div', { style: 'display:flex;align-items:center;gap:12px;margin:8px 0 12px;font-weight:800' });
     const lab = el('span', { style: 'min-width:120px;font-family:Fredoka;font-size:22px;color:#ffd34d' }, T.floors + ' floors');
-    const sl = el('input', { type: 'range', min: '5', max: '60', step: '1', value: String(T.floors), style: 'flex:1;height:44px;accent-color:#ffd34d' });
-    row.appendChild(el('span', null, '🏢 How many floors?')); row.appendChild(sl); row.appendChild(lab); card.insertBefore(row, blurb.nextSibling);
+    const sl = el('input', { type: 'range', min: '5', max: '200', step: '1', value: String(T.floors), style: 'flex:1;height:44px;accent-color:#ffd34d' });
+    const nb = el('input', { type: 'number', min: '2', max: '200', value: String(T.floors), style: 'width:76px;min-height:44px;font:700 20px Fredoka,Arial;border-radius:10px;border:2px solid #ffd34d;text-align:center' });
+    row.appendChild(el('span', null, '🏢 How many floors?')); row.appendChild(sl); row.appendChild(nb); row.appendChild(lab); card.insertBefore(row, blurb.nextSibling);
     let redraw = 0;
+    nb.onchange = () => { const v = Math.max(2, Math.min(200, parseInt(nb.value, 10) || T.floors)); sl.value = String(v); sl.oninput(); };
     sl.oninput = () => {
-      T.floors = +sl.value; lab.textContent = T.floors + ' floors'; blurb.textContent = (T.blurb || '').replace(/^\d+ floors/, T.floors + ' floors');
+      T.floors = +sl.value; nb.value = String(T.floors); lab.textContent = T.floors + ' floors'; blurb.textContent = (T.blurb || '').replace(/^\d+ floors/, T.floors + ' floors');
       clearTimeout(redraw); redraw = setTimeout(() => { const np = renderHome(T, 640, 640); pic.src = np.src || ''; if (!np.src) { np.style.cssText = pic.style.cssText; pic.replaceWith(np); pic = np; } }, 120);
     };
     T.blurb = blurb.textContent;

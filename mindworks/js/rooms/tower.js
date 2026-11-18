@@ -107,11 +107,43 @@ export async function enter({ player, makeCharacter, T, door }) {
     return type;
   }
 
+  /* 🍽️ free food in the restaurant: pick something and eat it, bite by bite */
+  const FOODS = ['🍕', '🍔', '🌮', '🍝', '🍣', '🍩', '🥗', '🍦'];
+  let eating = null;
+  function foodSprite(emoji) {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.font = '96px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(emoji, 64, 70);
+    const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, depthTest: false })); sp.renderOrder = 9; return sp;
+  }
+  function eat(emoji) {
+    closePanel(); if (eating) return;
+    const sp = foodSprite(emoji); scene.add(sp); eating = { sp, t0: t };
+  }
+  G.foodMenu = () => openPanel('🍽️ Free food!', body => {
+    const g = el('div', { style: 'display:grid;grid-template-columns:repeat(4,1fr);gap:10px' });
+    FOODS.forEach(f => { const b = el('button', { class: 'btn ghost', style: 'font-size:44px;min-height:76px' }, f); b.onclick = () => eat(f); g.appendChild(b); });
+    body.appendChild(g);
+  });
+  function eatTick() {
+    if (!eating) return;
+    const k = (t - eating.t0) / 3.2, p = player.root.position, yaw = player.root.rotation.y;
+    if (k >= 1) { scene.remove(eating.sp); eating.sp.material.map.dispose(); eating.sp.material.dispose(); eating = null; return; }
+    const bite = Math.floor(k * 4), ph = (k * 4) % 1, up = Math.sin(Math.min(1, ph * 1.4) * Math.PI / 2); // hand → mouth, four bites
+    eating.sp.position.set(p.x + Math.sin(yaw) * (.55 - .2 * up), p.y + .9 + .6 * up, p.z + Math.cos(yaw) * (.55 - .2 * up));
+    const s = .75 * (1 - bite * .22 - (ph > .5 ? .1 : 0)); eating.sp.scale.set(s, s, 1);
+    player.root.scale.y = 1 + (ph > .55 && ph < .95 ? Math.sin((ph - .55) * 25) * .025 : 0); // a little chew
+  }
   function openElevator() {
     openPanel('🛗 Elevator — ' + T.name, body => {
       body.appendChild(el('p', { style: 'color:var(--muted);font-weight:700;margin:0 0 12px' }, 'Pick a floor. ' + (T.real ? 'This tower is set up like a real skyscraper.' : 'Every floor in this tower is something fun!')));
+      const tall = T.floors > 40;
+      if (tall) {
+        const row = el('div', { style: 'display:flex;gap:8px;margin:0 0 12px' }), inp = el('input', { type: 'number', min: 0, max: T.floors + 1, placeholder: 'Floor number (1–' + T.floors + ')', style: 'flex:1;min-height:48px;font:700 18px Fredoka,Arial;padding:0 12px;border-radius:12px;border:2px solid #ccd' });
+        const go = el('button', { class: 'btn go small' }, 'Go'); go.onclick = () => { const v = parseInt(inp.value, 10); if (v >= 0 && v <= T.floors + 1) ride(v); }; inp.onkeydown = e => { if (e.key === 'Enter') go.onclick(); };
+        row.appendChild(inp); row.appendChild(go); body.appendChild(row);
+      }
       const g = el('div', { style: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px' });
       for (let k = T.floors + 1; k >= 0; k--) {
+        if (tall && k !== T.floors + 1 && k !== T.floors && k !== 0 && k % 10 !== 0 && floorType(T, k) !== 'restaurant') continue;
         const ty = floorType(T, k), b = el('button', { class: 'btn ' + (k === floorN ? 'go' : 'ghost') + ' small', style: 'justify-content:flex-start;min-height:52px' }, '<b style="min-width:42px;display:inline-block">' + (k === 0 ? 'L' : k > T.floors ? 'R' : k) + '</b>' + ICONS[ty] + ' ' + NAMES[ty]);
         b.onclick = () => ride(k); g.appendChild(b);
       }
@@ -146,8 +178,8 @@ export async function enter({ player, makeCharacter, T, door }) {
       { pos: new THREE.Vector3(-W / 2 + 3, 0, -D / 2 + 1), r: 1.6, label: '🚪 Back patio door', sub: 'Go out to the backyard', fn: () => G.backToTown('homeBack') }
     ] : []),
     buttons: [{ label: '🛗 Elevator', fn: openElevator, cls: 'primary' }],
-    update(dt) { t += dt; anim.forEach(f => f(t, dt)); },
-    exit() { if (sky.material.map) sky.material.map.dispose(); }
+    update(dt) { t += dt; anim.forEach(f => f(t, dt)); eatTick(); },
+    exit() { if (eating) { scene.remove(eating.sp); eating = null; } player.root.scale.y = 1;  if (sky.material.map) sky.material.map.dispose(); }
   };
 }
 const addFn = (group, cols) => (o, x, z, ry = 0, cw = 0, cd = 0) => { o.position.set(x, o.position.y, z); o.rotation.y = ry; group.add(o); if (cw) { const s = Math.abs(Math.sin(ry)) > .5, a = s ? cd : cw, b = s ? cw : cd; cols.push({ x1: x - a / 2, x2: x + a / 2, z1: z - b / 2, z2: z + b / 2 }); } return o; };
@@ -210,13 +242,15 @@ const FLOORS = {
     [-1, 1].forEach(s => add(rug(2, 3, s < 0 ? '#2f6fd8' : '#d04a3a'), 6 + s * 1.5, 2));
     const bag = new THREE.Mesh(new THREE.CylinderGeometry(.35, .35, 1.4, 16), std(0xd04a3a, .7)); bag.position.y = 1.4; add(bag, 9.5, 5.5, 0, .7, .7);
   },
-  restaurant({ add, r }) {
+  restaurant({ add, r, acts }) {
     for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
       const x = -8 + i * 5.5, z = -1.5 + j * 3.3, t2 = new THREE.Group();
       const top = new THREE.Mesh(new THREE.CylinderGeometry(.7, .7, .05, 20), std(0xf4f1ea, .6)); top.position.y = .76; t2.add(top); t2.add(box(.1, .76, .1, std(0x222222), 0, .38, 0));
       add(t2, x, z, 0, 1.2, 1.2); [0, Math.PI].forEach(a => add(chair(0x7a3b3b), x + Math.sin(a) * 1, z + Math.cos(a) * 1, a + Math.PI));
     }
     add(counter(6, '#3a2a20'), 7, -4.6, 0, 6, .9); add(plant(1.4), W / 2 - .8, D / 2 - .8, 0, .5, .5);
+    acts.push({ pos: new THREE.Vector3(7, 0, -3.2), r: 2.6, label: '🍽️ Get some food', sub: 'It’s free!', fn: () => G.foodMenu && G.foodMenu() });
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) acts.push({ pos: new THREE.Vector3(-8 + i * 5.5, 0, -1.5 + j * 3.3), r: 1.9, label: '🍽️ Eat at this table', sub: 'Free food', fn: () => G.foodMenu && G.foodMenu() });
   },
   pool({ add, group, cols }) {
     group.add(box(14, .3, 8, std(0xefece6, .4), -1, .15, 2));

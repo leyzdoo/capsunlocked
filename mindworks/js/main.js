@@ -107,7 +107,7 @@ async function boot() {
     heightAt: p => { if (ride && ride.type === 'plane') return p.y; if (ride && ride.type === 'boat') return WATER_Y + .05; const r = roofAt(p.x, p.z); return r > p.y - 1.5 && r < p.y + 1.5 ? r : world.heightAt(p.x, p.z); },
     blocked: p => ride && ride.type === 'plane' ? false : onRoofEdge(p) ? true : ride && ride.type === 'boat' ? world.heightAt(p.x, p.z) > WATER_Y - .2 : world.blocked(p),
     camClamp(p) { p.y = Math.max(p.y, world.heightAt(p.x, p.z) + .5); },
-    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), boatActs(), parkedActs(), stuffActs()); },
+    interact() { if (ride && ride.type === 'plane') return []; if (ride && ride.type === 'boat') return boatActs(); return town.doors.map(d => ({ pos: d.pos, r: 2.0, ...doorAction(d) })).concat(world.interact(player.root.position), roofActs(), boatActs(), parkedActs(), stuffActs()); },
     update(dt) { secretHydrant(); const yy = Math.max(0, player.root.position.y); town.scene.fog.near = 60 + yy * .8; town.scene.fog.far = 175 + yy * 1.4; const fr = 230 + yy * 1.6; if (Math.abs(camera.far - fr) > 5) { camera.far = fr; camera.updateProjectionMatrix(); } // see farther from up high
       town.followShadow(player.root.position); world.update(dt, player.root.position); if (ride) rideTick(dt); syncT += dt; if (syncT > .5) { syncT = 0; syncPlanes(); syncStuff(); } }
   };
@@ -350,6 +350,20 @@ function nearPoint(test) { // look around you for water (or land)
   return null;
 }
 let boatCache = { t: 0, acts: [] };
+/* 🛗 up on a skyscraper roof: an elevator takes you back down to the street */
+function roofActs() {
+  if (ride || !world) return [];
+  const p = player.root.position, ground = world.heightAt(p.x, p.z);
+  if (p.y < ground + 2.5 || Math.abs(roofAt(p.x, p.z) - p.y) > 1.5) return [];
+  const roofs = (town.roofs || []).concat(...world.near(p).map(c => c.roofs || []));
+  const R = roofs.find(r => p.x > r.x1 && p.x < r.x2 && p.z > r.z1 && p.z < r.z2); if (!R) return [];
+  return [{ pos: p.clone(), r: 6, label: '🛗 Take the elevator down', sub: 'Back to the street', fn: () => {
+    const cx = (R.x1 + R.x2) / 2, cz = (R.z1 + R.z2) / 2, m = 2.4;
+    const tries = [[cx, R.z2 + m], [cx, R.z1 - m], [R.x2 + m, cz], [R.x1 - m, cz], [R.x2 + m, R.z2 + m], [R.x1 - m, R.z1 - m]];
+    const spot = tries.find(([x, z]) => !world.blocked({ x, z })) || tries[0];
+    p.x = spot[0]; p.z = spot[1]; p.y = world.heightAt(p.x, p.z); toast('🛗 Ding! Ground floor.');
+  } }];
+}
 function boatActs() {
   const now = performance.now(); if (now - boatCache.t < 250) return boatCache.acts; boatCache.t = now;
   const u = G.S.data.up, p = player.root.position; let acts = [];

@@ -61,6 +61,9 @@ function towerSpec(r, q, color, big, small, seed, i) {
   const gl = color && GLASS_WORDS[color] ? GLASS_WORDS[color] : pick(r, ['#3b6f9c', '#2f5a7a', '#4a6f86', '#3f7f6a', '#22262c', '#8a97a6', '#a8843a']);
   const frame = skin === 'glass' ? pick(r, ['#2a2d33', '#9aa3ad', '#1d2128', '#c9ccd1']) : skin === 'stone' ? (color ? COLOR_WORDS[color] : pick(r, ['#cfc6b4', '#b9b2a6', '#ddd3c0'])) : '#8e4a38';
   let floors = Math.round(12 + r() * 24); if (big) floors += 14; if (small) floors = Math.round(6 + r() * 6);
+  // a number you type is the number of floors you get: "100 story skyscraper", "skyscraper with 80 floors"
+  const nm = q.match(/(\d{1,4})\s*[- ]?\s*(?:floors?|stor(?:y|ies|eys?)|levels?|stories)/) || q.match(/(?:floors?|stor(?:y|ies|eys?)|levels?)\s*[:=]?\s*(\d{1,4})/) || q.match(/\b(\d{1,4})\b/);
+  const typed = nm ? parseInt(nm[1], 10) : 0; if (typed >= 2) floors = Math.min(200, typed);
   const crown = has(q, 'helicopter', 'helipad') ? 'helipad' : has(q, 'spire', 'pointy') ? 'spire' : pick(r, ['flat', 'spire', 'helipad', 'dome', 'crown', 'flat']);
   const real = i % 2 === 0; // half look like real skyscrapers inside, half are fun
   const adj = { glass: pick(r, ['Glass', 'Sky', 'Crystal', 'Skyline', 'Mirror']), stone: pick(r, ['Grand', 'Old Town', 'Empire', 'Stone']), brick: pick(r, ['Brick', 'Red Brick', 'Union']), gold: pick(r, ['Golden', 'Gold']) }[skin];
