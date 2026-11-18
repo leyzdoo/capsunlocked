@@ -10,7 +10,9 @@ export function rng(seed) {
   let a = seed >>> 0;
   return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
-function cv(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+// phones: paint every texture at half size (a quarter of the memory); drawing code still uses full-size coordinates
+const PHONE = /iPhone|iPod|Android.+Mobile/.test(navigator.userAgent) || Math.min(screen.width, screen.height) < 500, K = PHONE ? .5 : 1;
+function cv(w, h) { const c = document.createElement('canvas'); c.width = Math.round(w * K); c.height = Math.round(h * K); if (K !== 1) c.getContext('2d').scale(K, K); return c; }
 function hex(c) { return '#' + new THREE.Color(c).getHexString(); }
 function shade(color, amt) { const c = new THREE.Color(color); const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, hsl.s, Math.max(0, Math.min(1, hsl.l + amt))); return '#' + c.getHexString(); }
 function noise(ctx, w, h, r, n, alpha, light) {

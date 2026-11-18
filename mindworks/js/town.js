@@ -572,7 +572,7 @@ export function createTown(renderer) {
   scene.environment = pmrem.fromScene(envScene).texture;
   const hemi = new THREE.HemisphereLight(0xdfeaff, 0x5a5040, .55); scene.add(hemi);
   const dir = new THREE.DirectionalLight(0xfff1dc, 2.6); dir.position.copy(sun).multiplyScalar(60);
-  dir.castShadow = true; dir.shadow.mapSize.set(2048, 2048); const sc = dir.shadow.camera; sc.left = -38; sc.right = 38; sc.top = 38; sc.bottom = -38; sc.near = 1; sc.far = 160; dir.shadow.bias = -.0004; dir.shadow.normalBias = .03;
+  dir.castShadow = true; dir.shadow.mapSize.setScalar(/iPhone|iPod|Android.+Mobile/.test(navigator.userAgent) || Math.min(screen.width, screen.height) < 500 ? 1024 : 2048); const sc = dir.shadow.camera; sc.left = -38; sc.right = 38; sc.top = 38; sc.bottom = -38; sc.near = 1; sc.far = 160; dir.shadow.bias = -.0004; dir.shadow.normalBias = .03;
   scene.add(dir); scene.add(dir.target);
 
   const white = new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: .8 });

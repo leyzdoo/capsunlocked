@@ -10,6 +10,8 @@ import { makeCharacter } from './character.js';
 import { G, toast } from './game.js';
 import { makeItem, makePlane, BIOME_ITEMS, today } from './vehicles.js';
 
+// on phones only the block you're in (plus the edge you're walking toward) is fully built, to save memory
+const PHONE = typeof navigator !== 'undefined' && (/iPhone|iPod|Android.+Mobile/.test(navigator.userAgent) || Math.min(screen.width, screen.height) < 500);
 export const CH = 160, HALF = 80, VX = 70;     // block size; the north–south road runs at local x = 70 in every block
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const std = (c, r = .7, m = 0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
@@ -160,7 +162,7 @@ export function createWorld(town) {
 
   function chunkAt(x, z) { return [Math.round(x / CH), Math.round(z / CH)]; }
   function needed(p) {
-    const [ci, cj] = chunkAt(p.x, p.z), lx = p.x - ci * CH, lz = p.z - cj * CH, T = 82, out = [[ci, cj]];
+    const [ci, cj] = chunkAt(p.x, p.z), lx = p.x - ci * CH, lz = p.z - cj * CH, T = PHONE ? 40 : 82, out = [[ci, cj]];
     const dx = lx > HALF - T ? 1 : lx < -HALF + T ? -1 : 0, dz = lz > HALF - T ? 1 : lz < -HALF + T ? -1 : 0;
     if (dx) out.push([ci + dx, cj]); if (dz) out.push([ci, cj + dz]); if (dx && dz) out.push([ci + dx, cj + dz]);
     return out;

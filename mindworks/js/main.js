@@ -14,8 +14,10 @@ import { setAnisotropy } from './tex.js';
 import { ROOMS } from './rooms/index.js';
 
 const canvas = $('gl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+// phones have far less memory than iPads: draw fewer pixels and skip antialiasing there
+const PHONE = /iPhone|iPod|Android.+Mobile/.test(navigator.userAgent) || Math.min(screen.width, screen.height) < 500;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !PHONE, powerPreference: PHONE ? 'default' : 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, PHONE ? 1.25 : 1.75));
 renderer.setSize(innerWidth, innerHeight, false);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95;
