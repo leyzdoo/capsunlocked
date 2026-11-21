@@ -21,7 +21,9 @@ const signedIn = () => !!me.token;
 /* ---------------- renderer ---------------- */
 const canvas = $('gl');
 const PHONE = /iPhone|iPod|Android.+Mobile/.test(navigator.userAgent) || Math.min(screen.width, screen.height) < 500;
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: !PHONE, powerPreference: PHONE ? 'default' : 'high-performance' });
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: !PHONE, powerPreference: PHONE ? 'default' : 'high-performance' }); }
+catch (e) { $('loading').innerHTML = '<div style="max-width:420px;text-align:center;padding:20px">This browser has 3D graphics (WebGL) turned off, so the town can\'t be drawn. Try Safari or Chrome on an iPad, or turn on "Use graphics acceleration" in Chrome settings → System, then reload.</div>'; throw e; }
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, PHONE ? 1.25 : 1.75));
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95; renderer.outputColorSpace = THREE.SRGBColorSpace;
