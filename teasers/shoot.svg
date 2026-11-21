@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 440" width="780" height="440">
+<rect width="780" height="440" fill="#17140f"/>
+<rect x="18" y="18" width="744" height="404" rx="14" fill="none" stroke="#a08a5f" stroke-opacity=".45" stroke-width="2"/>
+<g transform="translate(300 22) scale(.68)">
+<path d="M390 420 L150 180 A340 340 0 0 1 630 180 Z" fill="#2f6b34"/>
+<path d="M390 420 L190 220 A283 283 0 0 1 590 220 Z" fill="#37793c"/>
+<path d="M150 180 A340 340 0 0 1 630 180" fill="none" stroke="#ece4d3" stroke-opacity=".8" stroke-width="6"/>
+<path d="M390 220 L500 320 L390 420 L280 320 Z" fill="#b07d4b"/>
+<path d="M390 270 L450 320 L390 370 L330 320 Z" fill="#37793c"/>
+<circle cx="390" cy="322" r="14" fill="#b07d4b"/>
+<g fill="#ece4d3"><rect x="490" y="310" width="20" height="20" rx="3"/><rect x="380" y="210" width="20" height="20" rx="3"/><rect x="270" y="310" width="20" height="20" rx="3"/><rect x="380" y="402" width="16" height="14" rx="3"/></g>
+<g fill="#5b84c9"><circle cx="250" cy="160" r="12"/><circle cx="390" cy="110" r="12"/><circle cx="530" cy="160" r="12"/><circle cx="460" cy="250" r="12"/><circle cx="320" cy="250" r="12"/></g>
+<circle cx="405" cy="388" r="12" fill="#d4a63a"/>
+<path d="M394 392 L466 336" stroke="#8a5a2b" stroke-width="9" stroke-linecap="round"/>
+<path d="M412 300 Q460 160 560 96" fill="none" stroke="#ece4d3" stroke-width="3" stroke-dasharray="8 9" stroke-opacity=".75"/>
+<circle cx="562" cy="88" r="10" fill="#ece4d3"/>
+</g>
+<text x="48" y="352" font-family="'Special Elite','Courier New',monospace" font-size="54" fill="#ece4d3">Shoot</text>
+<rect x="48" y="368" width="40" height="3" fill="#d4a63a"/>
+<text x="48" y="398" font-family="'IBM Plex Mono',ui-monospace,Menlo,monospace" font-size="16" letter-spacing="2" fill="#a08a5f">SWING. KICK. SHOOT.</text>
+</svg>
