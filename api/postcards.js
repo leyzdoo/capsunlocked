@@ -62,9 +62,14 @@ module.exports = function postcards(req, res) {
   res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
-  const encodedKey = process.env.POSTCARDS_KEY || '';
+  const encodedKey = process.env.POSTCARDS_KEY?.trim() || '';
   const password = process.env.POSTCARDS_PASSWORD || '';
-  if (!/^[A-Za-z0-9_-]{43}$/.test(encodedKey) || !password) {
+  const validKey = /^[A-Za-z0-9_-]{43}$/.test(encodedKey);
+  if (!validKey || !password) {
+    console.error('Postcards configuration is incomplete.', {
+      key: !encodedKey ? 'missing' : validKey ? 'valid' : 'invalid format',
+      password: password ? 'configured' : 'missing',
+    });
     return res.status(503).send('Postcards are temporarily unavailable.');
   }
   const key = Buffer.from(encodedKey, 'base64url');
@@ -98,6 +103,7 @@ module.exports = function postcards(req, res) {
     const html = Buffer.concat([decipher.update(encrypted.subarray(28)), decipher.final()]);
     return res.status(200).send(html);
   } catch {
+    console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');
   }
 };
