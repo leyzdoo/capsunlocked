@@ -13,7 +13,20 @@
       "permanent": false
     }
   ],
+  "functions": {
+    "api/postcards.js": {
+      "includeFiles": "postcards-data/postcards.aes"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/postcards",
+      "destination": "/api/postcards"
+    },
+    {
+      "source": "/postcards.html",
+      "destination": "/api/postcards"
+    },
     {
       "source": "/:store([tT][jJ])",
       "destination": "/TJ"
