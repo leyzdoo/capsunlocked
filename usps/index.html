@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'self'; base-uri 'none'; form-action 'self'">
+<title>Post Office</title>
+<style>
+:root{color-scheme:light;--paper:#f4efe5;--ink:#302820;--accent:#813c32;--line:#cdbfaa;font:16px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+*{box-sizing:border-box}body{margin:0}main{max-width:1120px;margin:auto;padding:32px clamp(16px,4vw,44px) 48px}
+header{margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:16px}h1,h2{font-family:Georgia,serif;font-weight:400;margin:0}h1{font-size:clamp(2.25rem,5vw,3.5rem);line-height:1.05}h2{font-size:1.45rem;margin-bottom:.7rem}
+p{margin:.5rem 0 0}.workspace{display:grid;grid-template-columns:minmax(0,19rem) minmax(0,1fr);gap:clamp(20px,4vw,44px);align-items:start}
+fieldset{border:0;margin:0;padding:0;min-width:0}fieldset+fieldset{margin-top:.85rem}legend,label{font-weight:650}label{display:block;margin:.45rem 0 .15rem}select,input,textarea,button{font:inherit;color:inherit}select,input:not([type=range]),textarea{width:100%;min-width:0}select,textarea,input[type=text]{background:#fffdf7;border:1px solid #a99984;border-radius:.35rem;padding:.4rem .55rem}textarea{resize:vertical}.hint{font-size:.875rem;color:#655749}
+button{cursor:pointer;background:#fffdf7;border:1px solid #a99984;border-radius:.35rem;padding:.42rem .7rem}button.primary{background:var(--accent);border-color:var(--accent);color:white}button:disabled{opacity:.55;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.actions,.photo-tools,.mail-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.7rem}
+.preview{background:#e8dece;border:1px solid var(--line);border-radius:.8rem;padding:clamp(12px,3vw,28px);min-height:14rem}.mock-card{display:grid;gap:.8rem;justify-items:stretch}
+.front{aspect-ratio:3/2;overflow:hidden;background:#d8c9b4;border-radius:.3rem;display:grid;grid-template:minmax(0,1fr)/minmax(0,1fr);place-items:center;color:#574a3c}.front.portrait{aspect-ratio:2/3;width:min(100%,20rem);justify-self:center}.front img{width:100%;height:100%;object-fit:cover;min-height:0}
+.paper,.envelope,.telegram{background:#fffaf0;border:1px solid #cabca5;border-radius:.25rem;box-shadow:0 4px 12px #54381112;padding:.95rem}
+.paper{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.8rem}.paper img{width:100%;display:block;object-fit:contain;max-height:260px}.writing{font:1rem/1.55 "Courier New",monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.mark{align-self:start;border:2px double #8b4a3d;color:#713d32;padding:.3rem .4rem;border-radius:50%;font:.67rem/1.3 "Courier New",monospace;text-align:center;white-space:pre-wrap;transform:rotate(-8deg)}
+.envelope{background:#f4e7cb;min-height:9rem;display:grid;place-items:center;text-align:center;font:1.35rem Georgia,serif}.prints{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:.75rem}.prints img{display:block;width:100%;height:auto;align-self:start;background:#fff;border:.55rem solid #fff;box-shadow:0 3px 10px #48301522}
+.telegram{background:#f9e7b8;border-top:.4rem solid #843e32}.telegram h3{font:700 .92rem/1.3 "Courier New",monospace;letter-spacing:.25em;color:#713d32;border-bottom:1px solid #a47b55;padding-bottom:.5rem;margin:0 0 .7rem}.test{border-top:1px solid var(--line);margin-top:1.2rem;padding-top:1rem}.test p{font-size:.92rem}.badge{font-weight:700;color:var(--accent)}[hidden]{display:none!important}
+@media(max-width:720px){.workspace{grid-template-columns:1fr}}
+
+.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1rem}.tabs button[aria-current]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.signin{max-width:24rem;margin:2rem auto}.panel{margin-bottom:1rem}.mail-list{display:grid;gap:.65rem}.mail-row{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap;background:#fffaf0;border:1px solid var(--line);border-radius:.45rem;padding:.6rem .8rem}.mail-row p{margin:0}.read-actions{margin:.75rem 0}.actions [type=file]{width:auto}.notice{min-height:1.5em}.paper.retained{max-width:28rem}
+</style>
+</head>
+<body>
+<main>
+<header class="topline">
+  <div><h1>Post Office</h1><p class="hint" id="account"></p></div>
+  <button id="signout" type="button" hidden>Sign out</button>
+</header>
+<p id="notice" class="notice" role="status" aria-live="polite"></p>
+<form id="login" class="signin" hidden>
+  <h2>Sign in</h2>
+  <label for="email">Email</label><input id="email" type="email" autocomplete="username" required maxlength="254">
+  <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required maxlength="256">
+  <div class="actions"><button type="submit" class="primary">Open post office</button></div>
+</form>
+<div id="post-office" hidden>
+<nav class="tabs" aria-label="Post office">
+  <button type="button" data-page="inbox">Mailbox <span id="new-count"></span></button>
+  <button type="button" data-page="compose">Compose</button>
+  <button type="button" data-page="drafts">Drafts</button>
+  <button type="button" data-page="sent">Sent</button>
+  <button type="button" data-page="basket">Basket</button>
+</nav>
+<section id="mail-panel" class="panel" aria-labelledby="mail-heading">
+  <h2 id="mail-heading">Mailbox</h2>
+  <div id="mail-list" class="mail-list"></div>
+</section>
+<section id="reader" class="panel" aria-labelledby="reader-title" hidden>
+  <h2 id="reader-title">Letter</h2>
+  <div id="read-actions" class="actions read-actions"></div>
+  <div class="preview" id="read-preview"></div>
+</section>
+<div class="workspace" id="compose-panel" hidden>
+<form id="composer">
+<h2>Compose</h2>
+<label for="format">Mail format</label>
+<select id="format"><option value="postcard">Postcard</option><option value="envelope">Photo envelope</option><option value="telegram">Telegram</option></select>
+<p class="hint" id="recipient"></p>
+<fieldset id="frontFields">
+<legend>Postcard front</legend>
+<label for="photo">Front image</label><input id="photo" type="file" accept="image/*">
+<label for="orientation">Orientation</label>
+<select id="orientation"><option value="landscape">Horizontal</option><option value="portrait">Vertical</option></select>
+<div id="positionFields" hidden><label for="fit">Image fit</label><select id="fit"><option value="cover">Fill the card</option><option value="contain">Show the whole image</option></select>
+<label for="horizontal">Horizontal crop position</label><input id="horizontal" type="range" min="0" max="100" value="50">
+<label for="vertical">Vertical crop position</label><input id="vertical" type="range" min="0" max="100" value="50"></div>
+</fieldset>
+<fieldset id="envelopeFields" hidden>
+<legend>Photo prints</legend><label for="photos">Photos to enclose</label><input id="photos" type="file" accept="image/*" multiple>
+<p class="hint">White-bordered matte print preview. Choose up to eight photos.</p>
+</fieldset>
+<fieldset>
+<legend id="writingLegend">Message</legend>
+<div id="writingChoice"><label for="writingMode">Writing style</label><select id="writingMode"><option value="typewriter">Typewriter</option><option value="handwritten">Handwritten image</option></select></div>
+<div id="typedFields"><label for="message">Type your message</label><textarea id="message" rows="5" maxlength="5000"></textarea></div>
+<div id="scanFields" hidden><label for="scan">Image of your handwriting</label><input id="scan" type="file" accept="image/*"></div>
+</fieldset>
+<fieldset id="postmarkFields">
+<label for="postmark">Postmark text</label><input id="postmark" type="text" maxlength="60" placeholder="Optional">
+</fieldset>
+<div class="actions">
+<button type="button" id="new-draft">New draft</button>
+<button type="button" id="save">Save draft</button>
+<button type="button" class="primary" id="send">Send letter</button>
+</div>
+<details><summary>Import a draft from the standalone composer</summary>
+<label for="import">Draft file</label><input id="import" type="file" accept=".json,application/json">
+</details>
+<p class="hint" id="status" role="status"></p>
+</form>
+<section aria-labelledby="previewTitle">
+<h2 id="previewTitle">Preview</h2>
+<div class="preview" id="preview"></div>
+</section>
+</div>
+</div>
+</main>
+<script src="/usps/composer.js" defer></script>
+</body>
+</html>
