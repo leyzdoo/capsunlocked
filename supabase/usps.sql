@@ -1,5 +1,9 @@
 begin;
 
+create schema usps_private;
+revoke all on schema usps_private from public, anon;
+grant usage on schema usps_private to authenticated;
+
 create table if not exists public.usps_members (
   id uuid primary key references auth.users(id) on delete restrict,
   mailbox_slot smallint not null unique check (mailbox_slot in (1, 2)),
@@ -38,19 +42,20 @@ alter table public.usps_deliveries enable row level security;
 revoke all on public.usps_members, public.usps_letters, public.usps_deliveries from anon, authenticated;
 grant select on public.usps_members, public.usps_letters, public.usps_deliveries to authenticated;
 
-drop policy if exists usps_member_is_self on public.usps_members;
 create policy usps_member_is_self on public.usps_members for select to authenticated
   using (id = (select auth.uid()));
 
-drop policy if exists usps_letter_participants on public.usps_letters;
 create policy usps_letter_participants on public.usps_letters for select to authenticated
   using (sender_id = (select auth.uid()) or (recipient_id = (select auth.uid()) and sent_at is not null));
 
-drop policy if exists usps_delivery_participants on public.usps_deliveries;
 create policy usps_delivery_participants on public.usps_deliveries for select to authenticated
-  using (exists (select 1 from public.usps_letters where id = letter_id));
+  using (exists (
+    select 1 from public.usps_letters l where l.id = usps_deliveries.letter_id
+      and (l.sender_id = (select auth.uid())
+        or (l.recipient_id = (select auth.uid()) and l.sent_at is not null))
+  ));
 
-create or replace function public.usps_mailbox()
+create or replace function usps_private.usps_mailbox()
 returns jsonb
 language plpgsql stable security definer set search_path = ''
 as $$
@@ -84,7 +89,7 @@ begin
 end;
 $$;
 
-create or replace function public.usps_save_draft(p_id uuid, p_draft jsonb)
+create or replace function usps_private.usps_save_draft(p_id uuid, p_draft jsonb)
 returns void
 language plpgsql security definer set search_path = ''
 as $$
@@ -103,7 +108,7 @@ begin
 end;
 $$;
 
-create or replace function public.usps_deliver(p_id uuid, p_again boolean)
+create or replace function usps_private.usps_deliver(p_id uuid, p_again boolean)
 returns void
 language plpgsql security definer set search_path = ''
 as $$
@@ -122,7 +127,7 @@ begin
 end;
 $$;
 
-create or replace function public.usps_receive(p_id uuid, p_file boolean)
+create or replace function usps_private.usps_receive(p_id uuid, p_file boolean)
 returns void
 language plpgsql security definer set search_path = ''
 as $$
@@ -136,7 +141,7 @@ begin
 end;
 $$;
 
-create or replace function public.usps_send(p_id uuid, p_draft jsonb)
+create or replace function usps_private.usps_send(p_id uuid, p_draft jsonb)
 returns void
 language plpgsql security definer set search_path = ''
 as $$
@@ -144,10 +149,23 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_id::text, 0));
   if exists(select 1 from public.usps_letters
     where id=p_id and sender_id=auth.uid() and sent_at is not null) then return; end if;
-  perform public.usps_save_draft(p_id,p_draft);
-  perform public.usps_deliver(p_id,false);
+  perform usps_private.usps_save_draft(p_id,p_draft);
+  perform usps_private.usps_deliver(p_id,false);
 end;
 $$;
+
+create function public.usps_mailbox() returns jsonb language sql stable security invoker set search_path = '' as $$ select usps_private.usps_mailbox() $$;
+create function public.usps_save_draft(p_id uuid, p_draft jsonb) returns void language sql security invoker set search_path = '' as $$ select usps_private.usps_save_draft(p_id,p_draft) $$;
+create function public.usps_deliver(p_id uuid, p_again boolean) returns void language sql security invoker set search_path = '' as $$ select usps_private.usps_deliver(p_id,p_again) $$;
+create function public.usps_receive(p_id uuid, p_file boolean) returns void language sql security invoker set search_path = '' as $$ select usps_private.usps_receive(p_id,p_file) $$;
+create function public.usps_send(p_id uuid, p_draft jsonb) returns void language sql security invoker set search_path = '' as $$ select usps_private.usps_send(p_id,p_draft) $$;
+
+revoke all on function usps_private.usps_mailbox(), usps_private.usps_save_draft(uuid,jsonb),
+  usps_private.usps_deliver(uuid,boolean), usps_private.usps_receive(uuid,boolean),
+  usps_private.usps_send(uuid,jsonb) from public, anon;
+grant execute on function usps_private.usps_mailbox(), usps_private.usps_save_draft(uuid,jsonb),
+  usps_private.usps_deliver(uuid,boolean), usps_private.usps_receive(uuid,boolean),
+  usps_private.usps_send(uuid,jsonb) to authenticated;
 
 revoke all on function public.usps_mailbox(), public.usps_save_draft(uuid,jsonb),
   public.usps_deliver(uuid,boolean), public.usps_receive(uuid,boolean),
