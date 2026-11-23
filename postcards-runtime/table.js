@@ -169,7 +169,7 @@
       turns = 0;
       card.classList.remove('is-close');
       card.classList.toggle('portrait-view', Boolean(item.portraitCover));
-      card.classList.toggle('quinault', item.id === 'quinault-lodge-nov-22-2026');
+      card.classList.toggle('portrait-postcard', Boolean(item.portraitCover));
       card.classList.toggle('conference-envelope', Boolean(item.envelopeArt));
       card.style.removeProperty('--turn');
       card.setAttribute('aria-label', item.title + (item.contents ? '. Open envelope' : '. Bring closer'));
@@ -350,7 +350,7 @@
       button.type = 'button';
       const thumbnail = document.createElement('span');
       thumbnail.className = item.portraitCover ? 'mail-thumbnail portrait-view' : 'mail-thumbnail';
-      thumbnail.classList.toggle('quinault', item.id === 'quinault-lodge-nov-22-2026');
+      thumbnail.classList.toggle('portrait-postcard', Boolean(item.portraitCover));
       const image = new Image();
       image.loading = 'lazy';
       setArtwork(image, item.cover, '', item.coverCrop, item.scanSize, item.portraitCover);

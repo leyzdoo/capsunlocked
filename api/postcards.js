@@ -88,52 +88,83 @@ async function installQuinault(req, res) {
   }
 }
 
-const conferencePath = 'postcards/waffle-house-conference.json';
-const conferenceDigest = '4d9a53ebff8abffb36c3ab44c7a645167b52ea5b6deca7f6ffeb3ba341b01fd6';
+const privateMail = {
+  conference: {
+    path: 'postcards/waffle-house-conference.json',
+    digest: '4d9a53ebff8abffb36c3ab44c7a645167b52ea5b6deca7f6ffeb3ba341b01fd6',
+    label: 'conference envelope',
+  },
+  sauna: {
+    path: 'postcards/pacific-beach-sauna.json',
+    digest: '7a6c0bdba85f6725a112238ba98b700fe8637a07270f6160b761380b13371a78',
+    label: 'Pacific Beach postcard',
+  },
+};
 
-function conferencePayload(body) {
+function privateMailPayload(body, mail) {
   const payload = typeof body === 'string' ? body : JSON.stringify(body);
   return payload && Buffer.byteLength(payload) <= maxUpload &&
-    createHash('sha256').update(payload).digest('hex') === conferenceDigest ? payload : null;
+    createHash('sha256').update(payload).digest('hex') === mail.digest ? payload : null;
 }
 
-async function readConference() {
-  const result = await get(conferencePath, { access: 'private', useCache: false });
+async function readPrivateMail(mail) {
+  const result = await get(mail.path, { access: 'private', useCache: false });
   if (result?.statusCode !== 200 || result.blob.size > maxUpload) return null;
-  return conferencePayload(await new Response(result.stream).text());
+  return privateMailPayload(await new Response(result.stream).text(), mail);
 }
 
-async function installConference(req, res) {
+async function installPrivateMail(req, res, mail) {
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   if (!['https://www.capsunlocked.com', 'https://capsunlocked.com'].includes(req.headers.origin)) {
     return res.status(403).send('Open the installer on capsunlocked.com.');
   }
-  const payload = conferencePayload(req.body);
-  if (!payload) return res.status(400).send('Choose the prepared conference mail file.');
+  const payload = privateMailPayload(req.body, mail);
+  if (!payload) return res.status(400).send('Choose the prepared mail file.');
   try {
-    if (!await readConference()) {
-      await put(conferencePath, payload, {
-        access: 'private', allowOverwrite: false, contentType: 'application/json',
-      });
+    if (!await readPrivateMail(mail)) {
+      try {
+        await put(mail.path, payload, {
+          access: 'private', allowOverwrite: false, contentType: 'application/json',
+        });
+      } catch (error) {
+        if (!await readPrivateMail(mail)) throw error;
+      }
     }
     return res.status(204).end();
   } catch {
-    console.error('The conference envelope could not be saved to private Blob storage.');
-    return res.status(503).send('The envelope could not be saved. Retry from the installer.');
+    console.error('Private postcard mail could not be saved.');
+    return res.status(503).send('The mail could not be saved. Retry from the installer.');
   }
 }
 
-function conferenceInstaller() {
+function privateMailInstaller(mail) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Add the conference envelope</title></head><body><main>
-<h1>Add the conference envelope</h1>
+<title>Add the ${mail.label}</title></head><body><main>
+<h1>Add the ${mail.label}</h1>
 <form id="conference-install">
-<label>Conference mail file <input type="file" accept=".json,application/json" required></label>
+<label>Prepared mail file <input type="file" accept=".json,application/json" required></label>
 <button type="submit">Put in mailbox</button>
 </form><p id="conference-status" role="status"></p>
 <script src="/postcards-runtime/conference-install.js" defer></script>
 </main></body></html>`;
+}
+
+function addSauna(html, payload) {
+  if (!payload) return html;
+  const data = JSON.parse(payload);
+  const item = {
+    id: 'pacific-beach-sauna-nov-23-2026',
+    kind: 'postcard',
+    title: 'Pacific Beach Sauna',
+    date: '2026-11-23',
+    location: 'Pacific Beach, WA',
+    portraitCover: true,
+    cover: 'data:image/webp;base64,' + data.front,
+    back: 'data:image/webp;base64,' + data.back,
+    backAlt: 'Typewritten note to Sadie with a Coltrane stamp and Pacific Beach postmark',
+  };
+  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
 }
 
 function addConference(html, payload) {
@@ -175,9 +206,9 @@ function withTableControls(html) {
       .photo-list.enclosures img { max-width: 11rem; max-height: 11rem; object-fit: contain; }
       .photo-list.enclosure-detail { justify-items: center; }
       .photo-list.enclosure-detail img { height: auto; }
-      .postcard.portrait-view.quinault { width: min(66vw, 25rem, calc((100svh - 8rem) * .52)); aspect-ratio: 3 / 4; }
-      .mail-thumbnail.quinault { aspect-ratio: 3 / 4; }
-      .postcard.quinault:not(.portrait-view) { aspect-ratio: 4 / 3; }
+      .postcard.portrait-view.portrait-postcard { width: min(66vw, 25rem, calc((100svh - 8rem) * .52)); aspect-ratio: 3 / 4; }
+      .mail-thumbnail.portrait-postcard { aspect-ratio: 3 / 4; }
+      .postcard.portrait-postcard:not(.portrait-view) { aspect-ratio: 4 / 3; }
     </style>`)
     .replace('<button class="action deposit" type="button" hidden>Put in basket</button>',
       '<button class="action deposit" type="button" hidden>Put in basket</button>' +
@@ -246,7 +277,7 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 module.exports = async function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.setHeader('X-Postcards-Revision', 'conference-private-envelope');
+  res.setHeader('X-Postcards-Revision', 'pacific-beach-private-postcard');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
@@ -267,11 +298,12 @@ module.exports = async function postcards(req, res) {
   const installer = new URL(req.url || '/postcards', 'https://www.capsunlocked.com')
     .searchParams.get('install');
 
-  if (installer === 'quinault' || installer === 'conference') {
+  const mailToInstall = Object.hasOwn(privateMail, installer) ? privateMail[installer] : null;
+  if (installer === 'quinault' || mailToInstall) {
     if (!authorized(req, key)) return res.status(401).send('Open /postcards and sign in first.');
     if (!liveStore) return res.status(404).end();
-    if (req.method === 'POST') return installer === 'conference' ? installConference(req, res) : installQuinault(req, res);
-    if (req.method === 'GET') return res.status(200).send(installer === 'conference' ? conferenceInstaller() : quinaultInstaller());
+    if (req.method === 'POST') return mailToInstall ? installPrivateMail(req, res, mailToInstall) : installQuinault(req, res);
+    if (req.method === 'GET') return res.status(200).send(mailToInstall ? privateMailInstaller(mailToInstall) : quinaultInstaller());
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).end();
   }
@@ -307,11 +339,14 @@ module.exports = async function postcards(req, res) {
       console.error('The private Quinault postcard store could not be read.');
       return null;
     }) : null;
-    const conference = liveStore ? await readConference().catch(() => {
-      console.error('The private conference envelope store could not be read.');
-      return null;
-    }) : null;
-    return res.status(200).send(withTableControls(addConference(addQuinault(html.toString('utf8'), quinault), conference)));
+    const [conference, sauna] = liveStore ? await Promise.all(
+      Object.values(privateMail).map(mail => readPrivateMail(mail).catch(() => {
+        console.error('Private postcard mail could not be read.');
+        return null;
+      }))
+    ) : [];
+    const withExistingMail = addConference(addQuinault(html.toString('utf8'), quinault), conference);
+    return res.status(200).send(withTableControls(addSauna(withExistingMail, sauna)));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');

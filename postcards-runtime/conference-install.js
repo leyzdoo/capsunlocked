@@ -8,13 +8,13 @@ form.addEventListener('submit', async event => {
   event.preventDefault();
   const [file] = form.querySelector('input').files;
   if (!file || file.size > 1400000) {
-    status.textContent = 'Choose the prepared conference mail file.';
+    status.textContent = 'Choose the prepared mail file.';
     return;
   }
   button.disabled = true;
-  status.textContent = 'Adding the envelope…';
+  status.textContent = 'Adding the mail…';
   try {
-    const response = await fetch('/postcards?install=conference', {
+    const response = await fetch(window.location.href, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: await file.text(),
