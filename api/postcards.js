@@ -7,6 +7,34 @@ const { join } = require('node:path');
 const sessionName = '__Host-postcards';
 const lifetime = 7 * 24 * 60 * 60;
 
+function withTableControls(html) {
+  const start = html.indexOf("    const stage = document.querySelector('.stage');");
+  const end = html.indexOf('</script>', start);
+  if (start === -1 || end === -1) return html;
+
+  return (html.slice(0, start) + html.slice(end))
+    .replace('</style>', `
+      .mail-actions { flex-wrap: wrap; gap: .35rem .6rem; }
+      .mail-actions .hint { flex-basis: 100%; text-align: center; }
+      .tabletop { position: absolute; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 4; }
+    </style>`)
+    .replace('<button class="action deposit" type="button" hidden>Put in basket</button>',
+      '<button class="action deposit" type="button" hidden>Put in basket</button>' +
+      '<button class="action return-mail" type="button" hidden>Return to mailbox</button>')
+    .replace('</main>', '<button class="action tabletop" type="button" aria-haspopup="dialog" ' +
+      'aria-controls="postcards-table" hidden>On the table</button></main>')
+    .replace('</body>', `
+      <dialog class="table-dialog" id="postcards-table" aria-labelledby="postcards-table-title">
+        <header class="dialog-header">
+          <h1 id="postcards-table-title">On the table</h1>
+          <form method="dialog"><button class="action">Close</button></form>
+        </header>
+        <div class="archive-content"><ul class="mail-list"></ul></div>
+      </dialog>
+      <script src="/postcards-runtime/table.js" defer></script>
+    </body>`);
+}
+
 function sign(key, purpose, data) {
   return createHmac('sha256', key).update(purpose).update('\0').update(data).digest();
 }
@@ -57,9 +85,10 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 module.exports = function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.setHeader('X-Postcards-Revision', 'table-controls');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
-  res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+  res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
   const encodedKey = process.env.POSTCARDS_KEY?.trim() || '';
@@ -101,7 +130,7 @@ module.exports = function postcards(req, res) {
     const decipher = createDecipheriv('aes-256-gcm', key, encrypted.subarray(0, 12));
     decipher.setAuthTag(encrypted.subarray(12, 28));
     const html = Buffer.concat([decipher.update(encrypted.subarray(28)), decipher.final()]);
-    return res.status(200).send(html);
+    return res.status(200).send(withTableControls(html.toString('utf8')));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');
