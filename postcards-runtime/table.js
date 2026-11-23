@@ -169,6 +169,7 @@
       turns = 0;
       card.classList.remove('is-close');
       card.classList.toggle('portrait-view', Boolean(item.portraitCover));
+      card.classList.toggle('quinault', item.id === 'quinault-lodge-nov-22-2026');
       card.style.removeProperty('--turn');
       card.setAttribute('aria-label', item.title + '. Bring closer');
       front.hidden = isEnvelope;
@@ -303,6 +304,7 @@
       button.type = 'button';
       const thumbnail = document.createElement('span');
       thumbnail.className = item.portraitCover ? 'mail-thumbnail portrait-view' : 'mail-thumbnail';
+      thumbnail.classList.toggle('quinault', item.id === 'quinault-lodge-nov-22-2026');
       const image = new Image();
       image.loading = 'lazy';
       setArtwork(image, item.cover, '', item.coverCrop, item.scanSize, item.portraitCover);
