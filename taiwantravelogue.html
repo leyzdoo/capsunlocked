@@ -11,6 +11,23 @@
 .mast{background:#15382e;color:#fff9ec;border-bottom:5px solid #aa6049}.mast a{color:inherit}.wrap{width:min(1080px,calc(100% - 2.5rem));margin:auto}.mast .wrap{padding:1.5rem 0 3.5rem}.home{font-size:.875rem;font-weight:600}.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:2rem;align-items:end;margin-top:3rem}h1,h2,h3{font-family:Georgia,serif;font-weight:400;line-height:1.04}h1{font-size:clamp(3.2rem,9vw,7rem);letter-spacing:-.065em}.intro{max-width:35ch;color:#f4e9d3}.intro p+p{margin-top:.75rem}.overline,.locator{font-size:.875rem;font-weight:700;letter-spacing:.04em}.overline{color:#f1c6a8;margin-bottom:.6rem}
 main{padding:2rem 0 4rem}nav{border-bottom:1px solid var(--line);padding-bottom:1.4rem;margin-bottom:2rem}nav h2{font-size:1.8rem;margin-bottom:.65rem}nav ul{padding:0;margin:0;list-style:none;display:flex;flex-wrap:wrap;gap:.5rem}nav a{display:block;padding:.25rem .65rem;border:1px solid var(--line);border-radius:4px;font-size:.875rem;text-decoration:none}nav a:hover{background:#eadfce;text-decoration:underline}.card{border:1px solid var(--line);background:#fffcf5;margin-bottom:1.5rem;border-radius:8px;overflow:hidden}.card header{padding:1.15rem clamp(1rem,3vw,2rem);border-bottom:1px solid var(--line)}.locator{color:var(--red)}h3{font-size:clamp(1.8rem,4.5vw,3rem);margin:.25rem 0 .5rem}.zh{font:1rem system-ui,sans-serif;color:var(--muted);display:inline-block;white-space:nowrap}.scene{max-width:78ch}.body{display:grid;grid-template-columns:1fr 1.1fr;align-items:start}.photo{display:block;width:100%;aspect-ratio:var(--ratio,1.78);object-fit:cover;background:#d8dfca}.copy{padding:clamp(1rem,3vw,2rem)}.refs{display:flex;flex-wrap:wrap;gap:.4rem 1rem;padding:0;margin:1rem 0 0;list-style:none;font-size:.92rem}.credit,.edition{font-size:.875rem;color:var(--muted)}figcaption{padding:.35rem 1rem}.edition{margin-top:.9rem}footer{border-top:1px solid var(--line);padding-top:1.25rem}footer h2{font-size:1.8rem}footer p{margin-top:.5rem}
 @media(max-width:660px){.hero,.body{grid-template-columns:1fr;gap:0}.hero{margin-top:2rem}.intro{margin-top:1rem}.mast .wrap{padding-bottom:2rem}}
+
+.chapter-marker{display:inline-block;margin-right:.6rem;color:var(--muted)}
+.extra-index{margin-top:1rem}.extra-index summary{cursor:pointer;color:var(--red);font-weight:650}.extra-index ul{margin-top:.65rem}
+.extras{background:#eef0e4;border-top:1px solid var(--line);padding:clamp(.9rem,3vw,1.7rem)}
+.extras h4,.extra-card h5{font-family:Georgia,serif;line-height:1.15;font-weight:400;margin:0}
+.extras h4{font-size:1.5rem;margin-bottom:.75rem}
+.extra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem}
+.extra-card{border:1px solid #c4cbb8;background:#fcfcf5;border-radius:5px;overflow:hidden;padding:0;scroll-margin-top:1rem}
+.extra-card:target{outline:2px solid #355c45;outline-offset:2px}
+.extra-card header{padding:.7rem .8rem;border-bottom:1px solid #d3dac8}
+.extra-card h5{font-size:1.35rem;margin:.2rem 0 .3rem}
+.extra-locator{color:#355c45;font-weight:700;font-size:.875rem}
+.extra-body{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:start}
+.extra-body .photo{--ratio:1.25}.extra-body figcaption{padding:.35rem .6rem;line-height:1.35}
+.extra-copy{padding:.65rem .8rem}.extra-copy .refs{margin-top:.45rem}
+@media(max-width:900px){.extra-grid{grid-template-columns:1fr}}
+@media(max-width:420px){.extra-body{grid-template-columns:1fr}.extra-body .photo{--ratio:1.65}}
 </style>
 </head>
 <body id="top">
@@ -19,7 +36,7 @@ main{padding:2rem 0 4rem}nav{border-bottom:1px solid var(--line);padding-bottom:
 <div class="intro"><p>Follow the dishes through Yáng Shuāng-zǐ’s novel, translated by Lin King, as Aoyama Chizuko and her interpreter Chi-chan travel through Taiwan under Japanese rule.</p><p>Find the scene, see the dish, and explore the food behind it.</p></div>
 </div></div></header>
 <main class="wrap">
-<nav aria-label="Jump to a dish"><h2>Find a dish</h2><ul>
+<nav aria-label="Jump to a dish"><h2>Chapter-title dishes</h2><ul>
 <li><a href="#roasted-seeds">Roasted seeds</a></li>
 <li><a href="#silver-needle">Silver needle vermicelli</a></li>
 <li><a href="#jute-soup">Jute soup</a></li>
@@ -32,127 +49,266 @@ main{padding:2rem 0 4rem}nav{border-bottom:1px solid var(--line);padding-bottom:
 <li><a href="#potato-noodle-stew">Potato noodle stew</a></li>
 <li><a href="#savory-cake">Savory cake</a></li>
 <li><a href="#fruit-and-jelly-ice">Fruit and jelly ice</a></li>
-</ul><p class="edition">Cards follow the novel’s chapter order. Page 36 refers to the reader’s copy. Chapter references work across editions. Scene notes may reveal minor details.</p></nav>
+</ul><details class="extra-index"><summary>Jump to other foods in the novel</summary><ul>
+<li><a href="#castella">Castella</a></li>
+<li><a href="#aiyu-jelly">Aiyu jelly</a></li>
+<li><a href="#garlic-fava-beans">Garlic-fried fava beans</a></li>
+<li><a href="#plain-onigiri">Plain onigiri</a></li>
+<li><a href="#salted-duck-eggs">Salted duck eggs</a></li>
+<li><a href="#salted-clams">Salted freshwater clams</a></li>
+<li><a href="#lukang-taro-balls">Lukang taro balls</a></li>
+<li><a href="#xingang-candy">Xingang candy</a></li>
+<li><a href="#dorayaki">Dorayaki</a></li>
+<li><a href="#tainan-meat-rice-cake">Tainan meat rice cakes</a></li>
+<li><a href="#chicken-potato-curry">Chicken and potato curry</a></li>
+<li><a href="#shrimp-ball-curry">Shrimp ball curry soup</a></li>
+<li><a href="#taro-dates">Fried taro dates</a></li>
+<li><a href="#nine-layer-cake">Nine-layer rice cake</a></li>
+<li><a href="#inari-sushi">Inari sushi</a></li>
+<li><a href="#mung-bean-pastry">Mung bean pastries</a></li>
+<li><a href="#snow-fungus-sweet-soup">Snow fungus and longan sweet soup</a></li>
+<li><a href="#pineapple-juice">Pineapple juice</a></li>
+<li><a href="#marble-soda">Marble soda</a></li>
+</ul></details><p class="edition">The cards follow the novel’s chapter order. Other foods appear under “Also in this chapter.” Page 36 refers to the reader’s copy. Chapter references work across editions. Scene notes may reveal minor details.</p></nav>
 <section aria-label="Food cards">
 
 <article class="card" id="roasted-seeds" aria-labelledby="roasted-seeds-title">
-<header><p class="locator">Chapter I</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter I</p>
 <h3 id="roasted-seeds-title">Kue-Tsí <span class="zh" lang="zh-Hant">瓜子</span></h3>
 <p class="scene"><strong>Roasted seeds.</strong> A market vendor gives Aoyama melon seeds for the journey. Chi-chan shows her how to crack the shells.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://images.ctfassets.net/h4s2feya909e/3faSwujC18wPDWmpYsYXuC/fd4d760a67746decb5385ec719f88cd6/chinese-new-year-snacks-watermelon-seeds.jpg?fm=webp&amp;q=60&amp;w=640" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Roasted watermelon seeds in a white bowl">
 <figcaption class="credit"><a href="https://chinesenewyear.net/snacks/">Photo: Chinese New Year</a></figcaption>
 </figure><div class="copy"><p>The flat roasted seeds are cracked with the front teeth so you can eat the tiny kernel inside. In Taiwan they’re a snack to linger over with tea and conversation.</p><ul class="refs"><li><a href="https://www.cna.com.tw/news/acul/202605205004.aspx">Read the 12-dish guide (spoilers)</a></li></ul></div></div>
+<section class="extras" aria-labelledby="roasted-seeds-extras"><h4 id="roasted-seeds-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="castella" aria-labelledby="castella-title">
+<header><p class="extra-locator">Chapter I · Offerings</p><h5 id="castella-title">Castella</h5><p>Aoyama mentions castella among the cakes used as offerings. It links the early pages back to her hometown of Nagasaki.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://res-1.cloudinary.com/jnto/image/upload/w_750%2Ch_750%2Cc_fill%2Cf_auto%2Cfl_lossy%2Cq_auto/v1/media/filer_public/f9/6a/f96af86b-35fa-4b50-b4cc-b5194752c2ee/cuo-ying-2_credit_kttuky" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Castella"><figcaption class="credit"><a href="https://www.japan.travel/en/sg/story/fukusayas-famous-castella-cake/">Photo: Japan National Tourism Organization</a></figcaption></figure>
+<div class="extra-copy"><p>A soft sponge cake with a browned top and fine, springy crumb. The photo shows Nagasaki bakery Fukusaya’s version.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="aiyu-jelly" aria-labelledby="aiyu-jelly-title">
+<header><p class="extra-locator">Chapter I · Foods Aoyama wants to try</p><h5 id="aiyu-jelly-title">Aiyu jelly</h5><p>Aiyu is among the Taiwanese foods Aoyama is curious about on arrival. It turns up again as a drink in Chapter III.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://taiwanlove.jp/cdn/shop/files/285d2ba2-93d7-428b-bc3d-c00b4c8bfa93.jpg?v=1693817001&amp;width=1024" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Aiyu jelly"><figcaption class="credit"><a href="https://taiwanlove.jp/products/taiwan-aiyu-seeds">Photo: Taiwan Love</a></figcaption></figure>
+<div class="extra-copy"><p>The pale jelly sets from rubbed fig seeds. It’s usually served cold, often with lemon and syrup.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="silver-needle" aria-labelledby="silver-needle-title">
-<header><p class="locator">Chapter II · p. 36</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter II · p. 36</p>
 <h3 id="silver-needle-title">Bí-Thai-Bak <span class="zh" lang="zh-Hant">米篩目</span></h3>
 <p class="scene"><strong>Silver needle vermicelli.</strong> Chi-chan prepares bí-thai-bak for Aoyama at home.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://s.yimg.com/os/zh-tw/foodnext.tw/7f719bc948cf18ebe3ffe797d6a3b769" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Thick silver needle rice noodles in broth with chives and fried shallots">
 <figcaption class="credit"><a href="https://tw.news.yahoo.com/%E9%A3%9F%E5%8A%9B-%E7%B1%B3%E8%8B%94%E7%9B%AE%E4%BD%A0%E5%90%83%E9%B9%B9%E9%82%84%E6%98%AF%E5%90%83%E7%94%9C-%E7%82%BA%E4%BD%95%E7%94%A8%E8%88%8A%E7%B1%B3%E5%81%9A%E6%89%8D%E9%81%A9%E5%90%88-162502533.html">Photo: FoodNEXT / Yahoo Taiwan</a></figcaption>
 </figure><div class="copy"><p>These short rice noodles get their name from the sieve used to shape them. They can turn up in a savory bowl with minced pork and fried shallots, or as a chewy topping for sweet shaved ice.</p><ul class="refs"><li><a href="https://lithub.com/taiwan-travelogue/">Read the chapter excerpt</a></li><li><a href="https://kmweb.moa.gov.tw/redirect_files.php?id=669055&amp;theme=knowledgebase">See how the noodles are made</a></li></ul></div></div>
+<section class="extras" aria-labelledby="silver-needle-extras"><h4 id="silver-needle-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="garlic-fava-beans" aria-labelledby="garlic-fava-beans-title">
+<header><p class="extra-locator">Chapter II · At the cottage</p><h5 id="garlic-fava-beans-title">Garlic-fried fava beans</h5><p>Chi-chan shells the beans while explaining Taiwan’s railways. Aoyama keeps reaching for another handful.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://shoplineimg.com/6187fe21941308002aa79573/633d405268e1ae2bfbe7ac49/800x.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Garlic-fried fava beans"><figcaption class="credit"><a href="https://www.twnut.com.tw/products/%E5%BE%A1%E8%8F%AF%E7%94%9F-%E9%87%91%E8%92%9C%E5%91%B3%E6%A0%BC%E8%98%AD%E8%B1%86%EF%BC%88%E8%A0%B6%E8%B1%86%EF%BC%89">Photo: TWNut</a></figcaption></figure>
+<div class="extra-copy"><p>A crunchy garlic-seasoned snack made from broad beans, another name for fava beans.</p><ul class="refs"><li><a href="https://lithub.com/taiwan-travelogue/">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="plain-onigiri" aria-labelledby="plain-onigiri-title">
+<header><p class="extra-locator">Chapter II · Recalling the train ride</p><h5 id="plain-onigiri-title">Plain onigiri</h5><p>Aoyama remembers eating two plain rice balls instead of buying a station bento at Byōritsu, now Miaoli.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://image.yomuno.jp/store/article/99845/header_image/large-47fd48fd7d1578abc11dbf870c2a6520.jpeg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Plain onigiri"><figcaption class="credit"><a href="https://yomuno.jp/posts/99845">Photo: Yomuno</a></figcaption></figure>
+<div class="extra-copy"><p>Plain onigiri are hand-shaped balls of cooked rice. The photo shows shio musubi, the simple salted version.</p><ul class="refs"><li><a href="https://lithub.com/taiwan-travelogue/">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="salted-duck-eggs" aria-labelledby="salted-duck-eggs-title">
+<header><p class="extra-locator">Chapter II · Recalling the train ride</p><h5 id="salted-duck-eggs-title">Salted duck eggs</h5><p>Aoyama figures she missed a damaged railway bridge because she was peeling her salted duck eggs.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://img.ltn.com.tw/Upload/playing/page/2017/10/30/171030-7704-000-iuVwG.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Salted duck eggs"><figcaption class="credit"><a href="https://playing.ltn.com.tw/article/7704">Photo: Liberty Times Playing</a></figcaption></figure>
+<div class="extra-copy"><p>Salt curing firms the white and gives the yolk its dense texture and deep orange color.</p><ul class="refs"><li><a href="https://lithub.com/taiwan-travelogue/">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="jute-soup" aria-labelledby="jute-soup-title">
-<header><p class="locator">Chapter III</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter III</p>
 <h3 id="jute-soup-title">Muâ-Ínn-Thng <span class="zh" lang="zh-Hant">麻薏湯</span></h3>
 <p class="scene"><strong>Jute soup.</strong> A Taichung specialty comes up as Aoyama learns more about Chi-chan’s background.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://i0.wp.com/aoko.tw/wp-content/uploads/2021/08/%E9%BA%BB%E8%96%8F-25-1.jpg?fit=1600%2C1067&amp;ssl=1" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Green jute leaf soup with chunks of sweet potato">
 <figcaption class="credit"><a href="https://aoko.tw/%E9%BA%BB%E8%96%8F%E7%9A%84%E6%95%85%E4%BA%8B/mayi/">Photo: Aoko</a></figcaption>
 </figure><div class="copy"><p>Young jute leaves give the soup its deep green color, silky thickness, and slight bitterness. Sweet potato and tiny fish are traditional additions.</p><ul class="refs"><li><a href="https://taichung.travel/zh-tw/diary/detail/3586">Read Taichung’s jute soup guide</a></li></ul></div></div>
+<section class="extras" aria-labelledby="jute-soup-extras"><h4 id="jute-soup-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="salted-clams" aria-labelledby="salted-clams-title">
+<header><p class="extra-locator">Chapter III · With the jute soup</p><h5 id="salted-clams-title">Salted freshwater clams</h5><p>Chi-chan brings kiâm-lâ-á clams and pickled radish to the cottage lunch. Salted clams also come up in Chapter I.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://www.achingchef.com/uploads/202107/14/6/162625719842812.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Salted freshwater clams"><figcaption class="credit"><a href="https://www.achingchef.com/post_0404019219.html">Photo: A-Ching Chef</a></figcaption></figure>
+<div class="extra-copy"><p>Small freshwater clams served as a salty side. This modern recipe seasons them with garlic and chile.</p><ul class="refs"><li><a href="https://tank.tv/magazine/issue-107/features/taiwan-travelogue">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="lukang-taro-balls" aria-labelledby="lukang-taro-balls-title">
+<header><p class="extra-locator">Chapter III · With the jute soup</p><h5 id="lukang-taro-balls-title">Lukang taro balls</h5><p>The pair steam the market snacks they bought in Rokkō, now Lukang. One of the five varieties combines shaved taro with seasoned pork.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://s.yimg.com/os/en/mirrormedia.mg/b093dfe3423f50a67e3eb43938fbba5d" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Lukang taro balls"><figcaption class="credit"><a href="https://tw.news.yahoo.com/%E9%B9%BF%E6%B8%AF%E5%B0%8F%E5%90%834-%E6%98%AF%E8%8A%8B%E4%B8%B8%E4%B8%8D%E6%98%AF%E8%8A%8B%E5%9C%93-%E4%B9%BE%E6%BF%95%E5%85%A9%E5%90%83%E5%A5%BD%E5%A5%87%E5%A6%99-230000626.html">Photo: Mirror Media / Yahoo Taiwan</a></figcaption></figure>
+<div class="extra-copy"><p>The pork and shredded taro make these savory. The photo shows a modern Lukang taro ball served in broth.</p><ul class="refs"><li><a href="https://tank.tv/magazine/issue-107/features/taiwan-travelogue">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="sashimi" aria-labelledby="sashimi-title">
-<header><p class="locator">Chapter IV</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter IV</p>
 <h3 id="sashimi-title">Sashimi <span class="zh" lang="zh-Hant">生魚片</span></h3>
 <p class="scene"><strong>Sliced raw fish.</strong> After the school visit in Chapter II, Chi-chan suggests sashimi at Shintomichō Market. The dish later gives Chapter IV its title.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/Sashimi_%28Fatty_tuna%29_-_Flickr_-_jetalone.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Slices of fatty tuna sashimi">
 <figcaption class="credit">Tsukiji, Tokyo. <a href="https://commons.wikimedia.org/wiki/File:Sashimi_(Fatty_tuna)_-_Flickr_-_jetalone.jpg">Photo: Hajime Nakano / Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a> · displayed cropped</figcaption>
 </figure><div class="copy"><p>Fish is cut and served raw. In the novel, sashimi and braised minced pork reveal how Japanese and Taiwanese foods can carry different social status under colonial rule.</p><ul class="refs"><li><a href="https://lithub.com/taiwan-travelogue/">Read the market scene’s setup</a></li></ul></div></div>
+<section class="extras" aria-labelledby="sashimi-extras"><h4 id="sashimi-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="xingang-candy" aria-labelledby="xingang-candy-title">
+<header><p class="extra-locator">Chapter IV · Xingang specialties</p><h5 id="xingang-candy-title">Xingang candy</h5><p>The chapter mentions the Chiayi township’s sweets, including the candy then called 新高飴 and now known as 新港飴.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://cdn.store-assets.com/s/812958/i/49943843.jpeg?width=480" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Xingang candy"><figcaption class="credit"><a href="https://www.chintsanhao.com.tw/collections/%E6%96%B0%E6%B8%AF%E9%A3%B4">Photo: Chin Tsan Hao</a></figcaption></figure>
+<div class="extra-copy"><p>A chewy local confection sold in several flavors. This photo comes from a Xingang confectioner.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="minced-pork" aria-labelledby="minced-pork-title">
-<header><p class="locator">Chapter V</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter V</p>
 <h3 id="minced-pork-title">Bah-Sò <span class="zh" lang="zh-Hant">肉臊</span></h3>
 <p class="scene"><strong>Braised minced pork.</strong> Aoyama weighs the appeal of this Taiwanese staple alongside sashimi.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://pimg.1px.tw/tainanlohas/1481799188-492665887.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Taiwanese braised minced pork over rice">
 <figcaption class="credit"><a href="https://www.tainanlohas.cc/2016/12/blog-post_26.html">Photo: Tainan Lohas</a></figcaption>
 </figure><div class="copy"><p>Finely chopped pork is braised with soy sauce and spooned over rice or noodles. That fine chop distinguishes it from larger-cut braised pork in the novel’s discussion.</p><ul class="refs"><li><a href="https://fairbank.fas.harvard.edu/research/blog/a-conversation-on-taiwan-travelogue/">Read Harvard’s discussion</a></li></ul></div></div>
+<section class="extras" aria-labelledby="minced-pork-extras"><h4 id="minced-pork-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="dorayaki" aria-labelledby="dorayaki-title">
+<header><p class="extra-locator">Chapter V · Japanese sweets</p><h5 id="dorayaki-title">Dorayaki</h5><p>The chapter mentions dorayaki with red bean or cream filling and gives a price for a single cake or a bundle of five.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://asset.tokyo-recipes.com/upload/save_image/e9/e98b268d6a6d24d97138f3028998104e.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Dorayaki"><figcaption class="credit"><a href="https://tokyo-recipes.com/en/user/142/recipe/76">Photo: Tokyo Recipes by Nadia</a></figcaption></figure>
+<div class="extra-copy"><p>A sweet filling sandwiched between two small pancakes. The photo shows a red bean version.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="winter-melon" aria-labelledby="winter-melon-title">
-<header><p class="locator">Chapter VI</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter VI</p>
 <h3 id="winter-melon-title">Tang-Kue-Tê <span class="zh" lang="zh-Hant">冬瓜茶</span></h3>
 <p class="scene"><strong>Winter melon tea.</strong> Aoyama is served a glass over ice at the railway hotel in Tainan.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://tb-static.uber.com/prod/image-proc/processed_images/89ccb133400c8d56c922eda64d00d7f8/a19bb09692310dfd41e49a96c424b3a6.jpeg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Tainan-style winter melon tea from Yi Feng">
 <figcaption class="credit"><a href="https://www.ubereats.com/tw/store/%E7%BE%A9%E8%B1%90%E5%86%AC%E7%93%9C%E8%8C%B6-%E9%9D%92%E5%B9%B4%E5%BA%97/hOzO19mkQhKldziWrUwOLA">Photo: Yi Feng Winter Melon Tea</a></figcaption>
 </figure><div class="copy"><p>Winter melon and sugar are cooked down into a concentrate, sometimes molded into blocks. Diluted with water and chilled, it becomes an amber drink with a cooked-sugar flavor.</p><ul class="refs"><li><a href="https://www.youtube.com/watch?v=m60T2i2S0Xo">Watch winter melon tea being made</a></li></ul></div></div>
+<section class="extras" aria-labelledby="winter-melon-extras"><h4 id="winter-melon-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="tainan-meat-rice-cake" aria-labelledby="tainan-meat-rice-cake-title">
+<header><p class="extra-locator">Chapter VI · Tainan market foods</p><h5 id="tainan-meat-rice-cake-title">Tainan meat rice cakes</h5><p>Meat rice cakes are among the local foods mentioned in the winter melon tea chapter.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://axwwgrkdco.cloudimg.io/v7/__gmpics3__/cb0262cbb2ac4d20b72ff3e2c6b87a41.jpeg?h=1100&amp;org_if_sml=1&amp;w=1100" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Tainan meat rice cakes"><figcaption class="credit"><a href="https://guide.michelin.com/tw/zh_TW/tainan-region/tainan/restaurant/a-wen-rice-cake">Photo: Michelin Guide</a></figcaption></figure>
+<div class="extra-copy"><p>Rice batter is set into cakes, pan-fried and served with savory toppings. The photo shows a Tainan version from A-Wen.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="curry" aria-labelledby="curry-title">
-<header><p class="locator">Chapter VII</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter VII</p>
 <h3 id="curry-title">Ka-lí <span class="zh" lang="zh-Hant">咖哩</span></h3>
 <p class="scene"><strong>Curry.</strong> Chi-chan’s Spanish mackerel curry prompts a conversation about what makes a curry Taiwanese.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://img-global.cpcdn.com/recipes/2192a994a5889481/680x781cq80/fish-spanish-mackerel-in-spicy-coconut-cream-recipe-main-photo.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Spanish mackerel in a coconut curry sauce">
 <figcaption class="credit">Spanish mackerel coconut curry, a related preparation. <a href="https://cookpad.com/eng/recipes/13517026">Photo: Pinkblanket’s Kitchen / Cookpad</a></figcaption>
 </figure><div class="copy"><p>The fish is the detail to look for here. The dish carries a long history of adaptation, from South Asian cooking through Britain and Japan to the version Chi-chan makes in Taiwan.</p><ul class="refs"><li><a href="https://www.panmacmillan.co.in/blogs/literary/read-an-excerpt-from-the-booker-winning-taiwan-travelogue">Read the curry chapter excerpt</a></li><li><a href="https://activity.parenting.com.tw/media_taiwanfoods-2115">Explore the Taiwanese banquet song</a></li></ul></div></div>
+<section class="extras" aria-labelledby="curry-extras"><h4 id="curry-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="chicken-potato-curry" aria-labelledby="chicken-potato-curry-title">
+<header><p class="extra-locator">Chapter VII · Chi-chan’s curry meal</p><h5 id="chicken-potato-curry-title">Chicken and potato curry</h5><p>Back in Taichū, Chi-chan serves three curries. Aoyama eats the chicken and potato version with white rice.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://assets.tmecosys.com/image/upload/t_web767x639/img/recipe/ras/Assets/04687778-AA9A-4878-B248-FEBCF5A5C9F0/Derivates/c254f107-b5c8-4452-9a65-e5ec87fe917f.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Chicken and potato curry"><figcaption class="credit"><a href="https://cookidoo.tw/recipes/recipe/zh-Hant/r57718">Photo: Cookidoo</a></figcaption></figure>
+<div class="extra-copy"><p>In the novel, soy sauce and black vinegar season the curry, which cooks down to a thick stew. The photo shows a modern chicken curry.</p><ul class="refs"><li><a href="https://www.panmacmillan.co.in/blogs/literary/read-an-excerpt-from-the-booker-winning-taiwan-travelogue">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="shrimp-ball-curry" aria-labelledby="shrimp-ball-curry-title">
+<header><p class="extra-locator">Chapter VII · Chi-chan’s curry meal</p><h5 id="shrimp-ball-curry-title">Shrimp ball curry soup</h5><p>The second curry uses shrimp balls in a curried stock made from the shells, with mushrooms and water chestnuts.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://tokyo-kitchen.icook.network/uploads/recipe/cover/344977/53bc4eaf4df1bd98.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Shrimp balls in clear soup"><figcaption class="credit"><a href="https://icook.tw/recipes/344977">Photo: iCook / Rita</a></figcaption></figure>
+<div class="extra-copy"><p>The novel’s version gets its golden color from turmeric. The photo shows shrimp balls in a clear Taiwanese soup as a reference for their shape and texture.</p><ul class="refs"><li><a href="https://www.panmacmillan.co.in/blogs/literary/read-an-excerpt-from-the-booker-winning-taiwan-travelogue">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="taro-dates" aria-labelledby="taro-dates-title">
+<header><p class="extra-locator">Chapter VII · Discussed in a banquet song</p><h5 id="taro-dates-title">Fried taro dates</h5><p>Chi-chan mentions taro dates as a sweet served partway through the meal in the Song of a Dozen Dishes.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://3.bp.blogspot.com/-O_nO5s59ctU/VAgYvKih31I/AAAAAAAADKk/m1bJa1sBoo0/s1600/IMG_7231.JPG" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Fried taro dates"><figcaption class="credit"><a href="https://283liya.blogspot.com/2014/09/blog-post_5.html">Photo: Liya’s Kitchen</a></figcaption></figure>
+<div class="extra-copy"><p>Mashed taro is shaped into small rolls about the size of dates and fried. The name refers to their shape.</p><ul class="refs"><li><a href="https://www.panmacmillan.co.in/blogs/literary/read-an-excerpt-from-the-booker-winning-taiwan-travelogue">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+<article class="extra-card" id="nine-layer-cake" aria-labelledby="nine-layer-cake-title">
+<header><p class="extra-locator">Chapter VII · Discussed in a banquet song</p><h5 id="nine-layer-cake-title">Nine-layer rice cake</h5><p>Chi-chan describes this striped sweet as the final small dish in the song’s banquet.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://www.ptfoods.com.tw/FileUpload/reciepe/202206281722351.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Nine-layer rice cake"><figcaption class="credit"><a href="https://www.ptfoods.com.tw/reciepe/detail-25">Photo: Pingtung Agricultural Products</a></figcaption></figure>
+<div class="extra-copy"><p>Rice batter is steamed a layer at a time. In the novel, brown and white sugar batters alternate to make the stripes.</p><ul class="refs"><li><a href="https://www.panmacmillan.co.in/blogs/literary/read-an-excerpt-from-the-booker-winning-taiwan-travelogue">Read the chapter excerpt</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="sukiyaki" aria-labelledby="sukiyaki-title">
-<header><p class="locator">Chapter VIII</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter VIII</p>
 <h3 id="sukiyaki-title">Sukiyaki <span class="zh" lang="zh-Hant">壽喜燒</span></h3>
 <p class="scene"><strong>Pork hotpot in the novel.</strong> Aoyama and Chi-chan share pork sukiyaki and talk late into the night.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://yorkbenimaru.com/images/2025/10/%E8%B1%9A%E3%81%99%E3%81%8D%E7%84%BC%E3%81%8D.png" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Pork sukiyaki with tofu and vegetables">
 <figcaption class="credit"><a href="https://yorkbenimaru.com/osusume_menu/recipe/%E8%B1%9A%E3%81%99%E3%81%8D%E7%84%BC%E3%81%8D/">Photo: York Benimaru</a></figcaption>
 </figure><div class="copy"><p>Thinly sliced meat and vegetables cook together in a sweet soy-based liquid. Beef is familiar in Japanese sukiyaki. The meal in the novel uses pork to suit local eating customs.</p><ul class="refs"><li><a href="https://www.cna.com.tw/news/acul/202605205004.aspx">Read the 12-dish guide (spoilers)</a></li></ul></div></div>
+<section class="extras" aria-labelledby="sukiyaki-extras"><h4 id="sukiyaki-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="inari-sushi" aria-labelledby="inari-sushi-title">
+<header><p class="extra-locator">Chapter VIII · A meal in New Beitou</p><h5 id="inari-sushi-title">Inari sushi</h5><p>Inari sushi is part of the meal at a dining hall in New Beitou, alongside sashimi and other Japanese dishes.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://lh3.ggpht.com/p/AF1QipNk4zIf-6N6ZqVxAW3zEdNtoZeglLmY4TQpa_TB%3Ds1024" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Inari sushi"><figcaption class="credit"><a href="https://footinder.com.tw/%E5%8F%B0%E5%8C%97%E5%B8%82%E5%8C%97%E6%8A%95%E5%8D%80/7161/">Photo: Footinder</a></figcaption></figure>
+<div class="extra-copy"><p>Seasoned fried tofu pouches are filled with sushi rice. The photo shows inari from a present-day Beitou restaurant.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="leftovers-soup" aria-labelledby="leftovers-soup-title">
-<header><p class="locator">Chapter IX</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter IX</p>
 <h3 id="leftovers-soup-title">Tshài-Bué-Thng <span class="zh" lang="zh-Hant">菜尾湯</span></h3>
 <p class="scene"><strong>Leftovers soup.</strong> Chi-chan asks a banquet cook for this soup, a request that calls for an entire feast first.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://www.foodnext.net/dispPageBox/getFile/GetImg.aspx?FileLocation=%2FPJ-FOODNEXT%2FFiles%2F&amp;FileName=photo-37088-i.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Taiwanese banquet leftovers soup">
 <figcaption class="credit"><a href="https://www.foodnext.net/life/culture/paper/5739575552">Photo: FoodNEXT</a></figcaption>
 </figure><div class="copy"><p>The soup brings together dishes left from a traditional banquet. The vegetables, meat and seasonings vary with what was served, so the finished bowl tastes of the feast that preceded it.</p><ul class="refs"><li><a href="https://www.cna.com.tw/news/acul/202605205004.aspx">Read the 12-dish guide (spoilers)</a></li></ul></div></div>
+<section class="extras" aria-labelledby="leftovers-soup-extras"><h4 id="leftovers-soup-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="mung-bean-pastry" aria-labelledby="mung-bean-pastry-title">
+<header><p class="extra-locator">Chapter IX · Keelung sweets</p><h5 id="mung-bean-pastry-title">Mung bean pastries</h5><p>Mung bean pastries are among the sweets picked up in Keelung.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://ssag613.files.wordpress.com/2017/04/06_thumb.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Mung bean pastries"><figcaption class="credit"><a href="https://ssag.pixnet.net/blog/posts/44882506">Photo: SSAG’s food blog</a></figcaption></figure>
+<div class="extra-copy"><p>The tender pastry encloses a smooth mung bean filling. The photo shows a version sold by Keelung’s Lee Hu bakery.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="potato-noodle-stew" aria-labelledby="potato-noodle-stew-title">
-<header><p class="locator">Chapter X</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter X</p>
 <h3 id="potato-noodle-stew-title">Tau-Mī <span class="zh" lang="zh-Hant">兜麵</span></h3>
 <p class="scene"><strong>Potato noodle stew.</strong> Chi-chan mentions a dish she had considered making. It gives the chapter its title.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://www.newsmarket.com.tw/mag/files/2018/02/no13-02-01-r.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Tau-mī, a translucent sweet-potato starch dish with savory fillings">
 <figcaption class="credit"><a href="https://www.newsmarket.com.tw/mag/1030">Photo: News &amp; Market</a></figcaption>
 </figure><div class="copy"><p>Sweet potato starch binds ingredients such as dried shrimp, mushrooms and squid into a soft, chewy, translucent mass. It’s associated with New Year cooking in families with roots in Quanzhou.</p><ul class="refs"><li><a href="https://www.cna.com.tw/news/acul/202605205004.aspx">Read the 12-dish guide (spoilers)</a></li></ul></div></div>
+<section class="extras" aria-labelledby="potato-noodle-stew-extras"><h4 id="potato-noodle-stew-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="snow-fungus-sweet-soup" aria-labelledby="snow-fungus-sweet-soup-title">
+<header><p class="extra-locator">Chapter X · Banquet dessert</p><h5 id="snow-fungus-sweet-soup-title">Snow fungus and longan sweet soup</h5><p>The food index lists this sweet soup as the twelfth course of the banquet, with peanuts, snow fungus and dried longan.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://static.wixstatic.com/media/759395_02904af413414f4c821de96ba6a7753e~mv2.jpeg/v1/fill/w_1000%2Ch_774%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01/759395_02904af413414f4c821de96ba6a7753e~mv2.jpeg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Snow fungus and longan sweet soup"><figcaption class="credit"><a href="https://www.sunnyvegan.org/post/%E6%BB%8B%E6%BD%A4%E7%B3%96%E6%B0%B4-%E8%8A%B1%E7%94%9F%E7%B4%85%E6%A3%97%E6%9D%9E%E5%AD%90%E7%B4%85%E8%B1%86%E9%9B%AA%E8%80%B3%E6%A1%82%E5%9C%93">Photo: Sunny Vegan</a></figcaption></figure>
+<div class="extra-copy"><p>Snow fungus contributes a soft, slippery texture. The photo shows a related sweet soup with the same three ingredients, plus beans and fruit.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="savory-cake" aria-labelledby="savory-cake-title">
-<header><p class="locator">Chapter XI</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter XI</p>
 <h3 id="savory-cake-title">Kiâm-Nng-Ko <span class="zh" lang="zh-Hant">鹹蛋糕</span></h3>
 <p class="scene"><strong>Savory cake.</strong> A city official introduces Aoyama to this Taichung specialty.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://buuz.tw/wp-content/uploads/20181230193926_54.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Slices of savory sponge cake from Old Xuehua Zhai">
 <figcaption class="credit"><a href="https://taiwan17go.com/old-shj/">Photo: Buuz / Taiwan17go</a></figcaption>
 </figure><div class="copy"><p>A light sponge cake holds a savory layer of minced pork. Fengyuan’s Xuehua Zhai bakery is traditionally credited with popularizing this pairing during the Japanese colonial period.</p><ul class="refs"><li><a href="https://fairbank.fas.harvard.edu/research/blog/a-conversation-on-taiwan-travelogue/">Read Harvard’s discussion</a></li></ul></div></div>
+<section class="extras" aria-labelledby="savory-cake-extras"><h4 id="savory-cake-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="pineapple-juice" aria-labelledby="pineapple-juice-title">
+<header><p class="extra-locator">Chapter XI · With savory cake</p><h5 id="pineapple-juice-title">Pineapple juice</h5><p>Pineapple juice appears alongside the savory cake in a tasting of Taiwanese specialties.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://buuz.tw/wp-content/uploads/20200322183143_88.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Iced pineapple drink"><figcaption class="credit"><a href="https://taiwan17go.com/jinshu-pineappleice/">Photo: Buuz / Taiwan17go</a></figcaption></figure>
+<div class="extra-copy"><p>The food index describes a drink made with preserved pineapple. The photo shows a related iced pineapple drink from Fengyuan.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 
 <article class="card" id="fruit-and-jelly-ice" aria-labelledby="fruit-and-jelly-ice-title">
-<header><p class="locator">Chapter XII</p>
+<header><p class="locator"><span class="chapter-marker">Chapter-title dish</span>Chapter XII</p>
 <h3 id="fruit-and-jelly-ice-title">Kam-Á-Bit <span class="zh" lang="zh-Hant">蜜豆冰</span></h3>
 <p class="scene"><strong>Fruit and jelly ice.</strong> A bowl of shaved ice gives the final chapter its title and sets the scene for a conversation.</p></header>
 <div class="body"><figure>
 <img class="photo" src="https://taichung.travel/content/images/shops/3833/1024x768_Filedata635186446753659531.jpg" width="480" height="270" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Fruit and jelly shaved ice from Xing Fa Ting in Taichung">
 <figcaption class="credit"><a href="https://travel.taichung.gov.tw/zh-tw/shop/consume/350">Photo: Taichung Tourism</a></figcaption>
 </figure><div class="copy"><p>A Taichung-style bowl layers shaved ice with fruit and preserved toppings. The version described by Taiwan’s Central News Agency takes inspiration from Japanese fruit ice and is scented with banana essence.</p><ul class="refs"><li><a href="https://www.cna.com.tw/news/acul/202605205004.aspx">Read the 12-dish guide (spoilers)</a></li></ul></div></div>
+<section class="extras" aria-labelledby="fruit-and-jelly-ice-extras"><h4 id="fruit-and-jelly-ice-extras">Also in this chapter</h4><div class="extra-grid">
+<article class="extra-card" id="marble-soda" aria-labelledby="marble-soda-title">
+<header><p class="extra-locator">Chapter XII · A drink mentioned in the chapter</p><h5 id="marble-soda-title">Marble soda</h5><p>The food index records a mention of marble soda in the final chapter, alongside the chapter’s shaved ice.</p></header>
+<div class="extra-body"><figure><img class="photo" src="https://cdn-smiletaiwan.cw.com.tw/ckeditor/202403/ckeditor-65fa410c33d5f.jpg" width="360" height="288" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Marble soda"><figcaption class="credit"><a href="https://smiletaiwan.cw.com.tw/article/7089">Photo: Smile Taiwan</a></figcaption></figure>
+<div class="extra-copy"><p>A glass marble seals the bottle until it’s pushed down into the neck. The photo shows Taiwan’s Rong Chyuan brand.</p><ul class="refs"><li><a href="https://taiwan-travelogue-foods.netlify.app/">Food index (Chinese)</a></li></ul></div></div>
+</article>
+</div></section>
 </article>
 </section>
 <footer><h2>Keep exploring</h2><ul class="refs">
