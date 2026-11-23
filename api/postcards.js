@@ -88,6 +88,76 @@ async function installQuinault(req, res) {
   }
 }
 
+const conferencePath = 'postcards/waffle-house-conference.json';
+const conferenceDigest = '4d9a53ebff8abffb36c3ab44c7a645167b52ea5b6deca7f6ffeb3ba341b01fd6';
+
+function conferencePayload(body) {
+  const payload = typeof body === 'string' ? body : JSON.stringify(body);
+  return payload && Buffer.byteLength(payload) <= maxUpload &&
+    createHash('sha256').update(payload).digest('hex') === conferenceDigest ? payload : null;
+}
+
+async function readConference() {
+  const result = await get(conferencePath, { access: 'private', useCache: false });
+  if (result?.statusCode !== 200 || result.blob.size > maxUpload) return null;
+  return conferencePayload(await new Response(result.stream).text());
+}
+
+async function installConference(req, res) {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  if (!['https://www.capsunlocked.com', 'https://capsunlocked.com'].includes(req.headers.origin)) {
+    return res.status(403).send('Open the installer on capsunlocked.com.');
+  }
+  const payload = conferencePayload(req.body);
+  if (!payload) return res.status(400).send('Choose the prepared conference mail file.');
+  try {
+    if (!await readConference()) {
+      await put(conferencePath, payload, {
+        access: 'private', allowOverwrite: false, contentType: 'application/json',
+      });
+    }
+    return res.status(204).end();
+  } catch {
+    console.error('The conference envelope could not be saved to private Blob storage.');
+    return res.status(503).send('The envelope could not be saved. Retry from the installer.');
+  }
+}
+
+function conferenceInstaller() {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add the conference envelope</title></head><body><main>
+<h1>Add the conference envelope</h1>
+<form id="conference-install">
+<label>Conference mail file <input type="file" accept=".json,application/json" required></label>
+<button type="submit">Put in mailbox</button>
+</form><p id="conference-status" role="status"></p>
+<script src="/postcards-runtime/conference-install.js" defer></script>
+</main></body></html>`;
+}
+
+function addConference(html, payload) {
+  if (!payload) return html;
+  const data = JSON.parse(payload);
+  const image = key => 'data:image/webp;base64,' + data[key];
+  const item = {
+    id: 'waffle-house-conference-2026',
+    title: 'Waffle House Conference Mail',
+    date: '2026-11-22',
+    location: 'Rochester, NY',
+    kind: 'envelope',
+    envelopeArt: true,
+    cover: image('cover'),
+    contents: [
+      ['Handwritten note', 'note'],
+      ['Love Languages Report — page 1', 'inventory'],
+      ['Love Languages Report — page 2', 'letter'],
+      ['Love Languages Report — page 3', 'profile'],
+    ].map(([title, key]) => ({ title, src: image(key) })),
+  };
+  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
+}
+
 function withTableControls(html) {
   const start = html.indexOf("    const stage = document.querySelector('.stage');");
   const end = html.indexOf('</script>', start);
@@ -98,6 +168,13 @@ function withTableControls(html) {
       .mail-actions { flex-wrap: wrap; gap: .35rem .6rem; }
       .mail-actions .hint { flex-basis: 100%; text-align: center; }
       .tabletop { position: absolute; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 4; }
+      .postcard.conference-envelope { aspect-ratio: 684 / 297; }
+      .conference-envelope .envelope-recipient { width: 100%; height: 100%; left: 0; top: 0; border-radius: .5rem; }
+      .enclosure-button { display: grid; justify-items: center; gap: .45rem; padding: .6rem; color: inherit; background: #302820; border: 1px solid #766650; border-radius: .5rem; }
+      .photo-list.enclosures { grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+      .photo-list.enclosures img { max-width: 11rem; max-height: 11rem; object-fit: contain; }
+      .photo-list.enclosure-detail { justify-items: center; }
+      .photo-list.enclosure-detail img { height: auto; }
       .postcard.portrait-view.quinault { width: min(66vw, 25rem, calc((100svh - 8rem) * .52)); aspect-ratio: 3 / 4; }
       .mail-thumbnail.quinault { aspect-ratio: 3 / 4; }
       .postcard.quinault:not(.portrait-view) { aspect-ratio: 4 / 3; }
@@ -169,7 +246,7 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 module.exports = async function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.setHeader('X-Postcards-Revision', 'quinault-private-blob');
+  res.setHeader('X-Postcards-Revision', 'conference-private-envelope');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
@@ -188,13 +265,13 @@ module.exports = async function postcards(req, res) {
   const key = Buffer.from(encodedKey, 'base64url');
   const liveStore = process.env.VERCEL_ENV === 'production' && Boolean(process.env.BLOB_STORE_ID);
   const installer = new URL(req.url || '/postcards', 'https://www.capsunlocked.com')
-    .searchParams.get('install') === 'quinault';
+    .searchParams.get('install');
 
-  if (installer) {
+  if (installer === 'quinault' || installer === 'conference') {
     if (!authorized(req, key)) return res.status(401).send('Open /postcards and sign in first.');
     if (!liveStore) return res.status(404).end();
-    if (req.method === 'POST') return installQuinault(req, res);
-    if (req.method === 'GET') return res.status(200).send(quinaultInstaller());
+    if (req.method === 'POST') return installer === 'conference' ? installConference(req, res) : installQuinault(req, res);
+    if (req.method === 'GET') return res.status(200).send(installer === 'conference' ? conferenceInstaller() : quinaultInstaller());
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).end();
   }
@@ -230,7 +307,11 @@ module.exports = async function postcards(req, res) {
       console.error('The private Quinault postcard store could not be read.');
       return null;
     }) : null;
-    return res.status(200).send(withTableControls(addQuinault(html.toString('utf8'), quinault)));
+    const conference = liveStore ? await readConference().catch(() => {
+      console.error('The private conference envelope store could not be read.');
+      return null;
+    }) : null;
+    return res.status(200).send(withTableControls(addConference(addQuinault(html.toString('utf8'), quinault), conference)));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');

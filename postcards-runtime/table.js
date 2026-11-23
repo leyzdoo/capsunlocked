@@ -170,8 +170,9 @@
       card.classList.remove('is-close');
       card.classList.toggle('portrait-view', Boolean(item.portraitCover));
       card.classList.toggle('quinault', item.id === 'quinault-lodge-nov-22-2026');
+      card.classList.toggle('conference-envelope', Boolean(item.envelopeArt));
       card.style.removeProperty('--turn');
-      card.setAttribute('aria-label', item.title + '. Bring closer');
+      card.setAttribute('aria-label', item.title + (item.contents ? '. Open envelope' : '. Bring closer'));
       front.hidden = isEnvelope;
       front.setAttribute('aria-hidden', String(isEnvelope));
       if (!isEnvelope) {
@@ -186,16 +187,19 @@
       }
       envelope.hidden = !isEnvelope;
       if (isEnvelope) {
-        envelopeRecipient.src = recipient;
+        envelopeRecipient.src = item.envelopeArt ? item.cover : recipient;
         envelopePostmark.hidden = !item.postmark;
         if (item.postmark) envelopePostmark.src = item.postmark;
       }
-      hint.textContent = 'Bring closer';
+      hint.textContent = item.contents ? 'Open envelope' : 'Bring closer';
       deposit.hidden = false;
       returnToMailbox.hidden = false;
     }
 
     function openPhotos(item) {
+      photoList.className = 'photo-list';
+      photos.querySelector('h1').textContent = 'Photos';
+      photos.querySelector('form button').textContent = 'Close';
       photoList.replaceChildren(...item.photos.map(photo => {
         const image = new Image();
         image.src = photo.src;
@@ -205,8 +209,50 @@
       photos.showModal();
     }
 
+    function openEnclosures(item) {
+      const heading = photos.querySelector('h1');
+      const close = photos.querySelector('form button');
+      function showContents(focusIndex) {
+        heading.textContent = 'Inside the envelope';
+        close.textContent = 'Back to envelope';
+        photoList.className = 'photo-list enclosures';
+        photoList.replaceChildren(...item.contents.map((entry, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'enclosure-button';
+          const preview = new Image();
+          preview.src = entry.src;
+          preview.alt = '';
+          button.append(preview, entry.title);
+          button.addEventListener('click', () => {
+            heading.textContent = entry.title;
+            photoList.className = 'photo-list enclosure-detail';
+            const backToContents = document.createElement('button');
+            backToContents.type = 'button';
+            backToContents.className = 'action';
+            backToContents.textContent = 'Back to contents';
+            backToContents.addEventListener('click', () => showContents(index));
+            const page = new Image();
+            page.src = entry.src;
+            page.alt = entry.title;
+            photoList.replaceChildren(backToContents, page);
+            photos.scrollTop = 0;
+            backToContents.focus();
+          });
+          return button;
+        }));
+        if (focusIndex !== undefined) photoList.children[focusIndex].focus();
+      }
+      showContents();
+      photos.showModal();
+    }
+
     card.addEventListener('click', () => {
       if (filing || !current) return;
+      if (current.contents) {
+        openEnclosures(current);
+        return;
+      }
       const isEnvelope = current.kind === 'envelope';
       if (!card.classList.contains('is-close')) {
         card.classList.add('is-close');
