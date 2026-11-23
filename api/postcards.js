@@ -1,11 +1,123 @@
 'use strict';
 
-const { createDecipheriv, createHmac, timingSafeEqual } = require('node:crypto');
+const { createDecipheriv, createHash, createHmac, timingSafeEqual } = require('node:crypto');
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
+const { get, put } = require('@vercel/blob');
 
 const sessionName = '__Host-postcards';
 const lifetime = 7 * 24 * 60 * 60;
+const quinaultPath = 'postcards/quinault-lodge.json';
+const maxUpload = 1400000;
+const quinaultSides = {
+  front: '24c2cb818c5d9cb43b5c932d0b2df8f930726842374217d409233a4487630a6d',
+  back: 'b2bcbbeeff23076bc4693cd750683f256144f9fc8cd134caaee7b1602a8c92d1',
+};
+
+function validQuinault(data) {
+  return Object.entries(quinaultSides).every(([side, hash]) => {
+    const encoded = data?.[side];
+    return typeof encoded === 'string' && encoded.length <= maxUpload &&
+      /^[A-Za-z0-9+/]+={0,2}$/.test(encoded) &&
+      createHash('sha256').update(Buffer.from(encoded, 'base64')).digest('hex') === hash;
+  });
+}
+
+async function readQuinault() {
+  const result = await get(quinaultPath, { access: 'private', useCache: false });
+  if (result?.statusCode !== 200 || result.blob.size > maxUpload) return null;
+  const data = await new Response(result.stream).json();
+  return validQuinault(data) ? data : null;
+}
+
+function addQuinault(html, data) {
+  if (!data) return html;
+  const item = {
+    id: 'quinault-lodge-nov-22-2026',
+    kind: 'postcard',
+    title: 'Historic Quinault Lodge',
+    date: '2026-11-22',
+    location: 'Quinault, WA',
+    portraitCover: true,
+    cover: 'data:image/webp;base64,' + data.front,
+    back: 'data:image/webp;base64,' + data.back,
+    backAlt: 'Handwritten postcard with a John Coltrane stamp and Pacific Beach postmark',
+  };
+  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
+}
+
+function quinaultInstaller() {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add the Quinault postcard</title></head><body><main>
+<h1>Add the Quinault postcard</h1>
+<form id="quinault-install">
+<p><label>Front <input type="file" name="front" accept="image/webp" required></label></p>
+<p><label>Back <input type="file" name="back" accept="image/webp" required></label></p>
+<button type="submit">Put in mailbox</button>
+</form>
+<p id="quinault-status" role="status"></p>
+<p><a href="/postcards">Open postcards</a></p>
+<script src="/postcards-runtime/quinault-install.js" defer></script>
+</main></body></html>`;
+}
+
+async function installQuinault(req, res) {
+  if (req.headers.origin !== 'https://www.capsunlocked.com' &&
+      req.headers.origin !== 'https://capsunlocked.com') {
+    return res.status(403).send('Open the installer on capsunlocked.com.');
+  }
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  const data = req.body;
+  if (Number(req.headers['content-length']) > maxUpload || !validQuinault(data)) {
+    return res.status(400).send('Choose the prepared Quinault front and back files.');
+  }
+  try {
+    const payload = JSON.stringify({ front: data.front, back: data.back });
+    if (Buffer.byteLength(payload) > maxUpload) return res.status(413).end();
+    if (!await readQuinault()) {
+      await put(quinaultPath, payload, {
+        access: 'private', allowOverwrite: false, contentType: 'application/json',
+      });
+    }
+    return res.status(204).end();
+  } catch {
+    console.error('The Quinault postcard could not be saved to private Blob storage.');
+    return res.status(503).send('The postcard could not be saved. Retry from the installer.');
+  }
+}
+
+function withTableControls(html) {
+  const start = html.indexOf("    const stage = document.querySelector('.stage');");
+  const end = html.indexOf('</script>', start);
+  if (start === -1 || end === -1) return html;
+
+  return (html.slice(0, start) + html.slice(end))
+    .replace('</style>', `
+      .mail-actions { flex-wrap: wrap; gap: .35rem .6rem; }
+      .mail-actions .hint { flex-basis: 100%; text-align: center; }
+      .tabletop { position: absolute; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 4; }
+      .postcard.portrait-view.quinault { width: min(66vw, 25rem, calc((100svh - 8rem) * .52)); aspect-ratio: 3 / 4; }
+      .mail-thumbnail.quinault { aspect-ratio: 3 / 4; }
+      .postcard.quinault:not(.portrait-view) { aspect-ratio: 4 / 3; }
+    </style>`)
+    .replace('<button class="action deposit" type="button" hidden>Put in basket</button>',
+      '<button class="action deposit" type="button" hidden>Put in basket</button>' +
+      '<button class="action return-mail" type="button" hidden>Return to mailbox</button>')
+    .replace('</main>', '<button class="action tabletop" type="button" aria-haspopup="dialog" ' +
+      'aria-controls="postcards-table" hidden>On the table</button></main>')
+    .replace('</body>', `
+      <dialog class="table-dialog" id="postcards-table" aria-labelledby="postcards-table-title">
+        <header class="dialog-header">
+          <h1 id="postcards-table-title">On the table</h1>
+          <form method="dialog"><button class="action">Close</button></form>
+        </header>
+        <div class="archive-content"><ul class="mail-list"></ul></div>
+      </dialog>
+      <script src="/postcards-runtime/table.js" defer></script>
+    </body>`);
+}
 
 function sign(key, purpose, data) {
   return createHmac('sha256', key).update(purpose).update('\0').update(data).digest();
@@ -54,12 +166,13 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 </html>`;
 }
 
-module.exports = function postcards(req, res) {
+module.exports = async function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.setHeader('X-Postcards-Revision', 'quinault-private-blob');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
-  res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+  res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
   const encodedKey = process.env.POSTCARDS_KEY?.trim() || '';
@@ -73,6 +186,18 @@ module.exports = function postcards(req, res) {
     return res.status(503).send('Postcards are temporarily unavailable.');
   }
   const key = Buffer.from(encodedKey, 'base64url');
+  const liveStore = process.env.VERCEL_ENV === 'production' && Boolean(process.env.BLOB_STORE_ID);
+  const installer = new URL(req.url || '/postcards', 'https://www.capsunlocked.com')
+    .searchParams.get('install') === 'quinault';
+
+  if (installer) {
+    if (!authorized(req, key)) return res.status(401).send('Open /postcards and sign in first.');
+    if (!liveStore) return res.status(404).end();
+    if (req.method === 'POST') return installQuinault(req, res);
+    if (req.method === 'GET') return res.status(200).send(quinaultInstaller());
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).end();
+  }
 
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? new URLSearchParams(req.body) : null;
@@ -101,7 +226,11 @@ module.exports = function postcards(req, res) {
     const decipher = createDecipheriv('aes-256-gcm', key, encrypted.subarray(0, 12));
     decipher.setAuthTag(encrypted.subarray(12, 28));
     const html = Buffer.concat([decipher.update(encrypted.subarray(28)), decipher.final()]);
-    return res.status(200).send(html);
+    const quinault = liveStore ? await readQuinault().catch(() => {
+      console.error('The private Quinault postcard store could not be read.');
+      return null;
+    }) : null;
+    return res.status(200).send(withTableControls(addQuinault(html.toString('utf8'), quinault)));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');
