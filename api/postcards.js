@@ -104,11 +104,6 @@ const privateMail = {
     digest: '5831ca311bd505bedde3a4a091d543b7c62eb15cd5aa8a034897622150c1a144',
     label: 'Game Changers postcard',
   },
-  'taiwan-travelogue': {
-    path: 'postcards/taiwan-travelogue.json',
-    digest: 'a99b7d8dda41dc65c37a9e66137f7feccefafa176e232080ddd54d4ec7c295d6',
-    label: 'Taiwan Travelogue postcard',
-  },
 };
 
 function privateMailPayload(body, mail) {
@@ -220,27 +215,6 @@ function addGameChangers(html, payload) {
   return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
 }
 
-function addTaiwanTravelogue(html, payload) {
-  if (!payload) return html;
-  const data = JSON.parse(payload);
-  const item = {
-    id: 'taiwan-travelogue-nov-24-2026',
-    kind: 'postcard',
-    title: 'Taiwan Travelogue',
-    date: '2026-11-24',
-    location: 'Pacific Beach, WA',
-    portraitCover: true,
-    cover: 'data:image/webp;base64,' + data.front,
-    back: 'data:image/webp;base64,' + data.back,
-    backAlt: 'Handwritten postcard with a fox stamp and Pacific Beach postmark',
-    postalLayers: [
-      { kind: 'cancellation', left: 67, top: 10, width: 29, angle: -8, label: 'PACIFIC BEACH, WA · NOV 24 2026' },
-      { kind: 'tracking', left: 65, top: 85, width: 29, angle: 0, label: 'ROUTED • 24 NOV 2026' },
-    ],
-  };
-  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
-}
-
 function withTableControls(html) {
   const start = html.indexOf("    const stage = document.querySelector('.stage');");
   const end = html.indexOf('</script>', start);
@@ -329,7 +303,7 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 module.exports = async function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.setHeader('X-Postcards-Revision', 'taiwan-travelogue-private-postcard');
+  res.setHeader('X-Postcards-Revision', 'taiwan-travelogue-withdrawn');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
@@ -391,15 +365,14 @@ module.exports = async function postcards(req, res) {
       console.error('The private Quinault postcard store could not be read.');
       return null;
     }) : null;
-    const [conference, sauna, gameChangers, taiwanTravelogue] = liveStore ? await Promise.all(
+    const [conference, sauna, gameChangers] = liveStore ? await Promise.all(
       Object.values(privateMail).map(mail => readPrivateMail(mail).catch(() => {
         console.error('Private postcard mail could not be read.');
         return null;
       }))
     ) : [];
     const withExistingMail = addConference(addQuinault(html.toString('utf8'), quinault), conference);
-    const withGameChangers = addGameChangers(addSauna(withExistingMail, sauna), gameChangers);
-    return res.status(200).send(withTableControls(addTaiwanTravelogue(withGameChangers, taiwanTravelogue)));
+    return res.status(200).send(withTableControls(addGameChangers(addSauna(withExistingMail, sauna), gameChangers)));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');
