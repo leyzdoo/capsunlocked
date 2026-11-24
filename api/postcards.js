@@ -7,6 +7,7 @@ const { get, put } = require('@vercel/blob');
 
 const sessionName = '__Host-postcards';
 const lifetime = 7 * 24 * 60 * 60;
+const initialRecipientDigest = '8303919db62e02454bc1a5d2a991945d969beec950ce485d747f329a606d1218';
 const quinaultPath = 'postcards/quinault-lodge.json';
 const maxUpload = 1400000;
 const quinaultSides = {
@@ -308,12 +309,68 @@ function sign(key, purpose, data) {
   return createHmac('sha256', key).update(purpose).update('\0').update(data).digest();
 }
 
-function authorized(req, key) {
+function authorized(req, key, purpose = 'postcards-session') {
   const token = (req.headers.cookie || '').split(';').map(part => part.trim())
     .find(part => part.startsWith(sessionName + '='));
   const match = token?.slice(sessionName.length + 1).match(/^(\d{10})\.([A-Za-z0-9_-]{43})$/);
   if (!match || Number(match[1]) <= Math.floor(Date.now() / 1000)) return false;
-  return timingSafeEqual(Buffer.from(match[2], 'base64url'), sign(key, 'postcards-session', match[1]));
+  return timingSafeEqual(Buffer.from(match[2], 'base64url'), sign(key, purpose, match[1]));
+}
+
+function receiptConfig(html, key, recipient) {
+  const start = html.indexOf('    const mail = [');
+  const end = html.indexOf("    const stage = document.querySelector('.stage');", start);
+  if (start < 0 || end < 0) return '';
+  const ids = [...html.slice(start, end).matchAll(/\b["']?id["']?\s*:\s*["']([a-z0-9-]{1,100})["']/g)];
+  const tokens = Object.fromEntries(ids.map(([, id]) =>
+    [id, sign(key, 'postcards-receipt', id).toString('base64url')]));
+  return '<script>const receiptConfig = ' + JSON.stringify({ recipient, tokens }) + ';</script>';
+}
+
+async function readReceipt(path) {
+  const result = await get(path, { access: 'private', useCache: false });
+  if (result?.statusCode !== 200) return null;
+  const { receivedAt } = await new Response(result.stream).json();
+  return receivedAt;
+}
+
+async function handleReceipt(req, res, key, recipient, liveStore, url) {
+  if (!recipient && !authorized(req, key)) return res.status(401).end();
+  if (!liveStore) return res.status(404).end();
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).end();
+  }
+  if (req.method === 'POST' && (!recipient ||
+      !['https://www.capsunlocked.com', 'https://capsunlocked.com'].includes(req.headers.origin))) {
+    return res.status(403).end();
+  }
+  const id = url.searchParams.get('receipt');
+  const proof = url.searchParams.get('proof') || '';
+  if (!/^[a-z0-9-]{1,100}$/.test(id) || !/^[A-Za-z0-9_-]{43}$/.test(proof) ||
+      !timingSafeEqual(Buffer.from(proof, 'base64url'), sign(key, 'postcards-receipt', id))) {
+    return res.status(404).end();
+  }
+  const path = 'postcards/receipts/' + id + '.json';
+  try {
+    let receivedAt = await readReceipt(path);
+    if (!receivedAt && req.method === 'POST') {
+      receivedAt = new Date().toISOString();
+      try {
+        await put(path, JSON.stringify({ receivedAt }), {
+          access: 'private', allowOverwrite: false, contentType: 'application/json',
+        });
+      } catch (error) {
+        receivedAt = await readReceipt(path);
+        if (!receivedAt) throw error;
+      }
+    }
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    return res.status(200).json({ receivedAt });
+  } catch {
+    console.error('Private postcard receipt storage is unavailable.');
+    return res.status(503).end();
+  }
 }
 
 function entrance(invalid) {
@@ -372,8 +429,12 @@ module.exports = async function postcards(req, res) {
   }
   const key = Buffer.from(encodedKey, 'base64url');
   const liveStore = process.env.VERCEL_ENV === 'production' && Boolean(process.env.BLOB_STORE_ID);
-  const installer = new URL(req.url || '/postcards', 'https://www.capsunlocked.com')
-    .searchParams.get('install');
+  const url = new URL(req.url || '/postcards', 'https://www.capsunlocked.com');
+  const recipientDigest = process.env.POSTCARDS_RECIPIENT_DIGEST || initialRecipientDigest;
+  const recipientPurpose = 'postcards-recipient-session-' + recipientDigest;
+  const recipient = authorized(req, key, recipientPurpose);
+  if (url.searchParams.has('receipt')) return handleReceipt(req, res, key, recipient, liveStore, url);
+  const installer = url.searchParams.get('install');
 
   const mailToInstall = Object.hasOwn(privateMail, installer) ? privateMail[installer] : null;
   if (installer === 'quinault' || mailToInstall) {
@@ -388,13 +449,14 @@ module.exports = async function postcards(req, res) {
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? new URLSearchParams(req.body) : null;
     const candidate = body ? body.get('password') : req.body?.password;
-    if (typeof candidate !== 'string' || candidate.length > 128 ||
-        !timingSafeEqual(sign(key, 'postcards-password', candidate), sign(key, 'postcards-password', password))) {
-      return res.status(401).send(entrance(true));
-    }
+    if (typeof candidate !== 'string' || candidate.length > 128) return res.status(401).send(entrance(true));
+    const ownerLogin = timingSafeEqual(sign(key, 'postcards-password', candidate), sign(key, 'postcards-password', password));
+    const recipientLogin = /^[a-f0-9]{64}$/.test(recipientDigest) && timingSafeEqual(
+      createHash('sha256').update(candidate).digest(), Buffer.from(recipientDigest, 'hex'));
+    if (!ownerLogin && !recipientLogin) return res.status(401).send(entrance(true));
 
     const expiry = String(Math.floor(Date.now() / 1000) + lifetime);
-    const signature = sign(key, 'postcards-session', expiry).toString('base64url');
+    const signature = sign(key, ownerLogin ? 'postcards-session' : recipientPurpose, expiry).toString('base64url');
     res.setHeader('Set-Cookie', `${sessionName}=${expiry}.${signature}; Path=/; Max-Age=${lifetime}; HttpOnly; Secure; SameSite=Strict`);
     res.setHeader('Location', '/postcards');
     return res.status(303).end();
@@ -405,7 +467,7 @@ module.exports = async function postcards(req, res) {
     return res.status(405).end();
   }
 
-  if (!authorized(req, key)) return res.status(200).send(entrance(false));
+  if (!recipient && !authorized(req, key)) return res.status(200).send(entrance(false));
 
   try {
     const encrypted = readFileSync(join(process.cwd(), 'postcards-data', 'postcards.aes'));
@@ -425,7 +487,10 @@ module.exports = async function postcards(req, res) {
     const withExistingMail = addConference(addQuinault(html.toString('utf8'), quinault), conference);
     const withGameChangers = addGameChangers(addSauna(withExistingMail, sauna), gameChangers);
     const withTaiwanTravelogue = addTaiwanTravelogue(withGameChangers, taiwanTravelogue);
-    return res.status(200).send(withTableControls(addHuntRetreat(withTaiwanTravelogue, huntRetreat)));
+    const completeMail = addHuntRetreat(withTaiwanTravelogue, huntRetreat);
+    const page = withTableControls(completeMail);
+    const settings = liveStore ? receiptConfig(completeMail, key, recipient) : '';
+    return res.status(200).send(page.replace('<script src="/postcards-runtime/table.js"', settings + '<script src="/postcards-runtime/table.js"'));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');

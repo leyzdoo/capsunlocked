@@ -76,6 +76,59 @@
     let current;
     let turns = 0;
     let filing = false;
+    const receipts = typeof receiptConfig === 'undefined' ? null : receiptConfig;
+    const receiptButton = document.createElement('button');
+    receiptButton.className = 'action';
+    receiptButton.type = 'button';
+    receiptButton.textContent = 'I got it ♡';
+    receiptButton.hidden = true;
+    const receiptStatus = document.createElement('span');
+    receiptStatus.className = 'hint';
+    receiptStatus.setAttribute('role', 'status');
+    receiptStatus.hidden = true;
+    stage.querySelector('.mail-actions').append(receiptButton, receiptStatus);
+
+    function resetReceipt() {
+      receiptButton.hidden = true;
+      receiptStatus.hidden = true;
+      receiptStatus.textContent = '';
+    }
+
+    let receiptRequest = 0;
+    async function showReceipt(item, method = 'GET') {
+      const request = ++receiptRequest;
+      const proof = receipts?.tokens[item.id];
+      if (!proof) return;
+      receiptButton.hidden = !receipts.recipient;
+      receiptButton.disabled = true;
+      const url = new URL('/postcards', location.origin);
+      url.searchParams.set('receipt', item.id);
+      url.searchParams.set('proof', proof);
+      try {
+        const response = await fetch(url, { method });
+        if (!response.ok) throw new Error('Receipt unavailable');
+        const { receivedAt } = await response.json();
+        if (request !== receiptRequest) return;
+        if (receivedAt) {
+          receiptButton.hidden = true;
+          receiptStatus.textContent = 'Received by Sadie · ' + formatter.format(new Date(receivedAt));
+          receiptStatus.hidden = false;
+        }
+      } catch {
+        if (request !== receiptRequest) return;
+        receiptStatus.textContent = method === 'POST' ? 'Couldn’t save the receipt. Tap to try again.' : 'Receipt unavailable. Flip back to retry.';
+        receiptStatus.hidden = false;
+      } finally {
+        if (request === receiptRequest) receiptButton.disabled = false;
+      }
+    }
+
+    receiptButton.addEventListener('click', () => {
+      if (current && turns % 2 === 1) {
+        resetReceipt();
+        void showReceipt(current, 'POST');
+      }
+    });
 
     function setArtwork(image, src, alt, crop, scanSize, portrait = false) {
       image.alt = alt;
@@ -152,6 +205,8 @@
 
     function renderMail(item) {
       current = item;
+      receiptRequest += 1;
+      resetReceipt();
       stage.hidden = !item;
       status.hidden = Boolean(item);
       status.textContent = unfiledMail().length
@@ -269,6 +324,9 @@
 
       turns += 1;
       const showBack = turns % 2 === 1;
+      receiptRequest += 1;
+      resetReceipt();
+      if (showBack) void showReceipt(current);
       card.classList.toggle('portrait-view', Boolean(current.portraitCover) && !showBack);
       card.style.setProperty('--turn', `${180 * turns}deg`);
       front.setAttribute('aria-hidden', String(showBack));
