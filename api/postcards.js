@@ -430,7 +430,10 @@ module.exports = async function postcards(req, res) {
   const key = Buffer.from(encodedKey, 'base64url');
   const liveStore = process.env.VERCEL_ENV === 'production' && Boolean(process.env.BLOB_STORE_ID);
   const url = new URL(req.url || '/postcards', 'https://www.capsunlocked.com');
-  const recipientDigest = process.env.POSTCARDS_RECIPIENT_DIGEST || initialRecipientDigest;
+  const recipientPassword = process.env.POSTCARDS_RECIPIENT_PASSWORD;
+  const recipientDigest = recipientPassword
+    ? createHash('sha256').update(recipientPassword).digest('hex')
+    : process.env.POSTCARDS_RECIPIENT_DIGEST || initialRecipientDigest;
   const recipientPurpose = 'postcards-recipient-session-' + recipientDigest;
   const recipient = authorized(req, key, recipientPurpose);
   if (url.searchParams.has('receipt')) return handleReceipt(req, res, key, recipient, liveStore, url);
