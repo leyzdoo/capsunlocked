@@ -99,6 +99,11 @@ const privateMail = {
     digest: '7a6c0bdba85f6725a112238ba98b700fe8637a07270f6160b761380b13371a78',
     label: 'Pacific Beach postcard',
   },
+  'game-changers': {
+    path: 'postcards/game-changers.json',
+    digest: '5831ca311bd505bedde3a4a091d543b7c62eb15cd5aa8a034897622150c1a144',
+    label: 'Game Changers postcard',
+  },
 };
 
 function privateMailPayload(body, mail) {
@@ -185,6 +190,27 @@ function addConference(html, payload) {
       ['Love Languages Report — page 2', 'letter'],
       ['Love Languages Report — page 3', 'profile'],
     ].map(([title, key]) => ({ title, src: image(key) })),
+  };
+  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
+}
+
+function addGameChangers(html, payload) {
+  if (!payload) return html;
+  const data = JSON.parse(payload);
+  const item = {
+    id: 'game-changers-nov-23-2026',
+    kind: 'postcard',
+    title: 'Game Changers',
+    date: '2026-11-23',
+    location: 'Pacific Beach, WA',
+    portraitCover: true,
+    cover: 'data:image/webp;base64,' + data.front,
+    back: 'data:image/webp;base64,' + data.back,
+    backAlt: 'Handwritten postcard with a squash stamp and Pacific Beach postmark dated November 23, 2026',
+    postalLayers: [
+      { kind: 'cancellation', left: 66, top: 9, width: 29, angle: -8, label: 'PACIFIC BEACH, WA · NOV 23 2026' },
+      { kind: 'tracking', left: 64, top: 82, width: 29, angle: 0, label: 'ROUTED • 23 NOV 2026' },
+    ],
   };
   return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
 }
@@ -277,7 +303,7 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 module.exports = async function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.setHeader('X-Postcards-Revision', 'pacific-beach-private-postcard');
+  res.setHeader('X-Postcards-Revision', 'game-changers-private-postcard');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
@@ -339,14 +365,14 @@ module.exports = async function postcards(req, res) {
       console.error('The private Quinault postcard store could not be read.');
       return null;
     }) : null;
-    const [conference, sauna] = liveStore ? await Promise.all(
+    const [conference, sauna, gameChangers] = liveStore ? await Promise.all(
       Object.values(privateMail).map(mail => readPrivateMail(mail).catch(() => {
         console.error('Private postcard mail could not be read.');
         return null;
       }))
     ) : [];
     const withExistingMail = addConference(addQuinault(html.toString('utf8'), quinault), conference);
-    return res.status(200).send(withTableControls(addSauna(withExistingMail, sauna)));
+    return res.status(200).send(withTableControls(addGameChangers(addSauna(withExistingMail, sauna), gameChangers)));
   } catch {
     console.error('Postcards payload could not be loaded or authenticated.');
     return res.status(503).send('Postcards are temporarily unavailable.');
