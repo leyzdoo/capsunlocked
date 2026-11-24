@@ -467,7 +467,9 @@ module.exports = async function postcards(req, res) {
     return res.status(405).end();
   }
 
-  if (!recipient && !authorized(req, key)) return res.status(200).send(entrance(false));
+  if (url.searchParams.get('sign-in') === '1' || (!recipient && !authorized(req, key))) {
+    return res.status(200).send(entrance(false));
+  }
 
   try {
     const encrypted = readFileSync(join(process.cwd(), 'postcards-data', 'postcards.aes'));
