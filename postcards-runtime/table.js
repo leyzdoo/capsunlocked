@@ -381,8 +381,6 @@
     }
 
     function dismissOnBackdrop(dialog) {
-      dialog.querySelector('.dialog-header form[method="dialog"]')?.remove();
-
       function isBackdrop(event) {
         if (event.target !== dialog) return false;
         const { left, top, right, bottom } = dialog.getBoundingClientRect();
