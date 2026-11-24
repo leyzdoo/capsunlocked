@@ -380,6 +380,32 @@
       return row;
     }
 
+    function dismissOnBackdrop(dialog) {
+      dialog.querySelector('.dialog-header form[method="dialog"]')?.remove();
+
+      function isBackdrop(event) {
+        if (event.target !== dialog) return false;
+        const { left, top, right, bottom } = dialog.getBoundingClientRect();
+        return event.clientX < left || event.clientX >= right ||
+          event.clientY < top || event.clientY >= bottom;
+      }
+
+      let pressedBackdrop = false;
+      dialog.addEventListener('pointerdown', event => {
+        pressedBackdrop = isBackdrop(event);
+      });
+      dialog.addEventListener('pointercancel', () => {
+        pressedBackdrop = false;
+      });
+      dialog.addEventListener('click', event => {
+        if (pressedBackdrop && isBackdrop(event)) dialog.close();
+        pressedBackdrop = false;
+      });
+    }
+
+    dismissOnBackdrop(inbox);
+    dismissOnBackdrop(archive);
+
     mailbox.addEventListener('click', () => {
       const waiting = unfiledMail();
       inbox.querySelector('.empty').hidden = waiting.length !== 0;
