@@ -115,6 +115,11 @@ const privateMail = {
     digest: '70203dacb3d589159de14ad181a90c47d7f2da84eddbe8a53ea918cabe273fb7',
     label: 'Hunt : Retreat postcard',
   },
+  'travel-ranking': {
+    path: 'postcards/travel-ranking-nov-25-2026.json',
+    digest: '07f1efa416a9269e8d8c17871afd4805453d38ddbc3a62221dd2275d3aeece96',
+    label: 'Just to spur discussion postcard',
+  },
 };
 
 function privateMailPayload(body, mail) {
@@ -262,6 +267,25 @@ function addHuntRetreat(html, payload) {
     postalLayers: [
       { kind: 'cancellation', left: 65, top: 10, width: 30, angle: -8, label: 'PACIFIC BEACH, WA · NOV 24 2026' },
       { kind: 'tracking', left: 65, top: 85, width: 29, angle: 0, label: 'ROUTED • 24 NOV 2026' },
+    ],
+  };
+  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
+}
+
+function addTravelRanking(html, payload) {
+  if (!payload) return html;
+  const data = JSON.parse(payload);
+  const item = {
+    id: 'travel-ranking-nov-25-2026',
+    kind: 'postcard',
+    title: 'Just to spur discussion',
+    date: '2026-11-25',
+    cover: 'data:image/webp;base64,' + data.front,
+    back: 'data:image/webp;base64,' + data.back,
+    backAlt: 'Handwritten postcard with a saguaro stamp',
+    postalLayers: [
+      { kind: 'cancellation', left: 78, top: 13, width: 19, angle: -8, label: 'NOV 25 2026' },
+      { kind: 'tracking', left: 72, top: 86, width: 24, angle: 0, label: 'ROUTED • 25 NOV 2026' },
     ],
   };
   return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
@@ -483,7 +507,7 @@ module.exports = async function postcards(req, res) {
       console.error('The private Quinault postcard store could not be read.');
       return null;
     }) : null;
-    const [conference, sauna, gameChangers, taiwanTravelogue, huntRetreat] = liveStore ? await Promise.all(
+    const [conference, sauna, gameChangers, taiwanTravelogue, huntRetreat, travelRanking] = liveStore ? await Promise.all(
       Object.values(privateMail).map(mail => readPrivateMail(mail).catch(() => {
         console.error('Private postcard mail could not be read.');
         return null;
@@ -492,7 +516,7 @@ module.exports = async function postcards(req, res) {
     const withExistingMail = addConference(addQuinault(html.toString('utf8'), quinault), conference);
     const withGameChangers = addGameChangers(addSauna(withExistingMail, sauna), gameChangers);
     const withTaiwanTravelogue = addTaiwanTravelogue(withGameChangers, taiwanTravelogue);
-    const completeMail = addHuntRetreat(withTaiwanTravelogue, huntRetreat);
+    const completeMail = addTravelRanking(addHuntRetreat(withTaiwanTravelogue, huntRetreat), travelRanking);
     const page = withTableControls(completeMail);
     const settings = liveStore ? receiptConfig(completeMail, key, recipient) : '';
     return res.status(200).send(page.replace('<script src="/postcards-runtime/table.js"', settings + '<script src="/postcards-runtime/table.js"'));
