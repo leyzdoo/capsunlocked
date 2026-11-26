@@ -120,6 +120,11 @@ const privateMail = {
     digest: '07f1efa416a9269e8d8c17871afd4805453d38ddbc3a62221dd2275d3aeece96',
     label: 'Just to spur discussion postcard',
   },
+  'thankful-for-you': {
+    path: 'postcards/thankful-for-you-nov-26-2026.json',
+    digest: 'c2f8aca72dc1d7c001861b98b5d1b1a26b4dbb8c17b6a8be0deb169a0e66d5d5',
+    label: 'Thankful for you postcard',
+  },
 };
 
 function privateMailPayload(body, mail) {
@@ -291,6 +296,25 @@ function addTravelRanking(html, payload) {
   return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
 }
 
+function addThankfulForYou(html, payload) {
+  if (!payload) return html;
+  const data = JSON.parse(payload);
+  const item = {
+    id: 'thankful-for-you-nov-26-2026',
+    kind: 'postcard',
+    title: 'Thankful for you',
+    date: '2026-11-26',
+    cover: 'data:image/webp;base64,' + data.front,
+    back: 'data:image/webp;base64,' + data.back,
+    backAlt: 'Handwritten Thanksgiving postcard with a puppy stamp, cancellation, and routing strip',
+    postalLayers: [
+      { kind: 'cancellation', left: 66, top: 13, width: 27, angle: -8, label: 'NOV 26 2026' },
+      { kind: 'tracking', left: 67, top: 84, width: 26, angle: 0, label: 'ROUTED • 26 NOV 2026' },
+    ],
+  };
+  return html.replace('    const mail = [', () => '    const mail = [\n      ' + JSON.stringify(item) + ',');
+}
+
 function withTableControls(html) {
   const start = html.indexOf("    const stage = document.querySelector('.stage');");
   const end = html.indexOf('</script>', start);
@@ -435,7 +459,7 @@ ${invalid ? '<p role="alert">That password didn’t match. Try again.</p>' : ''}
 module.exports = async function postcards(req, res) {
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.setHeader('X-Postcards-Revision', 'hunt-retreat-private-postcard');
+  res.setHeader('X-Postcards-Revision', 'thankful-for-you-private-postcard');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
@@ -507,7 +531,7 @@ module.exports = async function postcards(req, res) {
       console.error('The private Quinault postcard store could not be read.');
       return null;
     }) : null;
-    const [conference, sauna, gameChangers, taiwanTravelogue, huntRetreat, travelRanking] = liveStore ? await Promise.all(
+    const [conference, sauna, gameChangers, taiwanTravelogue, huntRetreat, travelRanking, thankfulForYou] = liveStore ? await Promise.all(
       Object.values(privateMail).map(mail => readPrivateMail(mail).catch(() => {
         console.error('Private postcard mail could not be read.');
         return null;
@@ -516,7 +540,8 @@ module.exports = async function postcards(req, res) {
     const withExistingMail = addConference(addQuinault(html.toString('utf8'), quinault), conference);
     const withGameChangers = addGameChangers(addSauna(withExistingMail, sauna), gameChangers);
     const withTaiwanTravelogue = addTaiwanTravelogue(withGameChangers, taiwanTravelogue);
-    const completeMail = addTravelRanking(addHuntRetreat(withTaiwanTravelogue, huntRetreat), travelRanking);
+    const withTravelRanking = addTravelRanking(addHuntRetreat(withTaiwanTravelogue, huntRetreat), travelRanking);
+    const completeMail = addThankfulForYou(withTravelRanking, thankfulForYou);
     const page = withTableControls(completeMail);
     const settings = liveStore ? receiptConfig(completeMail, key, recipient) : '';
     return res.status(200).send(page.replace('<script src="/postcards-runtime/table.js"', settings + '<script src="/postcards-runtime/table.js"'));
